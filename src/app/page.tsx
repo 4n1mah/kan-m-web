@@ -122,6 +122,21 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* CATALOGUE CTA PHRASE */}
+      <section className="py-10 text-center">
+        <Link
+          href="/catalogo"
+          className="group inline-block"
+        >
+          <span className="font-script text-4xl md:text-5xl bg-gradient-to-r from-rose-400 via-pink-400 to-fuchsia-400 bg-clip-text text-transparent">
+            cada dulce, una historia
+          </span>
+          <span className="block mt-1 text-sm tracking-widest uppercase text-muted-foreground underline underline-offset-4 group-hover:text-rose transition-colors">
+            ver catálogo completo
+          </span>
+        </Link>
+      </section>
+
       {/* TESTIMONIALS */}
       <section className="bg-secondary/40 py-20">
         <div className="max-w-7xl mx-auto px-6">

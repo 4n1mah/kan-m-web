@@ -5,8 +5,10 @@ const ALG = "HS256";
 
 async function isValid(token: string | undefined) {
   if (!token) return false;
+  const authSecret = process.env.AUTH_SECRET ?? process.env.JWT_SECRET;
+  if (!authSecret) return false;
   try {
-    const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
+    const secret = new TextEncoder().encode(authSecret);
     await jwtVerify(token, secret);
     return true;
   } catch {

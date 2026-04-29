@@ -28,32 +28,35 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    console.error("CLOUDINARY_CLOUD_NAME not set");
+    return NextResponse.json({ error: "Configuración de Cloudinary incompleta" }, { status: 500 });
+  }
+
   try {
-    // Send file directly as multipart/form-data — avoids the slash error
-    // that occurs when encoding large data URIs as URLSearchParams
     const cloudForm = new FormData();
     cloudForm.append("file", file);
     cloudForm.append("upload_preset", "kanm_products");
 
-    const cloudName = process.env.CLOUDINARY_CLOUD_NAME!;
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       { method: "POST", body: cloudForm }
     );
 
+    const data = await res.json();
+
     if (!res.ok) {
-      const err = await res.json();
-      console.error("Cloudinary error:", err);
+      console.error("Cloudinary error:", JSON.stringify(data));
       return NextResponse.json(
-        { error: `Error Cloudinary: ${err?.error?.message ?? "desconocido"}` },
+        { error: `Error Cloudinary: ${data?.error?.message ?? "desconocido"}` },
         { status: 500 }
       );
     }
 
-    const data = await res.json();
     return NextResponse.json({ url: data.secure_url }, { status: 201 });
   } catch (err) {
-    console.error("Upload error:", err);
+    console.error("Upload exception:", err);
     return NextResponse.json({ error: "Error interno al subir la imagen" }, { status: 500 });
   }
 }

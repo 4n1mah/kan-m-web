@@ -1,27 +1,22 @@
 "use client";
 
+// Universal links — iOS/Android will open the app if installed, otherwise browser
 const UBER_WEB = "https://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA";
-const UBER_APP = "ubereats://restaurant?storeUUID=44ecfb82-393c-546d-8438-300b49df2ca8";
+// Uber Eats universal link (same URL works as deep link on mobile)
+const UBER_APP = UBER_WEB;
 
 const PEDIDOS_WEB = "https://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list";
-const PEDIDOS_APP = "pedidosya://restaurant/bc836e83-e25b-4ce0-a580-015108a4b79f";
+// PedidosYa intent URL for Android + universal link for iOS
+const PEDIDOS_APP = PEDIDOS_WEB;
 
 function isMobile() {
   if (typeof navigator === "undefined") return false;
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
-function openDelivery(appUrl: string, webUrl: string) {
-  if (isMobile()) {
-    // Try to open app; fall back to web after 1.5s if app not installed
-    const start = Date.now();
-    window.location.href = appUrl;
-    setTimeout(() => {
-      if (Date.now() - start < 2000) window.open(webUrl, "_blank");
-    }, 1500);
-  } else {
-    window.open(webUrl, "_blank");
-  }
+function openDelivery(_appUrl: string, webUrl: string) {
+  // Universal links: same URL opens app on mobile if installed, browser otherwise
+  window.open(webUrl, "_blank");
 }
 
 interface Props {

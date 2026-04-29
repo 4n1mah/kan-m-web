@@ -16,7 +16,7 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   return (
-    <header style={{ backgroundColor: "#f07097" }} className="sticky top-0 z-50 h-24 border-b border-white/20">
+    <header className="sticky top-0 z-50 h-24 border-b border-white/20 backdrop-blur-md" style={{ backgroundColor: "rgba(240,112,151,0.82)" }}>
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
 
         {/* Logo only — blends into pink navbar */}
@@ -67,7 +67,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div style={{ backgroundColor: "#f07097" }} className="md:hidden border-t border-white/20">
+        <div className="md:hidden border-t border-white/20 backdrop-blur-md" style={{ backgroundColor: "rgba(240,112,151,0.95)" }}>
           <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
             {links.map((l) => (
               <Link

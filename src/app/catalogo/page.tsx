@@ -8,6 +8,7 @@ const CATEGORIES = [
   { id: "desserts", label: "Postres" },
   { id: "events", label: "Mesa de dulces" },
   { id: "picaderas", label: "Picaderas para eventos" },
+  { id: "brunch", label: "Brunch" },
 ];
 
 export default function CatalogPage() {

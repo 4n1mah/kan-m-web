@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Cake, ArrowRight } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import { IMAGES } from "@/lib/images";
 
 const services = [
   {

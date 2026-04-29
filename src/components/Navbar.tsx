@@ -16,12 +16,12 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   return (
-    <header style={{ backgroundColor: "#f07097" }} className="sticky top-0 z-50 h-20 border-b border-white/20">
+    <header style={{ backgroundColor: "#f07097" }} className="sticky top-0 z-50 h-24 border-b border-white/20">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
 
         {/* Logo only — blends into pink navbar */}
         <Link href="/" className="flex items-center leading-none">
-          <div className="relative w-20 h-20 shrink-0">
+          <div className="relative w-24 h-24 shrink-0">
             <Image
               src="/logo-kanm.png"
               alt="Kan M Repostería y Catering"

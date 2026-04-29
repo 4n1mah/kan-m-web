@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import ProductCard from "@/components/ProductCard";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { IMAGES } from "@/lib/images";
+import DeliveryButtons from "@/components/DeliveryButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,8 @@ export default async function HomePage() {
                 Ver catálogo
               </Link>
             </div>
+
+            <DeliveryButtons variant="hero" />
           </div>
 
           <div className="relative">
@@ -137,9 +140,9 @@ export default async function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { q: "Mi repostería favorita, hacen los mejores bizcochos y postres que he probado.", n: "Rosalis García", r: "⭐⭐⭐⭐⭐ · Hace 2 años", link: "https://share.google/LouqDI0wIEPlHLP1O" },
-              { q: "Maravilloso lugar, los mejores postres de la Zona Colonial, sus galletas, brownies, empanadas son TOP, espero volver pronto.", n: "Miguel Antonio Sierra Castro", r: "⭐⭐⭐⭐⭐ · Local Guide", link: "https://share.google/yrKHFcGdWNJT1j6Gn" },
-              { q: "Sus dulces son la gloria, especialmente ese bizcocho de Fresa y alfajores 🍓💗 hicieron que nuestra noche fuera mejor, gracias por el excelente servicio y los postres 💗 volveremos sin lugar a dudas 100/5", n: "Franchesca Nicole Romero", r: "⭐⭐⭐⭐⭐ · Local Guide", link: "https://share.google/kP2TjV8Z92YIXfHoQ" },
+              { q: "Mi repostería favorita, hacen los mejores bizcochos y postres que he probado.", n: "Rosalis García", r: "⭐⭐⭐⭐⭐ · Hace 2 años", link: "https://www.google.com/maps/search/Kan+M+Reposteria+y+Catering+Santo+Domingo" },
+              { q: "Maravilloso lugar, los mejores postres de la Zona Colonial, sus galletas, brownies, empanadas son TOP, espero volver pronto.", n: "Miguel Antonio Sierra Castro", r: "⭐⭐⭐⭐⭐ · Local Guide", link: "https://www.google.com/maps/search/Kan+M+Reposteria+y+Catering+Santo+Domingo" },
+              { q: "Sus dulces son la gloria, especialmente ese bizcocho de Fresa y alfajores 🍓💗 hicieron que nuestra noche fuera mejor, gracias por el excelente servicio y los postres 💗 volveremos sin lugar a dudas 100/5", n: "Franchesca Nicole Romero", r: "⭐⭐⭐⭐⭐ · Local Guide", link: "https://www.google.com/maps/search/Kan+M+Reposteria+y+Catering+Santo+Domingo" },
             ].map((t, i) => (
               <a key={i} href={t.link} target="_blank" rel="noopener noreferrer" className="bg-card rounded-3xl border border-[var(--border)]/60 shadow-card p-7 block hover:shadow-soft transition-shadow">
                 <div className="flex items-center gap-2 mb-3">

@@ -1,21 +1,22 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductCard, { Product } from "@/components/ProductCard";
 
 const CATEGORIES = [
-  { id: "all", label: "Todo" },
-  { id: "cakes", label: "Pasteles" },
-  { id: "desserts", label: "Postres" },
-  { id: "events", label: "Mesa de dulces" },
+  { id: "all",       label: "Todo" },
+  { id: "cakes",     label: "Pasteles" },
+  { id: "desserts",  label: "Postres" },
+  { id: "events",    label: "Mesa de dulces" },
   { id: "picaderas", label: "Picaderas para eventos" },
-  { id: "brunch", label: "Brunch" },
+  { id: "brunch",    label: "Brunch" },
 ];
 
-export default function CatalogPage() {
+// Inner component that uses useSearchParams — must be inside Suspense
+function CatalogContent() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [active, setActive] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const [active, setActive]     = useState("all");
+  const [loading, setLoading]   = useState(true);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -33,15 +34,7 @@ export default function CatalogPage() {
   const visible = active === "all" ? products : products.filter((p) => p.category === active);
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20">
-      <div className="text-center mb-12">
-        <p className="font-script text-2xl text-rose">nuestro catálogo</p>
-        <h1 className="font-display text-4xl md:text-5xl mt-1">Creaciones Kan M</h1>
-        <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-          Explora nuestra colección de pasteles, postres, mesas de dulces y picaderas para eventos.
-        </p>
-      </div>
-
+    <>
       <div className="flex flex-wrap justify-center gap-3 mb-12">
         {CATEGORIES.map((c) => (
           <button
@@ -67,6 +60,23 @@ export default function CatalogPage() {
           {visible.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       )}
+    </>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <section className="max-w-7xl mx-auto px-6 py-20">
+      <div className="text-center mb-12">
+        <p className="font-script text-2xl text-rose">nuestro catálogo</p>
+        <h1 className="font-display text-4xl md:text-5xl mt-1">Creaciones Kan M</h1>
+        <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+          Explora nuestra colección de pasteles, postres, mesas de dulces y picaderas para eventos.
+        </p>
+      </div>
+      <Suspense fallback={<p className="text-center text-muted-foreground">Cargando…</p>}>
+        <CatalogContent />
+      </Suspense>
     </section>
   );
 }

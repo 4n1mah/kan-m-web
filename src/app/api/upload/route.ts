@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_MB = 5;
@@ -30,16 +28,36 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  try {
+    const bytes = await file.arrayBuffer();
+    const base64 = Buffer.from(bytes).toString("base64");
+    const dataUri = `data:${file.type};base64,${base64}`;
 
-  // Build a safe unique filename
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    const formPayload = new URLSearchParams();
+    formPayload.append("file", dataUri);
+    formPayload.append("upload_preset", "kanm_products");
+    formPayload.append("folder", "kanm");
 
-  await mkdir(uploadsDir, { recursive: true });
-  await writeFile(path.join(uploadsDir, safeName), buffer);
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME!;
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formPayload.toString(),
+      }
+    );
 
-  return NextResponse.json({ url: `/uploads/${safeName}` }, { status: 201 });
+    if (!res.ok) {
+      const err = await res.json();
+      console.error("Cloudinary error:", err);
+      return NextResponse.json({ error: "Error al subir imagen a Cloudinary" }, { status: 500 });
+    }
+
+    const data = await res.json();
+    return NextResponse.json({ url: data.secure_url }, { status: 201 });
+  } catch (err) {
+    console.error("Upload error:", err);
+    return NextResponse.json({ error: "Error interno al subir la imagen" }, { status: 500 });
+  }
 }

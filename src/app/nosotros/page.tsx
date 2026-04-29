@@ -20,7 +20,7 @@ export default function NosotrosPage() {
           </h1>
           <p className="text-muted-foreground mt-6 leading-relaxed">
             Kan M nació del amor por crear momentos memorables a través de la repostería.
-            Cada torta, cada postre, cada mesa dulce es elaborada con ingredientes seleccionados
+            Cada pastel, cada postre, cada mesa dulce es elaborada con ingredientes seleccionados
             y un toque de cariño que se siente en cada bocado.
           </p>
           <p className="text-muted-foreground mt-4 leading-relaxed">

@@ -12,7 +12,7 @@ const sans = Outfit({ subsets: ["latin"], variable: "--font-sans", weight: ["300
 export const metadata: Metadata = {
   title: "Kan M — Repostería y Catering",
   description:
-    "Repostería artesanal y catering boutique en República Dominicana. Tortas, postres y mesas dulces para tus momentos especiales.",
+    "Repostería artesanal y catering boutique en República Dominicana. Pastels, postres y mesas dulces para tus momentos especiales.",
   openGraph: {
     title: "Kan M — Repostería y Catering",
     description: "Repostería artesanal y catering boutique.",

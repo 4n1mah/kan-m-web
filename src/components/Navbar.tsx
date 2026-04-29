@@ -19,22 +19,16 @@ export default function Navbar() {
     <header style={{ backgroundColor: "#f07097" }} className="sticky top-0 z-50 h-20 border-b border-white/20">
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
 
-        {/* Logo + wordmark */}
-        <Link href="/" className="flex items-center gap-2.5 leading-none">
-          <div className="relative w-11 h-11 shrink-0 rounded-full overflow-hidden ring-2 ring-white/80">
+        {/* Logo only — blends into pink navbar */}
+        <Link href="/" className="flex items-center leading-none">
+          <div className="relative w-16 h-16 shrink-0">
             <Image
               src="/logo-kanm.png"
-              alt="Kan M logo"
+              alt="Kan M Repostería y Catering"
               fill
-              className="object-cover"
+              className="object-contain"
               priority
             />
-          </div>
-          <div>
-            <div className="font-script text-3xl text-white leading-none">Kan M</div>
-            <div className="text-[10px] tracking-[0.3em] uppercase text-white/80 mt-0.5">
-              Repostería · Catering
-            </div>
           </div>
         </Link>
 

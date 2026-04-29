@@ -5,7 +5,7 @@ import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 const services = [
   {
     title: "Bodas",
-    desc: "Mesas dulces personalizadas, tortas de varios pisos y detalles que marcan el día más importante.",
+    desc: "Mesas dulces personalizadas, pasteles de varios pisos y detalles que marcan el día más importante.",
     img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900",
   },
   {

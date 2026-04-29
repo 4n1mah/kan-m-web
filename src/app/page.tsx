@@ -23,7 +23,7 @@ export default async function HomePage() {
               Endulzamos<br />tu evento
             </h1>
             <p className="text-lg text-muted-foreground mt-6 max-w-md leading-relaxed">
-              Tortas artesanales, postres únicos y mesas dulces curadas con amor para los momentos que más importan.
+              Pasteles artesanales, postres únicos y mesas dulces curadas con amor para los momentos que más importan.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a
@@ -48,7 +48,7 @@ export default async function HomePage() {
             <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-soft">
               <Image
                 src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=900"
-                alt="Torta artesanal Kan M"
+                alt="Pastel artesanal Kan M"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 50vw"

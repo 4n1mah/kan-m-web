@@ -89,6 +89,48 @@ export default function ContactoPage() {
               <div className="font-display text-lg">@kanm.reposteriacafe</div>
             </div>
           </a>
+
+          {/* Delivery platforms */}
+          <div className="pt-2">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Pide a domicilio</p>
+            <div className="flex flex-col gap-3">
+              <a
+                href="https://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-card rounded-2xl border border-[var(--border)]/60 shadow-card p-4 flex items-center gap-3 hover:shadow-soft transition-shadow"
+              >
+                <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 40 40" className="w-6 h-6" fill="none">
+                    <rect width="40" height="40" rx="8" fill="black"/>
+                    <path d="M8 14h6v8a6 6 0 0012 0v-8h6v8a12 12 0 01-24 0v-8z" fill="white"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">Uber Eats</div>
+                  <div className="text-xs text-muted-foreground">Pide tus postres en minutos</div>
+                </div>
+                <svg className="w-4 h-4 text-muted-foreground ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </a>
+              <a
+                href="https://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-card rounded-2xl border border-[var(--border)]/60 shadow-card p-4 flex items-center gap-3 hover:shadow-soft transition-shadow"
+              >
+                <div className="w-10 h-10 rounded-xl bg-[#FA3C52] flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 40 40" className="w-6 h-6" fill="none">
+                    <path d="M20 8a12 12 0 100 24A12 12 0 0020 8zm0 4a8 8 0 110 16A8 8 0 0120 12zm0 3a5 5 0 100 10A5 5 0 0020 15z" fill="white"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">PedidosYa</div>
+                  <div className="text-xs text-muted-foreground">Delivery rápido a tu puerta</div>
+                </div>
+                <svg className="w-4 h-4 text-muted-foreground ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>

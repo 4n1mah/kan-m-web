@@ -4,6 +4,7 @@ import { Sparkles, Heart, Cake, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/db";
 import ProductCard from "@/components/ProductCard";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import { IMAGES } from "@/lib/images";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,7 @@ export default async function HomePage() {
             <div className="absolute -inset-6 bg-gradient-rose opacity-20 blur-3xl rounded-3xl" />
             <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-soft">
               <Image
-                src="https://images.unsplash.com/photo-1488477181946-6428a0291777?w=900"
+                src={IMAGES.heroProduct}
                 alt="Pastel artesanal Kan M"
                 fill
                 priority
@@ -88,7 +89,7 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
         <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-card">
           <Image
-            src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=900"
+            src={IMAGES.homeCatering}
             alt="Catering Kan M"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"

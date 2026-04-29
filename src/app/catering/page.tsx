@@ -6,17 +6,17 @@ const services = [
   {
     title: "Bodas",
     desc: "Mesas dulces personalizadas, pasteles de varios pisos y detalles que marcan el día más importante.",
-    img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900",
+    img: IMAGES.cateringBodas,
   },
   {
     title: "Cumpleaños",
     desc: "Temáticas, sabores y presentaciones únicas para celebrar a quienes amas.",
-    img: "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=900",
+    img: IMAGES.cateringCumple,
   },
   {
     title: "Eventos recreativos (cumpleaños, baby showers, graduaciones, etc.)",
     desc: "Coffee breaks, brunches y catering boutique con atención al detalle.",
-    img: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900",
+    img: IMAGES.cateringEventos,
   },
 ];
 

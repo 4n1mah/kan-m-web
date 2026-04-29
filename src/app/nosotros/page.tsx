@@ -1,3 +1,4 @@
+import { IMAGES } from "@/lib/images";
 import Image from "next/image";
 
 export default function NosotrosPage() {
@@ -6,7 +7,7 @@ export default function NosotrosPage() {
       <div className="grid md:grid-cols-2 gap-12 items-center">
         <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-card">
           <Image
-            src="https://images.unsplash.com/photo-1551024601-bec78aea704b?w=900"
+            src={IMAGES.nosotrosTeam}
             alt="Equipo Kan M"
             fill
             sizes="(max-width: 768px) 100vw, 50vw"

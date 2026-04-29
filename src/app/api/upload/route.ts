@@ -29,29 +29,25 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const bytes = await file.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
-    const dataUri = `data:${file.type};base64,${base64}`;
-
-    const formPayload = new URLSearchParams();
-    formPayload.append("file", dataUri);
-    formPayload.append("upload_preset", "kanm_products");
-    formPayload.append("folder", "kanm");
+    // Send file directly as multipart/form-data — avoids the slash error
+    // that occurs when encoding large data URIs as URLSearchParams
+    const cloudForm = new FormData();
+    cloudForm.append("file", file);
+    cloudForm.append("upload_preset", "kanm_products");
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME!;
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formPayload.toString(),
-      }
+      { method: "POST", body: cloudForm }
     );
 
     if (!res.ok) {
       const err = await res.json();
       console.error("Cloudinary error:", err);
-      return NextResponse.json({ error: "Error al subir imagen a Cloudinary" }, { status: 500 });
+      return NextResponse.json(
+        { error: `Error Cloudinary: ${err?.error?.message ?? "desconocido"}` },
+        { status: 500 }
+      );
     }
 
     const data = await res.json();

@@ -21,7 +21,7 @@ export default function Navbar() {
 
         {/* Logo only — blends into pink navbar */}
         <Link href="/" className="flex items-center leading-none">
-          <div className="relative w-16 h-16 shrink-0">
+          <div className="relative w-20 h-20 shrink-0">
             <Image
               src="/logo-kanm.png"
               alt="Kan M Repostería y Catering"

@@ -137,6 +137,19 @@ export default async function HomePage() {
         </Link>
       </section>
 
+      {/* BRUNCH PHRASE */}
+      <section className="py-10 px-6 text-center">
+        <p className="font-script text-3xl md:text-4xl text-gradient-rose">
+          Un brunch con Kan es un brunch que no olvidarás
+        </p>
+        <a
+          href="/catalogo?cat=brunch"
+          className="inline-block mt-3 text-sm text-rose border-b border-rose/60 hover:border-rose transition-colors pb-0.5"
+        >
+          Ver nuestro catálogo de Brunch →
+        </a>
+      </section>
+
       {/* TESTIMONIALS */}
       <section className="bg-secondary/40 py-20">
         <div className="max-w-7xl mx-auto px-6">

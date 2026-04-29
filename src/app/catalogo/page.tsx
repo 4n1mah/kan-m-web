@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import ProductCard, { Product } from "@/components/ProductCard";
 
 const CATEGORIES = [
@@ -15,6 +16,12 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [active, setActive] = useState("all");
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const cat = searchParams.get("cat");
+    if (cat && CATEGORIES.some((c) => c.id === cat)) setActive(cat);
+  }, [searchParams]);
 
   useEffect(() => {
     fetch("/api/products")

@@ -142,6 +142,7 @@ export default function Dashboard() {
           <option value="events">Mesa de dulces</option>
           <option value="picaderas">Picaderas para eventos</option>
           <option value="brunch">Brunch</option>
+          <option value="brunch">Brunch</option>
         </select>
         <input type="number" step="0.01" placeholder="Precio (opcional)" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })}
           className="rounded-md border border-[var(--input)] bg-background px-3 py-2 text-sm" />

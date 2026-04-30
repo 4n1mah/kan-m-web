@@ -21,7 +21,7 @@ import { IMAGES } from "@/lib/images";
 const services = [
   {
     title: "Pasteles personalizados",
-    desc: "Diseñamos el pastel de tus sueños desde cero — tamaño, sabor, relleno y decoración a tu gusto. Cada detalle pensado para hacer ese momento inolvidable.",
+    desc: "Diseñamos el pastel de tus sueños desde cero: tamaño, sabor, relleno y decoración a tu gusto. Cada detalle pensado para hacer ese momento inolvidable.",
     // 👇 Agrega más fotos al array para que se vean en el carrusel de esta sección
     imgs: IMAGES.cateringPasteles,
     bullets: ["Diseño exclusivo para ti", "Sabores y rellenos a elección", "Desde una talla hasta varios pisos"],

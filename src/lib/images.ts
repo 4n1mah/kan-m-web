@@ -65,4 +65,6 @@ export const IMAGES = {
   cateringEventos: [
     "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900",
   ],
+  mesaDeDulces: [
+  "https://www.freepik.es/fotos-premium/mesa-buffet-postres-fresa-comida-catering-bodas-celebraciones-navidenas-postres-fresas-jardin-campestre-ai-generativo_54343188.htm",
 };

@@ -16,7 +16,7 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 h-24 border-b border-white/20 backdrop-blur-md" style={{ backgroundColor: "rgba(240,112,151,0.82)" }}>
+    <header className="sticky top-0 z-50 h-24 border-b border-white/20 bg-background" style={{ backgroundColor: "rgba(240,112,151,0.82)" }}>
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
 
         {/* Logo only — blends into pink navbar */}

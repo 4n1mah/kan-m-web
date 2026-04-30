@@ -5,10 +5,7 @@ const UBER_WEB =
 const PEDIDOS_WEB =
   "https://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list";
 
-const PEDIDOS_ANDROID =
-  `intent://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list` +
-  `#Intent;scheme=https;package=com.pedidosya;` +
-  `S.browser_fallback_url=${encodeURIComponent(PEDIDOS_WEB)};end`;
+const PEDIDOS_ANDROID ="https://www.ubereats.com/store-browse-uuid/40e4fb22-393c-546d-a084-300b349fcc28?diningMode=DELIVERY";
 
 const UBER_IOS = UBER_WEB;
 const PEDIDOS_IOS = PEDIDOS_WEB;

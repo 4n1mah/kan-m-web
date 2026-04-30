@@ -113,7 +113,7 @@ export default function CateringPage() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
       <div className="text-center mb-16">
-        <p className="font-script text-2xl text-rose">para tu evento</p>
+        <p className="font-script text-2xl text-rose">para tus eventos</p>
         <h1 className="font-display text-4xl md:text-5xl mt-1">
           Catering que <span className="font-script text-gradient-rose italic">enamora</span>
         </h1>

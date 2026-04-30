@@ -34,8 +34,8 @@ export const IMAGES = {
   heroCarousel: [
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569347/Inicio3_b6dnzx.jpg",
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569346/INICIO1_emkhx3.jpg",
-    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569047/boda4_kqvrtp.jpg",
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569345/Inicio2_kq9pez.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777507121/kanm/ykckfyzhnf4vvmhpzfri.jpg",
 
   ],
 

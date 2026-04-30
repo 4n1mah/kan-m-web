@@ -23,7 +23,7 @@ export default async function HomePage() {
               <Sparkles size={14} className="text-white" /> Repostería Artesanal y Café
             </span>
             <h1 className="font-display text-5xl md:text-7xl leading-[1.1] mt-6 text-white drop-shadow-lg">
-              Endulzamos<br />tu evento
+              Endulzamos<br />tus dias y tus eventos
             </h1>
             <p className="text-lg text-white/85 mt-6 max-w-md leading-relaxed drop-shadow">
               Pasteles artesanales, postres únicos y mesas dulces curadas con amor para los momentos que más importan.

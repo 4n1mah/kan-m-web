@@ -102,7 +102,7 @@ export default async function HomePage() {
         <div>
           <p className="font-script text-2xl text-rose">para tu evento</p>
           <h2 className="font-display text-3xl md:text-4xl mt-1">
-            Catering que <span className="font-script text-gradient-rose italic">enamoran</span>
+            Catering que <span className="font-script text-gradient-rose italic">enamora</span>
           </h2>
           <ul className="mt-6 space-y-3 text-muted-foreground">
             {["Bodas y compromisos", "Cumpleaños temáticos", "Eventos recreativos"].map((x) => (
@@ -122,7 +122,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CATALOGUE CTA PHRASE */}
+      {/* CATALOGUE CTA PHRASE
       <section className="py-10 text-center">
         <Link
           href="/catalogo"
@@ -135,12 +135,12 @@ export default async function HomePage() {
             ver catálogo completo
           </span>
         </Link>
-      </section>
+      </section> */}
 
       {/* BRUNCH PHRASE */}
       <section className="py-10 px-6 text-center">
         <p className="font-script text-3xl md:text-4xl text-gradient-rose">
-          Un brunch con Kan es un brunch que no olvidarás
+          Brunch todo el dia, todos los dias
         </p>
         <a
           href="/catalogo?cat=brunch"

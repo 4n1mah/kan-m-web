@@ -221,7 +221,7 @@ export default function Dashboard() {
               id="image-upload"
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
+              accept="image/jpeg,image/png,image/webp,image/gif/image/jpg,image/heic,image/heif"
               onChange={handleImageChange}
               className="sr-only"
             />

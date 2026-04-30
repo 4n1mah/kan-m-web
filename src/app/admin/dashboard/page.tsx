@@ -47,12 +47,47 @@ export default function Dashboard() {
     router.push("/admin/login");
   }
 
+  // Convierte cualquier imagen (Ultra HDR, HEIC, etc.) a JPEG estándar usando canvas.
+  // Los Pixel con Ultra HDR generan JPEGs con gainmap que Cloudinary rechaza.
+  // Dibujar en canvas aplana el HDR a SDR y produce un JPEG limpio.
+  async function flattenToJpeg(file: File): Promise<File> {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "#ffffff"; // fondo blanco para imágenes con transparencia
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(objectUrl);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { resolve(file); return; }
+            const safeName = file.name.replace(/\.\w+$/, ".jpg") || "foto.jpg";
+            resolve(new File([blob], safeName, { type: "image/jpeg" }));
+          },
+          "image/jpeg",
+          0.92
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
+      img.src = objectUrl;
+    });
+  }
+
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const raw = e.target.files?.[0];
+    if (!raw) return;
     setUploadError("");
-    setImagePreview(URL.createObjectURL(file));
+    setImagePreview(URL.createObjectURL(raw));
     setUploading(true);
+
+    // Aplanar a JPEG estándar antes de subir (fix para Pixel Ultra HDR)
+    const file = await flattenToJpeg(raw);
+
     const fd = new FormData();
     fd.append("file", file);
     const res = await fetch("/api/upload", { method: "POST", body: fd });

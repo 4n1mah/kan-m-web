@@ -27,7 +27,7 @@ export const IMAGES = {
   cateringBodas: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900",
 
   /** Foto de la sección "Cumpleaños temáticos" */
-  cateringCumple: "/uploads/cumple_pastel.jpeg",
+  cateringCumple: "/uploads/catering-cumple.jpg",
 
   /** Foto de la sección "Eventos recreativos" */
   cateringEventos: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900",

@@ -49,7 +49,10 @@ export const IMAGES = {
     "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900",
   ],
   cateringBodas: [
-    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/boda1_xdayyk.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568573/boda2_dqnsmn.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568571/Boda3_hyexsj.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/boda1_xdayyk.jpg,"
   ],
   cateringCumple: [
     "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=900",

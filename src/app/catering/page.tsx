@@ -27,7 +27,7 @@ export default function CateringPage() {
       <div className="text-center mb-16">
         <p className="font-script text-2xl text-rose">para tu evento</p>
         <h1 className="font-display text-4xl md:text-5xl mt-1">
-          Catering que <span className="font-script text-gradient-rose italic">enamoran</span>
+          Catering que <span className="font-script text-gradient-rose italic">enamora</span>
         </h1>
         <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
           Diseñamos experiencias dulces a medida de tu evento, con productos artesanales y servicio impecable.

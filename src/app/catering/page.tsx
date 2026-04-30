@@ -3,21 +3,30 @@ import { Cake, ArrowRight } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { IMAGES } from "@/lib/images";
 
-const services = [
+const services: { title: string; desc: string; img: string; bullets: string[] }[] = [
+  {
+    title: "Pasteles personalizados",
+    desc: "Diseñamos el pastel de tus sueños desde cero — tamaño, sabor, relleno y decoración a tu gusto. Cada detalle pensado para hacer ese momento inolvidable.",
+    img: IMAGES.cateringPasteles,
+    bullets: ["Diseño exclusivo para ti", "Sabores y rellenos a elección", "Desde una talla hasta varios pisos"],
+  },
   {
     title: "Bodas",
     desc: "Mesas dulces personalizadas, pasteles de varios pisos y detalles que marcan el día más importante.",
     img: IMAGES.cateringBodas,
+    bullets: ["Asesoría personalizada", "Diseño a tu temática", "Montaje y servicio"],
   },
   {
     title: "Cumpleaños",
     desc: "Temáticas, sabores y presentaciones únicas para celebrar a quienes amas.",
     img: IMAGES.cateringCumple,
+    bullets: ["Asesoría personalizada", "Diseño a tu temática", "Montaje y servicio"],
   },
   {
     title: "Eventos recreativos (cumpleaños, baby showers, graduaciones, etc.)",
     desc: "Coffee breaks, brunches y catering boutique con atención al detalle.",
     img: IMAGES.cateringEventos,
+    bullets: ["Asesoría personalizada", "Diseño a tu temática", "Montaje y servicio"],
   },
 ];
 
@@ -44,9 +53,9 @@ export default function CateringPage() {
               <h2 className="font-display text-3xl md:text-4xl">{s.title}</h2>
               <p className="text-muted-foreground mt-4 leading-relaxed">{s.desc}</p>
               <ul className="mt-6 space-y-2 text-muted-foreground">
-                <li className="flex items-center gap-2"><Cake size={16} className="text-rose" /> Asesoría personalizada</li>
-                <li className="flex items-center gap-2"><Cake size={16} className="text-rose" /> Diseño a tu temática</li>
-                <li className="flex items-center gap-2"><Cake size={16} className="text-rose" /> Montaje y servicio</li>
+                {s.bullets.map((b) => (
+                  <li key={b} className="flex items-center gap-2"><Cake size={16} className="text-rose" /> {b}</li>
+                ))}
               </ul>
               <a
                 href={waLink(WA_MESSAGES.catering)}

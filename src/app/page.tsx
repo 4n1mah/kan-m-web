@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { IMAGES } from "@/lib/images";
 import DeliveryButtons from "@/components/DeliveryButtons";
+import HeroCarousel from "@/components/HeroCarousel";
 
 export const dynamic = "force-dynamic";
 
@@ -14,17 +15,17 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* HERO */}
-      <section className="bg-gradient-soft">
-        <div className="max-w-7xl mx-auto px-6 pt-16 pb-24 md:pt-24 md:pb-32 grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-card border border-[var(--border)]/60 text-xs uppercase tracking-widest">
-              <Sparkles size={14} className="text-rose" /> Repostería Artesanal y Café
+      {/* HERO — full-screen carousel background */}
+      <HeroCarousel images={IMAGES.heroCarousel}>
+        <div className="max-w-7xl mx-auto px-6 py-24 md:py-36">
+          <div className="max-w-2xl">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white">
+              <Sparkles size={14} className="text-white" /> Repostería Artesanal y Café
             </span>
-            <h1 className="font-display text-5xl md:text-7xl leading-[1.1] mt-6">
+            <h1 className="font-display text-5xl md:text-7xl leading-[1.1] mt-6 text-white drop-shadow-lg">
               Endulzamos<br />tu evento
             </h1>
-            <p className="text-lg text-muted-foreground mt-6 max-w-md leading-relaxed">
+            <p className="text-lg text-white/85 mt-6 max-w-md leading-relaxed drop-shadow">
               Pasteles artesanales, postres únicos y mesas dulces curadas con amor para los momentos que más importan.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
@@ -38,39 +39,26 @@ export default async function HomePage() {
               </a>
               <Link
                 href="/catalogo"
-                className="inline-flex items-center px-6 py-3 rounded-full bg-card border border-[var(--border)] hover:bg-secondary transition"
+                className="inline-flex items-center px-6 py-3 rounded-full bg-white/15 backdrop-blur-sm border border-white/40 text-white hover:bg-white/25 transition"
               >
                 Ver catálogo
               </Link>
             </div>
-
             <DeliveryButtons variant="hero" />
           </div>
 
-          <div className="relative">
-            <div className="absolute -inset-6 bg-gradient-rose opacity-20 blur-3xl rounded-3xl" />
-            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-soft">
-              <Image
-                src={IMAGES.heroProduct}
-                alt="Pastel artesanal Kan M"
-                fill
-                priority
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
+          {/* Floating badge */}
+          <div className="hidden sm:inline-flex mt-12 items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/30">
+            <div className="w-10 h-10 rounded-full bg-gradient-rose flex items-center justify-center text-white">
+              <Heart size={18} />
             </div>
-            <div className="hidden sm:flex absolute -bottom-6 -left-6 items-center gap-3 bg-card rounded-2xl shadow-card px-5 py-4 border border-[var(--border)]/60">
-              <div className="w-10 h-10 rounded-full bg-gradient-rose flex items-center justify-center text-white">
-                <Heart size={18} />
-              </div>
-              <div>
-                <div className="font-display text-lg leading-none">+500 eventos</div>
-                <div className="text-xs text-muted-foreground mt-1">endulzados con amor</div>
-              </div>
+            <div>
+              <div className="font-display text-lg leading-none text-white">+500 eventos</div>
+              <div className="text-xs text-white/70 mt-1">endulzados con amor</div>
             </div>
           </div>
         </div>
-      </section>
+      </HeroCarousel>
 
       {/* FEATURED */}
       <section className="max-w-7xl mx-auto px-6 py-20">

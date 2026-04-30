@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 
-const ALLOWED_TYPES = [
+const MAX_SIZE_MB = 10;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+// MIME types explicitly allowed
+const ALLOWED_TYPES = new Set([
   "image/jpeg",
   "image/jpg",
   "image/png",
@@ -9,80 +13,91 @@ const ALLOWED_TYPES = [
   "image/gif",
   "image/heic",
   "image/heif",
-];
+  "image/avif",
+]);
 
-const MAX_SIZE_MB = 10;
-const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+// Extension fallback when MIME type is empty (Google Photos on Android sends this)
+function isAllowedByExtension(filename: string): boolean {
+  const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+  return ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "avif"].includes(ext);
+}
+
+// Detect real type from magic bytes (first 12 bytes of the file)
+async function detectMimeFromBuffer(file: File): Promise<string> {
+  const slice = file.slice(0, 12);
+  const buf = new Uint8Array(await slice.arrayBuffer());
+
+  if (buf[0] === 0xff && buf[1] === 0xd8) return "image/jpeg";
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "image/png";
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return "image/gif";
+  if (buf[0] === 0x52 && buf[4] === 0x57 && buf[5] === 0x45 && buf[6] === 0x42) return "image/webp";
+  // HEIC/HEIF: ftyp box at offset 4
+  if (buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) return "image/heic";
+  return file.type || "application/octet-stream";
+}
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData().catch(() => null);
-
   if (!formData) {
-    return NextResponse.json(
-      { error: "Solicitud inválida. Intenta subir la imagen nuevamente." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Solicitud inválida." }, { status: 400 });
   }
 
   const file = formData.get("file") as File | null;
-
   if (!file) {
-    return NextResponse.json(
-      { error: "No se recibió ningún archivo." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "No se recibió ningún archivo." }, { status: 400 });
   }
+
+  // Detect real MIME type — Google Photos on Android often sends type: ""
+  const detectedType = await detectMimeFromBuffer(file);
+  const allowed =
+    ALLOWED_TYPES.has(detectedType) ||
+    ALLOWED_TYPES.has(file.type) ||
+    isAllowedByExtension(file.name);
 
   console.log("Upload attempt:", {
     name: file.name,
-    type: file.type,
+    reportedType: file.type,
+    detectedType,
     sizeMB: Number((file.size / 1024 / 1024).toFixed(2)),
   });
 
-  if (!ALLOWED_TYPES.includes(file.type)) {
+  if (!allowed) {
     return NextResponse.json(
-      {
-        error: `Tipo de archivo no permitido: ${file.type || "desconocido"}. Usa JPG, PNG, WEBP, GIF, HEIC o HEIF.`,
-      },
+      { error: `Tipo de archivo no soportado (${file.type || "desconocido"}). Usa JPG, PNG, WEBP o HEIC.` },
       { status: 400 }
     );
   }
 
   if (file.size > MAX_SIZE_BYTES) {
     return NextResponse.json(
-      {
-        error: `La imagen pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. Máximo permitido: ${MAX_SIZE_MB}MB.`,
-      },
+      { error: `La imagen pesa ${(file.size / 1024 / 1024).toFixed(1)}MB. Máximo: ${MAX_SIZE_MB}MB.` },
       { status: 400 }
     );
   }
 
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiKey    = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
   if (!cloudName || !apiKey || !apiSecret) {
-    console.error("Cloudinary env vars missing:", {
-      cloudName: !!cloudName,
-      apiKey: !!apiKey,
-      apiSecret: !!apiSecret,
-    });
-
-    return NextResponse.json(
-      { error: "Configuración de servidor incompleta." },
-      { status: 500 }
-    );
+    console.error("Cloudinary env vars missing");
+    return NextResponse.json({ error: "Configuración de servidor incompleta." }, { status: 500 });
   }
 
   try {
     const timestamp = Math.round(Date.now() / 1000).toString();
     const folder = "kanm";
-
     const toSign = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
     const signature = crypto.createHash("sha256").update(toSign).digest("hex");
 
+    // If type is empty, rebuild the File with the detected type so Cloudinary gets it correctly
+    const uploadFile =
+      file.type === "" || !ALLOWED_TYPES.has(file.type)
+        ? new File([file], file.name || `upload.${detectedType.split("/")[1]}`, { type: detectedType })
+        : file;
+
     const cloudForm = new FormData();
-    cloudForm.append("file", file);
+    cloudForm.append("file", uploadFile);
     cloudForm.append("api_key", apiKey);
     cloudForm.append("timestamp", timestamp);
     cloudForm.append("signature", signature);
@@ -90,46 +105,22 @@ export async function POST(req: NextRequest) {
 
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: cloudForm,
-      }
+      { method: "POST", body: cloudForm }
     );
 
     const data = await res.json();
 
     if (!res.ok) {
-      console.error("Cloudinary upload failed:", {
-        status: res.status,
-        fileName: file.name,
-        fileType: file.type,
-        fileSizeMB: Number((file.size / 1024 / 1024).toFixed(2)),
-        cloudinaryError: data,
-      });
-
+      console.error("Cloudinary error:", { status: res.status, error: data });
       return NextResponse.json(
-        {
-          error: data?.error?.message
-            ? `Error de Cloudinary: ${data.error.message}`
-            : "Error al subir la imagen a Cloudinary.",
-        },
+        { error: data?.error?.message ?? "Error al subir la imagen a Cloudinary." },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(
-      {
-        url: data.secure_url,
-        publicId: data.public_id,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ url: data.secure_url }, { status: 201 });
   } catch (err) {
     console.error("Upload exception:", err);
-
-    return NextResponse.json(
-      { error: "Error interno del servidor al subir la imagen." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error interno del servidor." }, { status: 500 });
   }
 }

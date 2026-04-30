@@ -1,14 +1,22 @@
 "use client";
 
-// Web URLs — also serve as universal links on iOS (open app if installed)
-const UBER_WEB = "https://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA";
-const PEDIDOS_WEB = "https://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list";
+const UBER_WEB =
+  "https://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA";
+const PEDIDOS_WEB =
+  "https://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list";
 
-// Android intent URIs — open app directly to the Kan M profile
-const UBER_ANDROID = "intent://restaurant?storeUUID=QOT7Ijk8VG2ghDALNJ_MKA#Intent;package=com.ubercab.eats;scheme=ubereats;end";
-const PEDIDOS_ANDROID = "intent://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu#Intent;package=com.pedidosya.droidapp;scheme=https;end";
+// Android intent:// — uses browser_fallback_url so if app is NOT installed
+// Chrome opens the web URL instead of going to the Play Store
+const UBER_ANDROID =
+  `intent://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA` +
+  `#Intent;scheme=https;package=com.ubercab.eats;` +
+  `S.browser_fallback_url=${encodeURIComponent(UBER_WEB)};end`;
+const PEDIDOS_ANDROID =
+  `intent://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list` +
+  `#Intent;scheme=https;package=com.pedidosya;` +
+  `S.browser_fallback_url=${encodeURIComponent(PEDIDOS_WEB)};end`;
 
-// iOS universal links — iOS will open the app automatically if installed
+// iOS: universal links — same web URL, iOS opens the app if installed
 const UBER_IOS = UBER_WEB;
 const PEDIDOS_IOS = PEDIDOS_WEB;
 

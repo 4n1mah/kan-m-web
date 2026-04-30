@@ -5,11 +5,11 @@ const UBER_WEB =
 const PEDIDOS_WEB =
   "https://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list";
 
-// Android intent:// — uses browser_fallback_url so if app is NOT installed
-// Chrome opens the web URL instead of going to the Play Store
+// Android intent:// — package name must match exactly what's on the Play Store.
+// S.browser_fallback_url ensures Chrome opens the web if the app isn't installed (no Play Store redirect).
 const UBER_ANDROID =
   `intent://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA` +
-  `#Intent;scheme=https;package=com.ubercab.eats;` +
+  `#Intent;scheme=https;package=com.ubercab.ubereats;` +
   `S.browser_fallback_url=${encodeURIComponent(UBER_WEB)};end`;
 const PEDIDOS_ANDROID =
   `intent://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list` +

@@ -16,12 +16,12 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 h-24 border-b border-white/20 backdrop-blur-md" style={{ backgroundColor: "#f07097" }}>
+    <header className="sticky top-0 z-50 h-28 border-b border-white/20" style={{ backgroundColor: "#f07097" }}>
       <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
 
         {/* Logo only — blends into pink navbar */}
         <Link href="/" className="flex items-center leading-none">
-          <div className="relative w-24 h-24 shrink-0">
+          <div className="relative w-28 h-28 shrink-0">
             <Image
               src="/logo-kanm.png"
               alt="Kan M Repostería y Catering"
@@ -67,7 +67,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden border-t border-white/20 backdrop-blur-md" style={{ backgroundColor: "#f07097" }}>
+        <div className="md:hidden border-t border-white/20" style={{ backgroundColor: "#f07097" }}>
           <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4">
             {links.map((l) => (
               <Link

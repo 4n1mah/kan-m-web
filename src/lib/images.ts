@@ -52,10 +52,14 @@ export const IMAGES = {
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/boda1_xdayyk.jpg",
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568573/boda2_dqnsmn.jpg",
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568571/Boda3_hyexsj.jpg",
-    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/boda1_xdayyk.jpg,"
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/boda1_xdayyk.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569047/boda4_kqvrtp.jpg",
   ],
   cateringCumple: [
-    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=900",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/cumple3_ryr4xa.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/cumple4_agt0wg.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568569/cumple2_rq3jwb.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568569/cumple1_jsl6zw.jpg",
   ],
   cateringEventos: [
     "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900",

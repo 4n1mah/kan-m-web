@@ -32,10 +32,11 @@ export const IMAGES = {
 
   // ── INICIO — Carrusel de fondo ───────────────────────────
   heroCarousel: [
-    "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=1400",
-    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1400",
-    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1400",
-    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1400",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569347/Inicio3_b6dnzx.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569346/INICIO1_emkhx3.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569047/boda4_kqvrtp.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569345/Inicio2_kq9pez.jpg",
+
   ],
 
   // ── INICIO — Sección catering ────────────────────────────

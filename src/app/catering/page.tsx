@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Cake, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { IMAGES } from "@/lib/images";
@@ -48,6 +48,11 @@ const services = [
 
 function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
   const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (imgs.length < 2) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % imgs.length), 4000);
+    return () => clearInterval(id);
+  }, [imgs.length]);
   const prev = () => setIdx((i) => (i - 1 + imgs.length) % imgs.length);
   const next = () => setIdx((i) => (i + 1) % imgs.length);
 

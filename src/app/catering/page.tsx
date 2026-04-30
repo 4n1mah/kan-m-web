@@ -33,6 +33,12 @@ const services = [
     bullets: ["Asesoría personalizada", "Diseño a tu temática", "Montaje y servicio"],
   },
   {
+    title: "Mesa de dulces",
+    desc: "Postres artesanales y diseños exclusivos que endulzan tus momentos especiales.",
+    imgs: IMAGES.mesaDeDulces,
+    bullets: ["Variedad gourmet", "Decoración temática", "Montaje incluido"],
+  },
+  {
     title: "Cumpleaños",
     desc: "Temáticas, sabores y presentaciones únicas para celebrar a quienes amas.",
     imgs: IMAGES.cateringCumple,

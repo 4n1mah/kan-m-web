@@ -23,25 +23,25 @@ const services = [
     title: "Pasteles personalizados",
     desc: "Diseñamos el pastel de tus sueños desde cero — tamaño, sabor, relleno y decoración a tu gusto. Cada detalle pensado para hacer ese momento inolvidable.",
     // 👇 Agrega más fotos al array para que se vean en el carrusel de esta sección
-    imgs: [IMAGES.cateringPasteles],
+    imgs: IMAGES.cateringPasteles,
     bullets: ["Diseño exclusivo para ti", "Sabores y rellenos a elección", "Desde una talla hasta varios pisos"],
   },
   {
     title: "Bodas",
     desc: "Mesas dulces personalizadas, pasteles de varios pisos y detalles que marcan el día más importante.",
-    imgs: [IMAGES.cateringBodas],
+    imgs: IMAGES.cateringBodas,
     bullets: ["Asesoría personalizada", "Diseño a tu temática", "Montaje y servicio"],
   },
   {
     title: "Cumpleaños",
     desc: "Temáticas, sabores y presentaciones únicas para celebrar a quienes amas.",
-    imgs: [IMAGES.cateringCumple],
+    imgs: IMAGES.cateringCumple,
     bullets: ["Asesoría personalizada", "Diseño a tu temática", "Montaje y servicio"],
   },
   {
     title: "Eventos recreativos",
     desc: "Baby showers, graduaciones, coffee breaks y catering boutique con atención al detalle. (cumpleaños, baby showers, graduaciones, etc.)",
-    imgs: [IMAGES.cateringEventos],
+    imgs: IMAGES.cateringEventos,
     bullets: ["Asesoría personalizada", "Diseño a tu temática", "Montaje y servicio"],
   },
 ];

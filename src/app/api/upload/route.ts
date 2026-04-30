@@ -96,13 +96,20 @@ export async function POST(req: NextRequest) {
         ? new File([file], file.name || `upload.${detectedType.split("/")[1]}`, { type: detectedType })
         : file;
 
+
     const cloudForm = new FormData();
     cloudForm.append("file", uploadFile);
     cloudForm.append("api_key", apiKey);
     cloudForm.append("timestamp", timestamp);
     cloudForm.append("signature", signature);
     cloudForm.append("folder", folder);
-
+    
+    // FIX HDR Pixel
+    cloudForm.append("quality", "auto");
+    cloudForm.append("fetch_format", "auto");
+    // opcional si algún HDR sigue fallando:
+    // cloudForm.append("flags", "strip_profile");
+    
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
       { method: "POST", body: cloudForm }

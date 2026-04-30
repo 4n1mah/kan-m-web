@@ -37,6 +37,12 @@ export default function Footer() {
               <Instagram size={14} className="text-rose" />
               <a href="https://www.instagram.com/kanm.reposteriacafe/" target="_blank" rel="noopener noreferrer" className="hover:text-rose transition-colors">@kanm.reposteriacafe</a>
             </li>
+            <li className="flex items-start gap-2">
+              <svg className="w-3.5 h-3.5 text-rose mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              <a href="https://maps.app.goo.gl/mU9uqEDyhnN4Zc7g9" target="_blank" rel="noopener noreferrer" className="hover:text-rose transition-colors leading-snug">Ver ubicación en Google Maps</a>
+            </li>
           </ul>
         </div>
       </div>

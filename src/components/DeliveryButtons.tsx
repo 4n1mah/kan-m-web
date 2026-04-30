@@ -46,7 +46,7 @@ export default function DeliveryButtons({ variant = "hero" }: Props) {
   if (variant === "hero") {
     return (
       <div className="mt-5 flex items-center gap-3 flex-wrap">
-        <span className="text-xs text-muted-foreground">Pide a domicilio:</span>
+        <span className="text-xs text-white/80 font-medium">Pide a domicilio:</span>
         <button
           onClick={() => openDelivery(UBER_WEB, "UBER", UBER_IOS)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black text-white text-xs font-medium hover:opacity-80 transition cursor-pointer"

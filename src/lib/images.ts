@@ -1,27 +1,36 @@
 /**
  * ============================================================
- *  CÓMO CAMBIAR LAS FOTOS DE LA PÁGINA
+ *  CÓMO CAMBIAR LAS FOTOS DEL SITIO
  * ============================================================
  *
- *  OPCIÓN A — Subir desde el admin (recomendado):
- *    1. Ve a /admin/dashboard y sube la foto
- *    2. Cloudinary te devuelve una URL como:
- *       https://res.cloudinary.com/dsvcag6oo/image/upload/v.../kanm/foto.jpg
- *    3. Copia esa URL y pégala abajo en el campo que quieras cambiar
- *    4. Haz git push para que el cambio aparezca en la web
+ *  PASO 1 — Sube la foto a Cloudinary:
+ *    Opción A: Ve a /admin/dashboard → sube desde ahí
+ *    Opción B: cloudinary.com → Media Library → Upload
+ *    → Copia la URL que empieza con https://res.cloudinary.com/...
  *
- *  OPCIÓN B — Subir directamente a Cloudinary:
- *    1. cloudinary.com → Media Library → Upload
- *    2. Copia la URL y pégala abajo
+ *  PASO 2 — Pega la URL abajo en el campo que quieras cambiar
  *
- *  NOTA: Para el carrusel del inicio, agrega o quita URLs del array heroCarousel.
+ *  PASO 3 — git add . → git commit -m "fotos" → git push
+ *
+ * ── CARRUSEL DE CATERING ────────────────────────────────────
+ *  Cada sección de catering puede tener VARIAS fotos.
+ *  Solo agrega más URLs al array, ejemplo:
+ *
+ *    cateringBodas: [
+ *      "https://res.cloudinary.com/.../boda1.jpg",
+ *      "https://res.cloudinary.com/.../boda2.jpg",
+ *      "https://res.cloudinary.com/.../boda3.jpg",
+ *    ],
+ *
+ * ── CARRUSEL DEL INICIO ─────────────────────────────────────
+ *  Igual — agrega o quita URLs del array heroCarousel.
+ *  Cambian automáticamente cada 4 segundos.
  * ============================================================
  */
 
 export const IMAGES = {
 
-  // ── INICIO — CARRUSEL DE FONDO ───────────────────────────
-  // Agrega más URLs al array para más fotos en el carrusel (cambian cada 4 segundos)
+  // ── INICIO — Carrusel de fondo ───────────────────────────
   heroCarousel: [
     "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=1400",
     "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=1400",
@@ -35,9 +44,17 @@ export const IMAGES = {
   // ── NOSOTROS ─────────────────────────────────────────────
   nosotrosTeam: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=900",
 
-  // ── CATERING ─────────────────────────────────────────────
-  cateringBodas:     "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900",
-  cateringCumple:    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=900",
-  cateringEventos:   "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900",
-  cateringPasteles:  "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900",
+  // ── CATERING — una o varias fotos por sección ────────────
+  cateringPasteles: [
+    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900",
+  ],
+  cateringBodas: [
+    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=900",
+  ],
+  cateringCumple: [
+    "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=900",
+  ],
+  cateringEventos: [
+    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900",
+  ],
 };

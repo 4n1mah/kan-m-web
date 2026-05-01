@@ -67,6 +67,8 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
     setSaving(false);
   }
 
+  const bakerName = order.assignedTo || "el equipo de Kan M";
+  
   const waMsg = encodeURIComponent(
     `Hola ${order.name} 👋, te habla ${bakerName} desde Kan M Repostería y Catering.
   

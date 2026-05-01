@@ -32,7 +32,7 @@ const config: Config = {
       },
       backgroundImage: {
         "gradient-rose":
-          "linear-gradient(135deg, var(--rose) 0%, var(--blush) 100%)",
+          "linear-gradient(135deg, #f07097 0%, #f4899e 50%, #e85d82 100%)",
         "gradient-soft":
           "linear-gradient(160deg, color-mix(in oklab, var(--blush) 60%, transparent) 0%, var(--background) 50%, color-mix(in oklab, var(--cream) 80%, transparent) 100%)",
       },

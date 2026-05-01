@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WhatsAppFab from "@/components/WhatsAppFab";
+import ScrollReveal from "@/components/ScrollReveal";
 import { Analytics } from "@vercel/analytics/react";
 
 const display = Playfair_Display({ subsets: ["latin"], variable: "--font-display", weight: ["400", "500", "700"] });
@@ -12,8 +13,7 @@ const sans = Outfit({ subsets: ["latin"], variable: "--font-sans", weight: ["300
 
 export const metadata: Metadata = {
   title: "Kan M — Repostería y Catering",
-  description:
-    "Repostería artesanal y catering boutique en República Dominicana. Pastels, postres y mesas dulces para tus momentos especiales.",
+  description: "Repostería artesanal y catering boutique en República Dominicana. Pastels, postres y mesas dulces para tus momentos especiales.",
   openGraph: {
     title: "Kan M — Repostería y Catering",
     description: "Repostería artesanal y catering boutique.",
@@ -29,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-screen">{children}</main>
         <Footer />
         <WhatsAppFab />
+        <ScrollReveal />
         <Analytics />
       </body>
     </html>

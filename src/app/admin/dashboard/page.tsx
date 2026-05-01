@@ -67,7 +67,13 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
     setSaving(false);
   }
 
-  const waMsg = encodeURIComponent(`Hola ${order.name} 👋, somos Kan M. Recibimos tu cotización para *${order.eventType}* el *${order.eventDate}*${order.deliveryTime ? ` a las ${order.deliveryTime}` : ""}. `);
+  const waMsg = encodeURIComponent(
+    `Hola ${order.name} 👋, te habla ${bakerName} desde Kan M Repostería y Catering.
+  
+  Estamos revisando tu cotización para *${order.eventType}* el *${order.eventDate}*${order.deliveryTime ? ` a las ${order.deliveryTime}` : ""}.
+  
+  Quedo atenta para cualquier detalle adicional 💕`
+  );
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.55)" }} onClick={onClose}>

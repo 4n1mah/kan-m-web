@@ -26,7 +26,7 @@ export default async function HomePage() {
               Endulzamos<br />tus dias y tus eventos
             </h1>
             <p className="text-lg text-white/85 mt-6 max-w-md leading-relaxed drop-shadow">
-              Pasteles artesanales, postres únicos y mesas dulces curadas con amor para los momentos que más importan.
+              Pasteles artesanales, postres exclusivos y mesas dulces personalizadas para bodas, cumpleaños y eventos especiales en todo Santo Domingo. Ubicados en la Zona Colonial.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a

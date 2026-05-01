@@ -50,7 +50,6 @@ export const IMAGES = {
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609637/pastel3_ggze5a.jpg",
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609636/pastel1_dgbqr9.webp", 
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609635/pastel2_egdmn5.jpg", 
-    "",
   ],
   cateringBodas: [
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/boda1_xdayyk.jpg",

@@ -277,7 +277,7 @@ export default async function HomePage() {
                 Hagamos juntos <span className="font-script text-gradient-rose">tu evento</span>
               </h2>
               <p className="text-foreground/70 mt-4 max-w-xl mx-auto leading-relaxed">
-                Cuéntanos qué imaginas y lo creamos. Cada detalle, cada sabor, hecho a tu medida.
+                Cuéntanos qué imaginas y lo creamos. Cada detalle, cada sabor, hecho a tu medida. Completa la cotización y nuestro equipo te contactará para confirmar disponibilidad.
               </p>
               <Link
                 href="/cotizar"

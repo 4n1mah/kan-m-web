@@ -143,7 +143,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <p className="font-script text-2xl text-rose">testimonios</p>
-            <h2 className="font-display text-3xl md:text-4xl mt-1">Clientes felices</h2>
+            <h2 className="font-display text-3xl md:text-4xl mt-1">Experiencias reales de clientes que probaron KAN M</h2>
             <a
               href="https://www.google.com/search?q=Kan+M+Reposteria+y+Catering"
               target="_blank"

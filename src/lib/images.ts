@@ -40,14 +40,17 @@ export const IMAGES = {
   ],
 
   // ── INICIO — Sección catering ────────────────────────────
-  homeCatering: "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=900",
+  homeCatering: "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777608859/_02A6188_1_aa4fi7.jpg",
 
   // ── NOSOTROS ─────────────────────────────────────────────
-  nosotrosTeam: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=900",
+  nosotrosTeam: "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777610943/nosotro_odkh7u.png",
 
   // ── CATERING — una o varias fotos por sección ────────────
   cateringPasteles: [
-    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609637/pastel3_ggze5a.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609636/pastel1_dgbqr9.webp", 
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609635/pastel2_egdmn5.jpg", 
+    "",
   ],
   cateringBodas: [
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568570/boda1_xdayyk.jpg",
@@ -63,9 +66,17 @@ export const IMAGES = {
     "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777568569/cumple1_jsl6zw.jpg",
   ],
   cateringEventos: [
-    "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=900",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777607822/INICIO1_nc3qkd.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609641/catering2_od2ayz.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609640/catering3_srcb9y.jpg", 
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777609639/catering4_zkwv73.jpg",
+    "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777608859/_02A6188_1_aa4fi7.jpg",
+
   ],
   mesaDeDulces: [
-  "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2F736x%2F7f%2F93%2F43%2F7f9343867b6037f6d85a1dc31e179b2c.jpg&f=1&nofb=1&ipt=3308caf80a750b048c373c0675910ec8116727a47457bd3c3bb4e9c883a4c9d0",
+  "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777607821/dulces5_ixexme.jpg",
+  "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777607820/dulces1_afhihi.jpg",
+  "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777607818/dulces2_hzjbxo.jpg",
+  "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777607820/Inicio4_pjbryu.jpg",
   ],
 };

@@ -31,21 +31,21 @@ enum OrderStatus {
 }
 
 model Order {
-  id            String       @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String
   phone         String
   email         String?
-  eventType     String        @map("event_type")
-  eventDate     String        @map("event_date")
-  guestCount    String        @map("guest_count")
-  selectedItems Json          @map("selected_items")
-  cakeDetails   Json?         @map("cake_details")    // { filling, masa, colors, message, size, peso } per cake item
+  eventType     String      @map("event_type")
+  eventDate     String      @map("event_date")
+  guestCount    String      @map("guest_count")
+  selectedItems Json        @map("selected_items")
+  cakeDetails   Json?       @map("cake_details")
   notes         String?
-  imageUrls     Json          @map("image_urls")
-  deliveryTime  String?       @map("delivery_time")
-  status        OrderStatus   @default("PENDING")  // PENDING | CONFIRMED | NEEDS_INFO | REJECTED | CANCELLED
-  assignedTo    String?       @map("assigned_to")   // "Karolyn Sierra" | "Astrid Sierra" | null
-  createdAt     DateTime      @default(now())      @map("created_at")
+  imageUrls     Json        @map("image_urls")
+  deliveryTime  String?     @map("delivery_time")
+  status        OrderStatus @default(PENDING)
+  assignedTo    String?     @map("assigned_to")
+  createdAt     DateTime    @default(now()) @map("created_at")
 
   @@map("orders")
   @@index([status])

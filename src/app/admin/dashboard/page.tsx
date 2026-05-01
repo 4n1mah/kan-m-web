@@ -24,6 +24,7 @@ const STATUS: Record<string, { label: string; color: string; bg: string; dot: st
   NEEDS_INFO: { label: "Más información", color: "#1e3a8a", bg: "#dbeafe", dot: "#3b82f6" },
   REJECTED:   { label: "No disponible",   color: "#991b1b", bg: "#fee2e2", dot: "#ef4444" },
   CANCELLED:  { label: "Cancelado",       color: "#374151", bg: "#f3f4f6", dot: "#9ca3af" },
+  COMPLETED:  { label: "Completado",      color: "#1f2937", bg: "#e5e7eb", dot: "#6b7280" }
 };
 const STATUSES = Object.keys(STATUS);
 const BAKERS = ["Karolyn Sierra", "Astrid Sierra"];

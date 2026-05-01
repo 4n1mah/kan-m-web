@@ -29,7 +29,7 @@ export default function ContactoPage() {
             </p>
 
             <a
-              href="https://maps.google.com/?q=Zona+Colonial+Santo+Domingo"
+              href="https://maps.app.goo.gl/D1i89Ui3vx92FubCA"
               target="_blank"
               rel="noopener noreferrer"
               className="glass rounded-2xl p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-all duration-200 group block"
@@ -39,7 +39,7 @@ export default function ContactoPage() {
               </div>
               <div>
                 <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Ubicación</div>
-                <div className="font-semibold text-sm mt-0.5">Zona Colonial, Santo Domingo</div>
+                <div className="font-semibold text-sm mt-0.5">C. Espaillat 58, Zona Colonial, Santo Domingo</div>
               </div>
             </a>
 

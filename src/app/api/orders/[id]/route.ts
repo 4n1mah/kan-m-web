@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
-const VALID_STATUSES = ["PENDING", "CONFIRMED", "NEEDS_INFO", "REJECTED", "CANCELLED"];
+const VALID_STATUSES = ["PENDING", "CONFIRMED", "NEEDS_INFO", "REJECTED", "CANCELLED", "COMPLETED"];
 const VALID_BAKERS   = ["Karolyn Sierra", "Astrid Sierra", null, ""];
 
 async function isAuthed() { return !!(await getSession()); }

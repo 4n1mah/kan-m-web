@@ -232,10 +232,15 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
                 style={{ background: BTN }}>
                 {saving ? "Guardando…" : <><Check size={16} /> Guardar cambios</>}
               </button>
-              <a href={`https://wa.me/${order.phone.replace(/\D/g, "")}?text=${waMsg}`}
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-90 transition"
-                style={{ background: "#25D366" }}>
+              <a
+                href={`https://wa.me/${order.phone.replace(/\D/g, "")}?text=${waMsg}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-white font-semibold text-sm transition ${
+                  !order.assignedTo ? "opacity-50 pointer-events-none" : "hover:opacity-90"
+                }`}
+                style={{ background: "#25D366" }}
+              >
                 <MessageCircle size={16} /> WhatsApp
               </a>
               <button onClick={() => onDelete(order.id)}

@@ -24,7 +24,7 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-6">
         <h3 className="font-display text-xl">{product.name}</h3>
-        <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
           {product.description}
         </p>
         {product.price != null && (

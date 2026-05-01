@@ -10,6 +10,7 @@ const CATEGORIES = [
   { id: "events",    label: "Mesa de dulces" },
   { id: "picaderas", label: "Picaderas para eventos" },
   { id: "brunch",    label: "Brunch" },
+  { id: "drinks",    label: "Bebidas"},
 ];
 
 // Inner component that uses useSearchParams — must be inside Suspense

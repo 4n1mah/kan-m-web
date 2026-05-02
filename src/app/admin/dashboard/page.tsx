@@ -19,6 +19,14 @@ type Order = {
   status: string; assignedTo?: string | null; createdAt: string;
 };
 
+function formatTo12h(time?: string) {
+  if (!time) return "No especificada";
+  const [h, m] = time.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour = h % 12 || 12;
+  return `${hour}:${m.toString().padStart(2, "0")} ${period}`;
+}
+
 const STATUS: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
   PENDING:    { label: "En revisión",     color: "#92400e", bg: "#fef3c7", dot: "#f59e0b",  border: "#fcd34d" },
   CONFIRMED:  { label: "Confirmado",      color: "#065f46", bg: "#d1fae5", dot: "#10b981",  border: "#6ee7b7" },
@@ -263,7 +271,7 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
               {[
                 { emoji: "🎉", label: "Tipo de evento", value: order.eventType },
                 { emoji: "📅", label: "Fecha", value: order.eventDate },
-                { emoji: "⏰", label: "Hora de entrega", value: order.deliveryTime || "No especificada" },
+                { emoji: "⏰", label: "Hora de entrega", value: formatTo12h(order.deliveryTime) },
                 { emoji: "👥", label: "Personas", value: order.guestCount },
               ].map(({ emoji, label, value }) => (
                 <div key={label} className="bg-[#faf8f5] rounded-2xl p-3.5">

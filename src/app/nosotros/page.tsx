@@ -40,8 +40,8 @@ export default function NosotrosPage() {
             >
               <MapPin size={17} className="shrink-0 mt-0.5 text-rose" />
               <span>
-                <span className="font-medium text-foreground">C. Espaillat 58</span>
-                <span className="block text-xs mt-0.5">Zona Colonial, Santo Domingo</span>
+                <span className="font-medium text-foreground">Zona Colonial</span>
+                <span className="block text-xs mt-0.5">C. Espaillat 58, Santo Domingo</span>
               </span>
             </a>
             <a

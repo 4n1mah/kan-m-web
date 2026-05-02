@@ -10,7 +10,17 @@ async function isAuthed() {
 export async function GET() {
   if (!await isAuthed()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
-  return NextResponse.json(orders);
+
+  // Normalize Json fields — Prisma returns them as Prisma.JsonValue (object), 
+  // but the frontend expects plain arrays/objects
+  const normalized = orders.map(o => ({
+    ...o,
+    selectedItems: Array.isArray(o.selectedItems) ? o.selectedItems : [],
+    imageUrls: Array.isArray(o.imageUrls) ? o.imageUrls : [],
+    cakeDetails: o.cakeDetails && typeof o.cakeDetails === "object" ? o.cakeDetails : null,
+  }));
+
+  return NextResponse.json(normalized);
 }
 
 export async function POST(req: NextRequest) {
@@ -27,7 +37,7 @@ export async function POST(req: NextRequest) {
       email: email || null,
       eventType, eventDate, guestCount,
       selectedItems: selectedItems ?? [],
-      cakeDetails: cakeDetails ?? null,
+      cakeDetails: cakeDetails ?? undefined,
       notes: notes || null,
       imageUrls: imageUrls ?? [],
       deliveryTime: deliveryTime || null,

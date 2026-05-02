@@ -88,9 +88,9 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
   const dropdownRef = useRef<HTMLDivElement>(null);
   const today = new Date();
   const minDate = new Date(today);
-  minDate.setDate(minDate.getDate() + 1); // Mañana
+  minDate.setDate(minDate.getDate() + 1);
   const maxDate = new Date(today);
-  maxDate.setMonth(maxDate.getMonth() + 2); // 2 meses desde hoy
+  maxDate.setMonth(maxDate.getMonth() + 2);
 
   const [displayMonth, setDisplayMonth] = useState(value ? new Date(value + "T00:00:00").getMonth() : today.getMonth());
   const [displayYear, setDisplayYear] = useState(value ? new Date(value + "T00:00:00").getFullYear() : today.getFullYear());
@@ -105,13 +105,11 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // Verificar si un año es válido (no más de 2 meses de diferencia)
   const canChangeYear = (year: number) => {
     const testDate = new Date(year, displayMonth, 1);
     return testDate <= maxDate && testDate >= new Date(today.getFullYear(), today.getMonth(), 1);
   };
 
-  // Verificar si un mes es válido para el año actual
   const canChangeMonth = (month: number, year: number) => {
     const testDate = new Date(year, month, 1);
     return testDate <= maxDate && testDate >= new Date(today.getFullYear(), today.getMonth(), 1);
@@ -201,7 +199,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
 
       {isOpen && (
         <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full max-w-xs">
-          {/* Header con mes/año */}
           <div className="flex items-center justify-between mb-4">
             <button
               type="button"
@@ -224,7 +221,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
             </button>
           </div>
 
-          {/* Controles de año */}
           <div className="flex items-center justify-between mb-4 px-2">
             <button
               type="button"
@@ -245,7 +241,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
             </button>
           </div>
 
-          {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {dayNames.map(day => (
               <div key={day} className="text-center text-xs font-semibold text-[var(--muted-foreground)] py-1">
@@ -254,7 +249,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
             ))}
           </div>
 
-          {/* Calendario */}
           <div className="grid grid-cols-7 gap-1">
             {emptyDays.map((_, i) => (
               <div key={`empty-${i}`} className="h-8" />
@@ -279,7 +273,6 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
             ))}
           </div>
 
-          {/* Botones de acción */}
           <div className="flex gap-2 mt-4">
             <button
               type="button"
@@ -312,9 +305,8 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Convertir de 24h a 12h
   const convertTo12h = (time24: string) => {
-    if (!time24) return { hours: "12", minutes: "00", period: "AM" };
+    if (!time24) return { hours: "10", minutes: "00", period: "AM" };
     const [h, m] = time24.split(":");
     const hours24 = parseInt(h);
     const period = hours24 >= 12 ? "PM" : "AM";
@@ -326,7 +318,6 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
     };
   };
 
-  // Convertir de 12h a 24h
   const convertTo24h = (hours: string, minutes: string, period: string) => {
     let h = parseInt(hours) || 0;
     if (period === "PM" && h !== 12) h += 12;
@@ -350,7 +341,7 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
   }, [isOpen]);
 
   const hoursArray = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
-  const minutesArray = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
+  const minutesArray = ["00", "15", "30", "45"];
 
   const handleConfirm = () => {
     const newTime24 = convertTo24h(displayHours, displayMinutes, displayPeriod);
@@ -358,45 +349,8 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
     setIsOpen(false);
   };
 
-  const incrementHours = () => {
-    const idx = hoursArray.indexOf(displayHours);
-    setDisplayHours(hoursArray[(idx + 1) % 12]);
-  };
-
-  const decrementHours = () => {
-    const idx = hoursArray.indexOf(displayHours);
-    setDisplayHours(hoursArray[(idx - 1 + 12) % 12]);
-  };
-
-  const incrementMinutes = () => {
-    const idx = minutesArray.indexOf(displayMinutes);
-    setDisplayMinutes(minutesArray[(idx + 1) % 12]);
-  };
-
-  const decrementMinutes = () => {
-    const idx = minutesArray.indexOf(displayMinutes);
-    setDisplayMinutes(minutesArray[(idx - 1 + 12) % 12]);
-  };
-
-  const handleHoursInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value.replace(/[^0-9]/g, "");
-    if (val.length > 2) val = val.slice(0, 2);
-    if (val !== "") {
-      const num = parseInt(val);
-      if (num > 12) val = "12";
-      if (num === 0) val = "12";
-    }
-    setDisplayHours(val.padStart(2, "0"));
-  };
-
-  const handleMinutesInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let val = e.target.value.replace(/[^0-9]/g, "");
-    if (val.length > 2) val = val.slice(0, 2);
-    if (val !== "") {
-      const num = parseInt(val);
-      if (num > 59) val = "59";
-    }
-    setDisplayMinutes(val.padStart(2, "0"));
+  const handleCancel = () => {
+    setIsOpen(false);
   };
 
   const displayText = value ? `${displayHours}:${displayMinutes} ${displayPeriod}` : "Selecciona una hora";
@@ -412,149 +366,77 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full max-w-sm">
-          <div className="flex gap-3 justify-center mb-4">
-            {/* Hours */}
-            <div className="flex flex-col items-center">
-              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Horas</p>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={decrementHours}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-                <input
-                  type="text"
-                  value={displayHours}
-                  onChange={handleHoursInput}
-                  maxLength={2}
-                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
-                />
-                <button
-                  type="button"
-                  onClick={incrementHours}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center text-3xl font-bold text-[var(--muted-foreground)]">:</div>
-
-            {/* Minutes */}
-            <div className="flex flex-col items-center">
-              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Minutos</p>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={decrementMinutes}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-                <input
-                  type="text"
-                  value={displayMinutes}
-                  onChange={handleMinutesInput}
-                  maxLength={2}
-                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
-                />
-                <button
-                  type="button"
-                  onClick={incrementMinutes}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* AM/PM */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Período</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setDisplayPeriod("AM")}
-                className={`flex-1 py-3 rounded-lg font-bold text-lg transition ${
-                  displayPeriod === "AM"
-                    ? "text-white"
-                    : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
-                }`}
-                style={displayPeriod === "AM" ? { background: BTN } : {}}
+        <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-6 w-full max-w-xs">
+          <h3 className="text-sm font-semibold text-[var(--muted-foreground)] mb-4">Select Time</h3>
+          
+          {/* Selectores */}
+          <div className="flex items-center justify-center gap-2 mb-6">
+            {/* Horas Dropdown */}
+            <div className="flex-1">
+              <select
+                value={displayHours}
+                onChange={(e) => setDisplayHours(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-sm font-semibold text-center focus:outline-none focus:border-[var(--rose)] appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 8px center",
+                  paddingRight: "28px",
+                }}
               >
-                AM
-              </button>
-              <button
-                type="button"
-                onClick={() => setDisplayPeriod("PM")}
-                className={`flex-1 py-3 rounded-lg font-bold text-lg transition ${
-                  displayPeriod === "PM"
-                    ? "text-white"
-                    : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
-                }`}
-                style={displayPeriod === "PM" ? { background: BTN } : {}}
+                {hoursArray.map(h => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Separador */}
+            <span className="text-2xl font-bold text-[var(--muted-foreground)]">:</span>
+
+            {/* Minutos Dropdown */}
+            <div className="flex-1">
+              <select
+                value={displayMinutes}
+                onChange={(e) => setDisplayMinutes(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-sm font-semibold text-center focus:outline-none focus:border-[var(--rose)] appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 8px center",
+                  paddingRight: "28px",
+                }}
               >
-                PM
-              </button>
+                {minutesArray.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* AM/PM */}
+            <div className="flex-1">
+              <select
+                value={displayPeriod}
+                onChange={(e) => setDisplayPeriod(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-sm font-semibold text-center focus:outline-none focus:border-[var(--rose)] appearance-none cursor-pointer"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "right 8px center",
+                  paddingRight: "28px",
+                }}
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
             </div>
           </div>
 
-          {/* Horas grid */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Selecciona hora</p>
-            <div className="grid grid-cols-3 gap-2">
-              {hoursArray.map(h => (
-                <button
-                  key={h}
-                  type="button"
-                  onClick={() => setDisplayHours(h)}
-                  className={`py-2 rounded-lg text-sm font-semibold transition ${
-                    displayHours === h
-                      ? "text-white"
-                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
-                  }`}
-                  style={displayHours === h ? { background: BTN } : {}}
-                >
-                  {h}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Minutos grid */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Selecciona minuto</p>
-            <div className="grid grid-cols-3 gap-2">
-              {minutesArray.map(m => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setDisplayMinutes(m)}
-                  className={`py-2 rounded-lg text-sm font-semibold transition ${
-                    displayMinutes === m
-                      ? "text-white"
-                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
-                  }`}
-                  style={displayMinutes === m ? { background: BTN } : {}}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Botones de acción */}
-          <div className="flex gap-2">
+          {/* Botones */}
+          <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 py-2.5 rounded-lg text-[var(--rose)] font-semibold text-sm transition border border-[var(--rose)] hover:bg-[var(--rose)]/5"
+              onClick={handleCancel}
+              className="flex-1 py-2.5 rounded-lg text-[var(--rose)] font-semibold text-sm transition hover:bg-[var(--rose)]/5"
             >
               Cancelar
             </button>
@@ -564,7 +446,7 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
               className="flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
               style={{ background: BTN }}
             >
-              OK
+              Guardar
             </button>
           </div>
         </div>

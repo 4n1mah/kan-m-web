@@ -86,8 +86,6 @@ function StepHeader({n,label}:{n:number;label:string}) {
 function TimePicker({ value, onChange }: { value: string; onChange: (time: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const hoursInputRef = useRef<HTMLInputElement>(null);
-  const minutesInputRef = useRef<HTMLInputElement>(null);
 
   // Convertir de 24h a 12h
   const convertTo12h = (time24: string) => {
@@ -111,10 +109,10 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
     return `${String(h).padStart(2, "0")}:${minutes.padStart(2, "0")}`;
   };
 
-  const { hours, minutes, period } = convertTo12h(value);
-  const [displayHours, setDisplayHours] = useState(hours);
-  const [displayMinutes, setDisplayMinutes] = useState(minutes);
-  const [displayPeriod, setDisplayPeriod] = useState(period);
+  const { hours: initialHours, minutes: initialMinutes, period: initialPeriod } = convertTo12h(value);
+  const [displayHours, setDisplayHours] = useState(initialHours);
+  const [displayMinutes, setDisplayMinutes] = useState(initialMinutes);
+  const [displayPeriod, setDisplayPeriod] = useState(initialPeriod);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -128,7 +126,6 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
 
   const hoursArray = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
   const minutesArray = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
-  const periods = ["AM", "PM"];
 
   const handleConfirm = () => {
     const newTime24 = convertTo24h(displayHours, displayMinutes, displayPeriod);
@@ -154,10 +151,6 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
   const decrementMinutes = () => {
     const idx = minutesArray.indexOf(displayMinutes);
     setDisplayMinutes(minutesArray[(idx - 1 + 12) % 12]);
-  };
-
-  const togglePeriod = () => {
-    setDisplayPeriod(displayPeriod === "AM" ? "PM" : "AM");
   };
 
   const handleHoursInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,90 +187,146 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full">
-          <div className="flex gap-3 justify-center mb-4">
-            {/* Hours */}
-            <div className="flex flex-col items-center">
-              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Horas</p>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={incrementHours}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-                <input
-                  ref={hoursInputRef}
-                  type="text"
-                  value={displayHours}
-                  onChange={handleHoursInput}
-                  maxLength={2}
-                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
-                />
-                <button
-                  type="button"
-                  onClick={decrementHours}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center text-3xl font-bold text-[var(--muted-foreground)]">:</div>
-
-            {/* Minutes */}
-            <div className="flex flex-col items-center">
-              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Minutos</p>
-              <div className="flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={incrementMinutes}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-                <input
-                  ref={minutesInputRef}
-                  type="text"
-                  value={displayMinutes}
-                  onChange={handleMinutesInput}
-                  maxLength={2}
-                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
-                />
-                <button
-                  type="button"
-                  onClick={decrementMinutes}
-                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-                >
-                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
-                </button>
-              </div>
-            </div>
-
-            {/* AM/PM */}
-            <div className="flex flex-col items-center">
-              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Período</p>
+        <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full max-w-sm">
+          {/* Horas */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Horas</p>
+            <div className="flex items-center gap-2 mb-3">
               <button
                 type="button"
-                onClick={togglePeriod}
-                className="px-4 py-2 font-bold text-lg border border-[var(--rose)] rounded-lg bg-[var(--rose)]/5 text-[var(--rose)] hover:bg-[var(--rose)]/10 transition focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+                onClick={decrementHours}
+                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
               >
-                {displayPeriod}
+                <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
+              </button>
+              <input
+                type="text"
+                value={displayHours}
+                onChange={handleHoursInput}
+                maxLength={2}
+                className="flex-1 h-10 border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+              />
+              <button
+                type="button"
+                onClick={incrementHours}
+                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+              >
+                <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {hoursArray.map(h => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => setDisplayHours(h)}
+                  className={`py-2 rounded-lg text-sm font-semibold transition ${
+                    displayHours === h
+                      ? "text-white"
+                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
+                  }`}
+                  style={displayHours === h ? { background: BTN } : {}}
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Minutos */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Minutos</p>
+            <div className="flex items-center gap-2 mb-3">
+              <button
+                type="button"
+                onClick={decrementMinutes}
+                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+              >
+                <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
+              </button>
+              <input
+                type="text"
+                value={displayMinutes}
+                onChange={handleMinutesInput}
+                maxLength={2}
+                className="flex-1 h-10 border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+              />
+              <button
+                type="button"
+                onClick={incrementMinutes}
+                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+              >
+                <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {minutesArray.map(m => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setDisplayMinutes(m)}
+                  className={`py-2 rounded-lg text-sm font-semibold transition ${
+                    displayMinutes === m
+                      ? "text-white"
+                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
+                  }`}
+                  style={displayMinutes === m ? { background: BTN } : {}}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* AM/PM */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Período</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDisplayPeriod("AM")}
+                className={`flex-1 py-3 rounded-lg font-bold text-lg transition ${
+                  displayPeriod === "AM"
+                    ? "text-white"
+                    : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
+                }`}
+                style={displayPeriod === "AM" ? { background: BTN } : {}}
+              >
+                AM
+              </button>
+              <button
+                type="button"
+                onClick={() => setDisplayPeriod("PM")}
+                className={`flex-1 py-3 rounded-lg font-bold text-lg transition ${
+                  displayPeriod === "PM"
+                    ? "text-white"
+                    : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
+                }`}
+                style={displayPeriod === "PM" ? { background: BTN } : {}}
+              >
+                PM
               </button>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="w-full py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
-            style={{ background: BTN }}
-          >
-            Confirmar
-          </button>
+          {/* Botones de acción */}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="flex-1 py-2.5 rounded-lg text-[var(--rose)] font-semibold text-sm transition border border-[var(--rose)] hover:bg-[var(--rose)]/5"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              className="flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
+              style={{ background: BTN }}
+            >
+              OK
+            </button>
+          </div>
         </div>
       )}
     </div>

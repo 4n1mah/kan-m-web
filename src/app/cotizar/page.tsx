@@ -83,14 +83,19 @@ function StepHeader({n,label}:{n:number;label:string}) {
   );
 }
 
+// Reemplaza solo la función DatePicker con esta versión corregida:
+
 function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const today = new Date();
+  today.setHours(0, 0, 0, 0); // Asegurar que sea media noche
+  
   const minDate = new Date(today);
-  minDate.setDate(minDate.getDate() + 1);
+  minDate.setDate(minDate.getDate() + 1); // Mañana
+  
   const maxDate = new Date(today);
-  maxDate.setMonth(maxDate.getMonth() + 2);
+  maxDate.setMonth(maxDate.getMonth() + 2); // 2 meses desde hoy
 
   const [displayMonth, setDisplayMonth] = useState(value ? new Date(value + "T00:00:00").getMonth() : today.getMonth());
   const [displayYear, setDisplayYear] = useState(value ? new Date(value + "T00:00:00").getFullYear() : today.getFullYear());
@@ -107,11 +112,13 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
 
   const canChangeYear = (year: number) => {
     const testDate = new Date(year, displayMonth, 1);
-    return testDate <= maxDate && testDate >= new Date(today.getFullYear(), today.getMonth(), 1);
+    testDate.setHours(0, 0, 0, 0);
+    return testDate <= maxDate;
   };
 
   const canChangeMonth = (month: number, year: number) => {
     const testDate = new Date(year, month, 1);
+    testDate.setHours(0, 0, 0, 0);
     return testDate <= maxDate && testDate >= new Date(today.getFullYear(), today.getMonth(), 1);
   };
 
@@ -125,6 +132,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
 
   const isDateDisabled = (day: number) => {
     const testDate = new Date(displayYear, displayMonth, day);
+    testDate.setHours(0, 0, 0, 0);
     return testDate < minDate || testDate > maxDate;
   };
 

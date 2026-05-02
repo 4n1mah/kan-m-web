@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 import {
   Package, ClipboardList, LogOut, RefreshCw, Plus, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check,
@@ -30,7 +31,7 @@ function formatTo12h(time?: string) {
 
 function formatDateEs(date?: string) {
   if (!date) return "No especificada";
-  const d = new Date(date + "T00:00:00"); // evita bug de zona horaria
+  const d = new Date(date + "T00:00:00");
   return d.toLocaleDateString("es-DO", {
     day: "numeric",
     month: "long",
@@ -155,8 +156,14 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
   const [showBakerPopup, setShowBakerPopup] = useState(false);
   const [pendingStatus, setPendingStatus]   = useState<string | null>(null);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+  
+  // Modales de confirmación
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: null as "delete" | "save" | null,
+    isLoading: false,
+  });
 
-  // Safely coerce JSON values to arrays/objects
   const imgs  = Array.isArray(order.imageUrls) ? order.imageUrls.filter(u => typeof u === "string" && u.startsWith("http")) : [];
   const items = Array.isArray(order.selectedItems) ? order.selectedItems : [];
   const cakeDetails = (order.cakeDetails && typeof order.cakeDetails === "object" ? order.cakeDetails : {}) as Record<string, CakeDetail>;
@@ -168,17 +175,16 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
   const dateReceived = new Date(order.createdAt).toLocaleDateString("es-DO", { day: "2-digit", month: "long", year: "numeric" });
 
   useEffect(() => {
-    const fn = (e: KeyboardEvent) => { if (e.key === "Escape" && !showBakerPopup && lightboxIdx === null) onClose(); };
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape" && !showBakerPopup && lightboxIdx === null && !confirmModal.isOpen) onClose(); };
     document.addEventListener("keydown", fn);
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", fn); document.body.style.overflow = ""; };
-  }, [onClose, showBakerPopup, lightboxIdx]);
+  }, [onClose, showBakerPopup, lightboxIdx, confirmModal.isOpen]);
 
   const handleAction = (newStatus: string) => {
     setPendingStatus(newStatus); setShowBakerPopup(true);
   };
 
-  // Auto-save when baker is selected from popup
   const handleBakerSelect = async (baker: string) => {
     setShowBakerPopup(false);
     const newStatus = pendingStatus ?? status;
@@ -188,7 +194,6 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
     setSaving(false);
   };
 
-  // Auto-save when baker is changed from buttons (non-pending state)
   const handleBakerButton = async (baker: string) => {
     setAssigned(baker);
     setSaving(true);
@@ -196,11 +201,27 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
     setSaving(false);
   };
 
-  async function save() {
+  const handleSaveClick = () => {
+    setConfirmModal({ isOpen: true, type: "save", isLoading: false });
+  };
+
+  const handleConfirmSave = async () => {
+    setConfirmModal(prev => ({ ...prev, isLoading: true }));
     setSaving(true);
     await onUpdate(order.id, { status, assignedTo: assigned || null });
     setSaving(false);
-  }
+    setConfirmModal({ isOpen: false, type: null, isLoading: false });
+  };
+
+  const handleDeleteClick = () => {
+    setConfirmModal({ isOpen: true, type: "delete", isLoading: false });
+  };
+
+  const handleConfirmDelete = async () => {
+    setConfirmModal(prev => ({ ...prev, isLoading: true }));
+    await onDelete(order.id);
+    setConfirmModal({ isOpen: false, type: null, isLoading: false });
+  };
 
   const waMsg = encodeURIComponent(`Hola ${order.name} 👋, somos Kan M. Recibimos tu cotización para *${order.eventType}* el *${order.eventDate}*${order.deliveryTime ? ` a las ${order.deliveryTime}` : ""}. `);
 
@@ -208,6 +229,32 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
     <>
       {lightboxIdx !== null && <ImgLightbox urls={imgs} startIdx={lightboxIdx} onClose={() => setLightboxIdx(null)} />}
       {showBakerPopup && <BakerPopup onSelect={handleBakerSelect} onClose={() => { setShowBakerPopup(false); setPendingStatus(null); }} />}
+      
+      {/* Modales de confirmación */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen && confirmModal.type === "save"}
+        title="Guardar cambios"
+        message="¿Deseas guardar los cambios realizados en este pedido?"
+        confirmText="Guardar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmSave}
+        onCancel={() => setConfirmModal({ isOpen: false, type: null, isLoading: false })}
+        isLoading={confirmModal.isLoading}
+        icon="save"
+      />
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen && confirmModal.type === "delete"}
+        title="Eliminar pedido"
+        message="¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        isDestructive={true}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmModal({ isOpen: false, type: null, isLoading: false })}
+        isLoading={confirmModal.isLoading}
+        icon="delete"
+      />
 
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.55)" }} onClick={onClose}>
         <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
@@ -215,7 +262,6 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
           {/* Sticky header */}
           <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl">
             <div className="flex items-center gap-3">
-              {/* Status badge — dashed border when PENDING, clickable dropdown otherwise */}
               {!isPending ? (
                 <div className="relative">
                   <button onClick={() => setShowStatusMenu(v => !v)}
@@ -326,7 +372,7 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
               </div>
             )}
 
-            {/* ── PHOTOS — always render section, show placeholder if none ── */}
+            {/* PHOTOS */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
                 <ImageIcon size={11} /> Imágenes de referencia
@@ -398,7 +444,7 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
 
               {/* Actions row */}
               <div className="flex flex-wrap gap-2">
-                <button onClick={save} disabled={saving}
+                <button onClick={handleSaveClick} disabled={saving}
                   className="flex-1 min-w-[120px] py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
                   style={{ background: PINK }}>
                   {saving ? "Guardando…" : <><Check size={14} /> Guardar cambios</>}
@@ -409,7 +455,7 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
                   style={{ background: "#bbf7d0", color: "#065f46" }}>
                   <MessageCircle size={14} /> WhatsApp
                 </a>
-                <button onClick={() => onDelete(order.id)}
+                <button onClick={handleDeleteClick}
                   className="px-3 py-2.5 rounded-xl border-2 border-red-100 text-red-400 hover:bg-red-50 hover:border-red-200 transition">
                   <Trash2 size={14} />
                 </button>
@@ -434,7 +480,6 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
   return (
     <button onClick={onClick}
       className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col hover:shadow-md hover:-translate-y-0.5 transition-all text-left w-full cursor-pointer group ${urgent ? "border-red-300 ring-1 ring-red-100" : "border-[#f0e8e0]"}`}>
-      {/* Top strip — image or gradient placeholder */}
       {imgs.length > 0 ? (
         <div className="flex h-32 overflow-hidden">
           {imgs.slice(0, 3).map((url, i) => (
@@ -450,7 +495,6 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
       )}
 
       <div className="p-5 flex flex-col gap-3 flex-1">
-        {/* Status + urgent + date */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
@@ -466,13 +510,11 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
           <span className="text-xs text-gray-400 shrink-0">{dateR}</span>
         </div>
 
-        {/* Name + phone */}
         <div>
           <p className="font-display text-base leading-tight text-gray-900">{order.name}</p>
           <p className="text-xs text-gray-400">{order.phone}</p>
         </div>
 
-        {/* Event summary */}
         <div className="bg-[#faf8f5] rounded-xl p-3 text-xs space-y-1">
           <p className="font-medium text-gray-700">🎉 {order.eventType}</p>
           <p className="text-gray-500">📅 {order.eventDate}{order.deliveryTime ? ` · ⏰ ${order.deliveryTime}` : ""}</p>
@@ -570,13 +612,13 @@ export default function Dashboard() {
     setSelectedOrder(prev => prev?.id === id ? {...prev,...data} : prev);
   }, []);
   const deleteOrder = useCallback(async (id: string) => {
-    if(!confirm("¿Eliminar este pedido?"))return;
-    await fetch(`/api/orders/${id}`,{method:"DELETE"});setSelectedOrder(null);loadOrders();
+    await fetch(`/api/orders/${id}`,{method:"DELETE"});
+    setSelectedOrder(null);
+    loadOrders();
   }, []);
 
   const pendingCount = orders.filter(o => o.status === "PENDING").length;
 
-  // Sort: urgent first, then PENDING, then others
   const sortedOrders = [...orders].sort((a, b) => priorityScore(a) - priorityScore(b));
   const filteredOrders = statusFilter === "ALL" ? sortedOrders : sortedOrders.filter(o => o.status === statusFilter);
   const filteredProducts = catFilter === "all" ? products : products.filter(p => p.category === catFilter);
@@ -649,7 +691,7 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Status filter — horizontal scroll on mobile */}
+            {/* Status filter */}
             <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1" style={{scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
               <button onClick={()=>setStatusFilter("ALL")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition shrink-0 ${statusFilter==="ALL"?"text-white border-transparent":"border-[#ede8e0] text-gray-500"}`}

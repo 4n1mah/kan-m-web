@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CalendarDays, Users, Cake, Sparkles, ArrowRight,
-  CheckCircle2, ImagePlus, X, Clock,
+  CheckCircle2, ImagePlus, X, Clock, ChevronUp, ChevronDown,
 } from "lucide-react";
 
 const EVENT_TYPES = ["Cumpleaños","Boda / Compromiso","Baby shower","Corporativo","Graduación","Quinceañera","Otro"];
@@ -61,8 +61,8 @@ function CakePopup({ item,onSave,onClose }:{ item:string; onSave:(d:CakeDetail)=
               className="mt-2 w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"
             />
           </div>
-          <div><p className="text-sm font-semibold mb-2">🎨 Colores para decoración</p><input type="text" placeholder="ej. rosa, dorado, blanco..." value={d.colors} onChange={e=>s("colors",e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
-          <div><p className="text-sm font-semibold mb-2">✍️ Mensaje <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></p><input type="text" placeholder="ej. Feliz cumpleaños María..." value={d.message} onChange={e=>s("message",e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
+          <div><p className="text-sm font-semibold mb-2">🎨 Colores para decoración</p><input type="text" placeholder="ej. rosa, dorado, blanco..." value={d.colors} onChange={e=>s("colors",e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
+          <div><p className="text-sm font-semibold mb-2">✍️ Mensaje <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></p><input type="text" placeholder="ej. Feliz cumpleaños..." value={d.message} onChange={e=>s("message",e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
           <button type="button" disabled={!d.filling||!d.masa||!d.size} onClick={()=>{onSave(d);onClose();}}
             className="w-full py-3.5 rounded-2xl text-white font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             style={{background:BTN}}>
@@ -80,6 +80,115 @@ function StepHeader({n,label}:{n:number;label:string}) {
       <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{background:BTN}}>{n}</span>
       {label}
     </h2>
+  );
+}
+
+function TimePicker({ value, onChange }: { value: string; onChange: (time: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [hours, setHours] = useState(value?.split(":")[0] || "09");
+  const [minutes, setMinutes] = useState(value?.split(":")[1] || "00");
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+  const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
+
+  const handleConfirm = () => {
+    const newTime = `${hours}:${minutes}`;
+    onChange(newTime);
+    setIsOpen(false);
+  };
+
+  const incrementHours = () => setHours(hoursArray[(hoursArray.indexOf(hours) + 1) % 24]);
+  const decrementHours = () => setHours(hoursArray[(hoursArray.indexOf(hours) - 1 + 24) % 24]);
+  const incrementMinutes = () => setMinutes(minutesArray[(minutesArray.indexOf(minutes) + 1) % 60]);
+  const decrementMinutes = () => setMinutes(minutesArray[(minutesArray.indexOf(minutes) - 1 + 60) % 60]);
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition text-left"
+      >
+        {value || "Selecciona una hora"}
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full">
+          <div className="flex gap-6 justify-center mb-4">
+            {/* Hours */}
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Horas</p>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={incrementHours}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+                >
+                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
+                </button>
+                <div className="w-14 h-12 flex items-center justify-center border border-[var(--border)] rounded-lg font-bold text-lg bg-[var(--rose)]/5">
+                  {hours}
+                </div>
+                <button
+                  type="button"
+                  onClick={decrementHours}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+                >
+                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+                </button>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center text-3xl font-bold text-[var(--muted-foreground)]">:</div>
+
+            {/* Minutes */}
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Minutos</p>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={incrementMinutes}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+                >
+                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
+                </button>
+                <div className="w-14 h-12 flex items-center justify-center border border-[var(--border)] rounded-lg font-bold text-lg bg-[var(--rose)]/5">
+                  {minutes}
+                </div>
+                <button
+                  type="button"
+                  onClick={decrementMinutes}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+                >
+                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="w-full py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
+            style={{ background: BTN }}
+          >
+            Confirmar
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -206,11 +315,14 @@ function CotizarForm() {
             <StepHeader n={1} label="Tus datos"/>
             <div className="grid sm:grid-cols-2 gap-4">
               <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">Nombre completo <span className="text-[var(--rose)]">*</span></span>
-                <input type="text" placeholder="Tu nombre" value={form.name} onChange={e=>set("name",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></label>
+                <input type="text" placeholder="Tu nombre" value={form.name} onChange={e=>set("name",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+              </label>
               <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">WhatsApp / Teléfono <span className="text-[var(--rose)]">*</span></span>
-                <input type="tel" placeholder="+1 809 000 0000" value={form.phone} onChange={e=>set("phone",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></label>
+                <input type="tel" placeholder="+1 809 000 0000" value={form.phone} onChange={e=>set("phone",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+              </label>
               <label className="flex flex-col gap-1.5 sm:col-span-2"><span className="text-sm font-medium">Correo <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>
-                <input type="email" placeholder="tu@correo.com" value={form.email} onChange={e=>set("email",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></label>
+                <input type="email" placeholder="tu@correo.com" value={form.email} onChange={e=>set("email",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+              </label>
             </div>
           </div>
 
@@ -236,8 +348,8 @@ function CotizarForm() {
                   <input type="date" value={form.eventDate} onChange={e=>set("eventDate",e.target.value)} min={new Date().toISOString().split("T")[0]} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
                 </label>
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-medium flex items-center gap-1.5"><Clock size={15} className="text-[var(--rose)]"/> Hora de entrega <span className="text-[var(--muted-foreground)] font-normal text-xs">(opcional)</span></span>
-                  <input type="time" value={form.deliveryTime} onChange={e=>set("deliveryTime",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+                  <span className="text-sm font-medium flex items-center gap-1.5"><Clock size={15} className="text-[var(--rose)]"/> Hora de entrega <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>
+                  <TimePicker value={form.deliveryTime} onChange={(time) => set("deliveryTime", time)} />
                 </label>
                 <label className="flex flex-col gap-1.5 sm:col-span-2">
                   <span className="text-sm font-medium flex items-center gap-1.5"><Users size={15} className="text-[var(--rose)]"/> Personas <span className="text-[var(--rose)]">*</span></span>
@@ -313,7 +425,7 @@ function CotizarForm() {
             )}
             {imageFiles.length<5&&(
               <button type="button" onClick={()=>fileRef.current?.click()}
-                className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)]/50 hover:text-[var(--rose)] transition text-sm w-full justify-center">
+                className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)]/50 hover:text-[var(--rose)] transition">
                 <ImagePlus size={18}/>
                 {imageFiles.length===0?"Agregar imágenes de referencia":`Agregar más (${imageFiles.length}/5)`}
               </button>
@@ -333,10 +445,10 @@ function CotizarForm() {
           {error&&<p className="text-sm text-red-500 text-center bg-red-50 rounded-xl py-2">{error}</p>}
 
           <button type="button" onClick={handleSubmit} disabled={!isValid||submitting}
-            className={`w-full py-4 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition shadow-md ${isValid&&!submitting?"hover:opacity-90 cursor-pointer":"opacity-40 cursor-not-allowed"}`}
+            className={`w-full py-4 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition shadow-md ${isValid&&!submitting?"hover:opacity-90 cursor-pointer":"opacity-50 cursor-not-allowed"}`}
             style={{background:BTN}}>
             {submitting?(
-              <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> {uploadProgress||"Enviando…"}</>
+              <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Enviando...</>
             ):<>Enviar cotización <ArrowRight size={18}/></>}
           </button>
           <p className="text-center text-xs text-[var(--muted-foreground)]">

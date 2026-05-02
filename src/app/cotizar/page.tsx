@@ -8,10 +8,10 @@ import {
 
 const EVENT_TYPES = ["Cumpleaños","Boda / Compromiso","Baby shower","Corporativo","Graduación","Quinceañera","Otro"];
 const PRODUCT_CATEGORIES = [
-  { label: "Pasteles",items: ["Pastel personalizado","Naked cake","Drip cake","Pastel de bodas"],isCake: true },
-  { label: "Postres",items: ["Macarons","Brownies","Alfajores","Cheesecake"],isCake: false },
-  { label: "Mesa dulce",items: ["Mesa dulce completa","Mesa de postres mini"],isCake: false },
-  { label: "Brunch / Catering",items: ["Brunch para grupo","Catering de evento"],isCake: false },
+  { label: "Pasteles", items: ["Pastel personalizado","Naked cake","Drip cake","Pastel de bodas"], isCake: true, note: null },
+  { label: "Postres", items: ["Macarons","Brownies","Alfajores","Cheesecake"], isCake: false, note: "La cantidad y presentación se ajustan según tu evento." },
+  { label: "Mesa dulce", items: ["Mesa dulce completa","Mesa de postres mini"], isCake: false, note: "La composición se personaliza según el número de personas y la temática." },
+  { label: "Brunch / Catering", items: ["Brunch para grupo","Catering de evento"], isCake: false, note: "El menú se define en base a tus necesidades y tipo de evento." },
 ];
 const CAKE_ITEMS = new Set(PRODUCT_CATEGORIES.filter(c=>c.isCake).flatMap(c=>c.items));
 const FILLINGS = ["Dulce de leche","Crema pastelera","Ganache chocolate","Ganache chocolate blanco","Mermelada fresa","Mermelada frutos del bosque","Mermelada piña","Mermelada limón"];
@@ -636,7 +636,8 @@ function CotizarForm() {
             <div className="space-y-4">
               {PRODUCT_CATEGORIES.map(cat=>(
                 <div key={cat.label}>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-2">{cat.label}</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-1">{cat.label}</p>
+                  {cat.note && <p className="text-xs text-[var(--muted-foreground)]/70 italic mb-2">{cat.note}</p>}
                   <div className="flex flex-wrap gap-2">
                     {cat.items.map(item=>{
                       const selected=form.selectedItems.includes(item);

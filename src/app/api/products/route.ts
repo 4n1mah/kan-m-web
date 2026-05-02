@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().min(1).max(1000),
-  category: z.enum(["cakes", "desserts", "events", "picaderas", "brunch"]),
+  category: z.enum(["cakes", "desserts", "events", "picaderas", "brunch", "drinks"]),
   imageUrl: z.string().max(500).refine(
     (v) => v.startsWith("/uploads/") || /^https?:\/\//.test(v),
     { message: "Debe ser una URL válida o una imagen subida al servidor" }

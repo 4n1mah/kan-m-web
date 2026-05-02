@@ -24,8 +24,9 @@ model Product {
 enum OrderStatus {
   PENDING
   CONFIRMED
-  COMPLETED
   NEEDS_INFO
+  COMPLETED
+  DELIVERED
   REJECTED
   CANCELLED
 }
@@ -41,10 +42,13 @@ model Order {
   selectedItems Json        @map("selected_items")
   cakeDetails   Json?       @map("cake_details")
   notes         String?
+  internalNote  String?     @map("internal_note")
   imageUrls     Json        @map("image_urls")
   deliveryTime  String?     @map("delivery_time")
   status        OrderStatus @default(PENDING)
   assignedTo    String?     @map("assigned_to")
+  agreedPrice   Float?      @map("agreed_price")
+  statusLog     Json        @default("[]") @map("status_log")
   createdAt     DateTime    @default(now()) @map("created_at")
 
   @@map("orders")

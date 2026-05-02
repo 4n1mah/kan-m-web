@@ -85,9 +85,36 @@ function StepHeader({n,label}:{n:number;label:string}) {
 
 function TimePicker({ value, onChange }: { value: string; onChange: (time: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [hours, setHours] = useState(value?.split(":")[0] || "09");
-  const [minutes, setMinutes] = useState(value?.split(":")[1] || "00");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const hoursInputRef = useRef<HTMLInputElement>(null);
+  const minutesInputRef = useRef<HTMLInputElement>(null);
+
+  // Convertir de 24h a 12h
+  const convertTo12h = (time24: string) => {
+    if (!time24) return { hours: "12", minutes: "00", period: "AM" };
+    const [h, m] = time24.split(":");
+    const hours24 = parseInt(h);
+    const period = hours24 >= 12 ? "PM" : "AM";
+    const hours12 = hours24 % 12 || 12;
+    return {
+      hours: String(hours12).padStart(2, "0"),
+      minutes: m,
+      period,
+    };
+  };
+
+  // Convertir de 12h a 24h
+  const convertTo24h = (hours: string, minutes: string, period: string) => {
+    let h = parseInt(hours) || 0;
+    if (period === "PM" && h !== 12) h += 12;
+    if (period === "AM" && h === 12) h = 0;
+    return `${String(h).padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+  };
+
+  const { hours, minutes, period } = convertTo12h(value);
+  const [displayHours, setDisplayHours] = useState(hours);
+  const [displayMinutes, setDisplayMinutes] = useState(minutes);
+  const [displayPeriod, setDisplayPeriod] = useState(period);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -99,19 +126,62 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const hoursArray = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-  const minutesArray = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
+  const hoursArray = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
+  const minutesArray = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, "0"));
+  const periods = ["AM", "PM"];
 
   const handleConfirm = () => {
-    const newTime = `${hours}:${minutes}`;
-    onChange(newTime);
+    const newTime24 = convertTo24h(displayHours, displayMinutes, displayPeriod);
+    onChange(newTime24);
     setIsOpen(false);
   };
 
-  const incrementHours = () => setHours(hoursArray[(hoursArray.indexOf(hours) + 1) % 24]);
-  const decrementHours = () => setHours(hoursArray[(hoursArray.indexOf(hours) - 1 + 24) % 24]);
-  const incrementMinutes = () => setMinutes(minutesArray[(minutesArray.indexOf(minutes) + 1) % 60]);
-  const decrementMinutes = () => setMinutes(minutesArray[(minutesArray.indexOf(minutes) - 1 + 60) % 60]);
+  const incrementHours = () => {
+    const idx = hoursArray.indexOf(displayHours);
+    setDisplayHours(hoursArray[(idx + 1) % 12]);
+  };
+
+  const decrementHours = () => {
+    const idx = hoursArray.indexOf(displayHours);
+    setDisplayHours(hoursArray[(idx - 1 + 12) % 12]);
+  };
+
+  const incrementMinutes = () => {
+    const idx = minutesArray.indexOf(displayMinutes);
+    setDisplayMinutes(minutesArray[(idx + 1) % 12]);
+  };
+
+  const decrementMinutes = () => {
+    const idx = minutesArray.indexOf(displayMinutes);
+    setDisplayMinutes(minutesArray[(idx - 1 + 12) % 12]);
+  };
+
+  const togglePeriod = () => {
+    setDisplayPeriod(displayPeriod === "AM" ? "PM" : "AM");
+  };
+
+  const handleHoursInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^0-9]/g, "");
+    if (val.length > 2) val = val.slice(0, 2);
+    if (val !== "") {
+      const num = parseInt(val);
+      if (num > 12) val = "12";
+      if (num === 0) val = "12";
+    }
+    setDisplayHours(val.padStart(2, "0"));
+  };
+
+  const handleMinutesInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value.replace(/[^0-9]/g, "");
+    if (val.length > 2) val = val.slice(0, 2);
+    if (val !== "") {
+      const num = parseInt(val);
+      if (num > 59) val = "59";
+    }
+    setDisplayMinutes(val.padStart(2, "0"));
+  };
+
+  const displayText = value ? `${displayHours}:${displayMinutes} ${displayPeriod}` : "Selecciona una hora";
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
@@ -120,12 +190,12 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition text-left"
       >
-        {value || "Selecciona una hora"}
+        {displayText}
       </button>
 
       {isOpen && (
         <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full">
-          <div className="flex gap-6 justify-center mb-4">
+          <div className="flex gap-3 justify-center mb-4">
             {/* Hours */}
             <div className="flex flex-col items-center">
               <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Horas</p>
@@ -137,9 +207,14 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
                 >
                   <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
                 </button>
-                <div className="w-14 h-12 flex items-center justify-center border border-[var(--border)] rounded-lg font-bold text-lg bg-[var(--rose)]/5">
-                  {hours}
-                </div>
+                <input
+                  ref={hoursInputRef}
+                  type="text"
+                  value={displayHours}
+                  onChange={handleHoursInput}
+                  maxLength={2}
+                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+                />
                 <button
                   type="button"
                   onClick={decrementHours}
@@ -164,9 +239,14 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
                 >
                   <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
                 </button>
-                <div className="w-14 h-12 flex items-center justify-center border border-[var(--border)] rounded-lg font-bold text-lg bg-[var(--rose)]/5">
-                  {minutes}
-                </div>
+                <input
+                  ref={minutesInputRef}
+                  type="text"
+                  value={displayMinutes}
+                  onChange={handleMinutesInput}
+                  maxLength={2}
+                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+                />
                 <button
                   type="button"
                   onClick={decrementMinutes}
@@ -175,6 +255,18 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
                   <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
                 </button>
               </div>
+            </div>
+
+            {/* AM/PM */}
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Período</p>
+              <button
+                type="button"
+                onClick={togglePeriod}
+                className="px-4 py-2 font-bold text-lg border border-[var(--rose)] rounded-lg bg-[var(--rose)]/5 text-[var(--rose)] hover:bg-[var(--rose)]/10 transition focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+              >
+                {displayPeriod}
+              </button>
             </div>
           </div>
 
@@ -224,16 +316,13 @@ function CotizarForm() {
     setPendingCakeItem(null);
   };
 
-  // Correct: batch both state updates in one call each
   const handleImages = (files: FileList | null) => {
     if (!files) return;
     const remaining = 5 - imageFiles.length;
     if (remaining <= 0) return;
     const newFiles = Array.from(files).slice(0, remaining);
-    // Batch update both arrays at once (not in forEach)
     setImageFiles(prev => [...prev, ...newFiles]);
     setImagePreviews(prev => [...prev, ...newFiles.map(f => URL.createObjectURL(f))]);
-    // Reset input so the same file can be selected again
     if (fileRef.current) fileRef.current.value = "";
   };
   const removeImage=(i:number)=>{

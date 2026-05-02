@@ -954,7 +954,7 @@ export default function Dashboard() {
   const sorted = [...orders].sort((a,b)=>priorityScore(a)-priorityScore(b));
   const tabCfg = ORDER_TABS.find(t=>t.id===orderTab)!;
   const tabOrders = sorted
-    .filter(o=>tabCfg.statuses.includes(o.status as any))
+    .filter((o) => (tabCfg.statuses as readonly string[]).includes(o.status))
     .filter(o=>bakerFilter==="ALL"||o.assignedTo===bakerFilter||(!o.assignedTo&&bakerFilter==="UNASSIGNED"))
     .filter(o=>matchesSearch(o,orderSearch));
   const filteredProducts = products.filter(p=>catFilter==="all"||p.category===catFilter).filter(p=>!catSearch||p.name.toLowerCase().includes(catSearch.toLowerCase()));

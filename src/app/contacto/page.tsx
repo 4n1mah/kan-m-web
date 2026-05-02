@@ -140,7 +140,7 @@ export default function ContactoPage() {
                   ¡Mejor dinos qué quieres y cotiza desde ahora!
                 </h2>
                 <p className="text-[var(--muted-foreground)] mt-2 text-sm leading-relaxed">
-                  Completa el formulario en menos de 2 minutos y nuestro equipo te responde con una propuesta personalizada.
+                  Completa el formulario en menos de 2 minutos y nuestro equipo te respondera para endulzar tu proximo evento.
                 </p>
               </div>
               <Link

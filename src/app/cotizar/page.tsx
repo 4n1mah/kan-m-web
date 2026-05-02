@@ -720,7 +720,7 @@ function CotizarForm() {
             ):<>Enviar cotización <ArrowRight size={18}/></>}
           </button>
           <p className="text-center text-xs text-[var(--muted-foreground)]">
-            <span className="text-[var(--rose)]">*</span> obligatorios · Te contactamos por WhatsApp en menos de 24 horas.
+            <span className="text-[var(--rose)]">Los campos *</span> son obligatorios· Te contactamos por WhatsApp en menos de 24 horas.
           </p>
         </div>
       </section>

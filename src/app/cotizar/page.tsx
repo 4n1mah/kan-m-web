@@ -83,6 +83,231 @@ function StepHeader({n,label}:{n:number;label:string}) {
   );
 }
 
+function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const today = new Date();
+  const minDate = new Date(today);
+  minDate.setDate(minDate.getDate() + 1); // Mañana
+  const maxDate = new Date(today);
+  maxDate.setMonth(maxDate.getMonth() + 2); // 2 meses desde hoy
+
+  const [displayMonth, setDisplayMonth] = useState(value ? new Date(value + "T00:00:00").getMonth() : today.getMonth());
+  const [displayYear, setDisplayYear] = useState(value ? new Date(value + "T00:00:00").getFullYear() : today.getFullYear());
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  // Verificar si un año es válido (no más de 2 meses de diferencia)
+  const canChangeYear = (year: number) => {
+    const testDate = new Date(year, displayMonth, 1);
+    return testDate <= maxDate && testDate >= new Date(today.getFullYear(), today.getMonth(), 1);
+  };
+
+  // Verificar si un mes es válido para el año actual
+  const canChangeMonth = (month: number, year: number) => {
+    const testDate = new Date(year, month, 1);
+    return testDate <= maxDate && testDate >= new Date(today.getFullYear(), today.getMonth(), 1);
+  };
+
+  const getDaysInMonth = (month: number, year: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (month: number, year: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const isDateDisabled = (day: number) => {
+    const testDate = new Date(displayYear, displayMonth, day);
+    return testDate < minDate || testDate > maxDate;
+  };
+
+  const isDateSelected = (day: number) => {
+    if (!value) return false;
+    const [year, month, dayStr] = value.split("-");
+    return parseInt(dayStr) === day && parseInt(month) - 1 === displayMonth && parseInt(year) === displayYear;
+  };
+
+  const handleDateSelect = (day: number) => {
+    const dateStr = `${displayYear}-${String(displayMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    onChange(dateStr);
+    setIsOpen(false);
+  };
+
+  const prevMonth = () => {
+    let newMonth = displayMonth - 1;
+    let newYear = displayYear;
+    if (newMonth < 0) {
+      newMonth = 11;
+      newYear--;
+    }
+    if (canChangeMonth(newMonth, newYear)) {
+      setDisplayMonth(newMonth);
+      setDisplayYear(newYear);
+    }
+  };
+
+  const nextMonth = () => {
+    let newMonth = displayMonth + 1;
+    let newYear = displayYear;
+    if (newMonth > 11) {
+      newMonth = 0;
+      newYear++;
+    }
+    if (canChangeMonth(newMonth, newYear)) {
+      setDisplayMonth(newMonth);
+      setDisplayYear(newYear);
+    }
+  };
+
+  const prevYear = () => {
+    if (canChangeYear(displayYear - 1)) {
+      setDisplayYear(displayYear - 1);
+    }
+  };
+
+  const nextYear = () => {
+    if (canChangeYear(displayYear + 1)) {
+      setDisplayYear(displayYear + 1);
+    }
+  };
+
+  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+  const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const daysInMonth = getDaysInMonth(displayMonth, displayYear);
+  const firstDay = getFirstDayOfMonth(displayMonth, displayYear);
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
+
+  const displayValue = value ? new Date(value + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" }) : "Selecciona una fecha";
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition text-left"
+      >
+        {displayValue}
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full max-w-xs">
+          {/* Header con mes/año */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              type="button"
+              onClick={prevMonth}
+              disabled={!canChangeMonth(displayMonth - 1 < 0 ? 11 : displayMonth - 1, displayMonth - 1 < 0 ? displayYear - 1 : displayYear)}
+              className="p-1 hover:bg-[var(--rose)]/10 rounded transition disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
+            </button>
+            <div className="text-center">
+              <p className="font-semibold text-[var(--rose)]">{monthNames[displayMonth]} {displayYear}</p>
+            </div>
+            <button
+              type="button"
+              onClick={nextMonth}
+              disabled={!canChangeMonth(displayMonth + 1 > 11 ? 0 : displayMonth + 1, displayMonth + 1 > 11 ? displayYear + 1 : displayYear)}
+              className="p-1 hover:bg-[var(--rose)]/10 rounded transition disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+            </button>
+          </div>
+
+          {/* Controles de año */}
+          <div className="flex items-center justify-between mb-4 px-2">
+            <button
+              type="button"
+              onClick={prevYear}
+              disabled={!canChangeYear(displayYear - 1)}
+              className="p-1 hover:bg-[var(--rose)]/10 rounded transition disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronUp size={16} className="text-[var(--muted-foreground)]" />
+            </button>
+            <span className="text-sm font-medium text-[var(--muted-foreground)]">Año: {displayYear}</span>
+            <button
+              type="button"
+              onClick={nextYear}
+              disabled={!canChangeYear(displayYear + 1)}
+              className="p-1 hover:bg-[var(--rose)]/10 rounded transition disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronDown size={16} className="text-[var(--muted-foreground)]" />
+            </button>
+          </div>
+
+          {/* Días de la semana */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {dayNames.map(day => (
+              <div key={day} className="text-center text-xs font-semibold text-[var(--muted-foreground)] py-1">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendario */}
+          <div className="grid grid-cols-7 gap-1">
+            {emptyDays.map((_, i) => (
+              <div key={`empty-${i}`} className="h-8" />
+            ))}
+            {days.map(day => (
+              <button
+                key={day}
+                type="button"
+                onClick={() => handleDateSelect(day)}
+                disabled={isDateDisabled(day)}
+                className={`h-8 rounded-lg text-sm font-medium transition ${
+                  isDateSelected(day)
+                    ? "text-white"
+                    : isDateDisabled(day)
+                    ? "text-[var(--muted-foreground)]/30 cursor-not-allowed"
+                    : "text-[var(--muted-foreground)] hover:bg-[var(--rose)]/10 hover:text-[var(--rose)]"
+                }`}
+                style={isDateSelected(day) ? { background: BTN } : {}}
+              >
+                {day}
+              </button>
+            ))}
+          </div>
+
+          {/* Botones de acción */}
+          <div className="flex gap-2 mt-4">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="flex-1 py-2 rounded-lg text-[var(--rose)] font-semibold text-sm transition border border-[var(--rose)] hover:bg-[var(--rose)]/5"
+            >
+              Cancelar
+            </button>
+            {value && (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  setIsOpen(false);
+                }}
+                className="flex-1 py-2 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #999 0%, #aaa 50%, #888 100%)" }}
+              >
+                Limpiar
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TimePicker({ value, onChange }: { value: string; onChange: (time: string) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -188,93 +413,64 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
 
       {isOpen && (
         <div className="absolute z-50 top-full mt-2 bg-white border border-[var(--border)] rounded-2xl shadow-xl p-4 w-full max-w-sm">
-          {/* Horas */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Horas</p>
-            <div className="flex items-center gap-2 mb-3">
-              <button
-                type="button"
-                onClick={decrementHours}
-                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-              >
-                <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
-              </button>
-              <input
-                type="text"
-                value={displayHours}
-                onChange={handleHoursInput}
-                maxLength={2}
-                className="flex-1 h-10 border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
-              />
-              <button
-                type="button"
-                onClick={incrementHours}
-                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-              >
-                <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {hoursArray.map(h => (
+          <div className="flex gap-3 justify-center mb-4">
+            {/* Hours */}
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Horas</p>
+              <div className="flex flex-col gap-2">
                 <button
-                  key={h}
                   type="button"
-                  onClick={() => setDisplayHours(h)}
-                  className={`py-2 rounded-lg text-sm font-semibold transition ${
-                    displayHours === h
-                      ? "text-white"
-                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
-                  }`}
-                  style={displayHours === h ? { background: BTN } : {}}
+                  onClick={decrementHours}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
                 >
-                  {h}
+                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
                 </button>
-              ))}
+                <input
+                  type="text"
+                  value={displayHours}
+                  onChange={handleHoursInput}
+                  maxLength={2}
+                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+                />
+                <button
+                  type="button"
+                  onClick={incrementHours}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+                >
+                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Minutos */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Minutos</p>
-            <div className="flex items-center gap-2 mb-3">
-              <button
-                type="button"
-                onClick={decrementMinutes}
-                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-              >
-                <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
-              </button>
-              <input
-                type="text"
-                value={displayMinutes}
-                onChange={handleMinutesInput}
-                maxLength={2}
-                className="flex-1 h-10 border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
-              />
-              <button
-                type="button"
-                onClick={incrementMinutes}
-                className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
-              >
-                <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {minutesArray.map(m => (
+            {/* Divider */}
+            <div className="flex items-center text-3xl font-bold text-[var(--muted-foreground)]">:</div>
+
+            {/* Minutes */}
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Minutos</p>
+              <div className="flex flex-col gap-2">
                 <button
-                  key={m}
                   type="button"
-                  onClick={() => setDisplayMinutes(m)}
-                  className={`py-2 rounded-lg text-sm font-semibold transition ${
-                    displayMinutes === m
-                      ? "text-white"
-                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
-                  }`}
-                  style={displayMinutes === m ? { background: BTN } : {}}
+                  onClick={decrementMinutes}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
                 >
-                  {m}
+                  <ChevronUp size={18} className="text-[var(--muted-foreground)]" />
                 </button>
-              ))}
+                <input
+                  type="text"
+                  value={displayMinutes}
+                  onChange={handleMinutesInput}
+                  maxLength={2}
+                  className="w-12 h-12 flex items-center justify-center border border-[var(--rose)] rounded-lg font-bold text-lg bg-[var(--rose)]/5 text-center focus:outline-none focus:ring-2 focus:ring-[var(--rose)]/20"
+                />
+                <button
+                  type="button"
+                  onClick={incrementMinutes}
+                  className="p-1 hover:bg-[var(--rose)]/10 rounded transition"
+                >
+                  <ChevronDown size={18} className="text-[var(--muted-foreground)]" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -306,6 +502,50 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
               >
                 PM
               </button>
+            </div>
+          </div>
+
+          {/* Horas grid */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Selecciona hora</p>
+            <div className="grid grid-cols-3 gap-2">
+              {hoursArray.map(h => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => setDisplayHours(h)}
+                  className={`py-2 rounded-lg text-sm font-semibold transition ${
+                    displayHours === h
+                      ? "text-white"
+                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
+                  }`}
+                  style={displayHours === h ? { background: BTN } : {}}
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Minutos grid */}
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-[var(--muted-foreground)] mb-2">Selecciona minuto</p>
+            <div className="grid grid-cols-3 gap-2">
+              {minutesArray.map(m => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setDisplayMinutes(m)}
+                  className={`py-2 rounded-lg text-sm font-semibold transition ${
+                    displayMinutes === m
+                      ? "text-white"
+                      : "border border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"
+                  }`}
+                  style={displayMinutes === m ? { background: BTN } : {}}
+                >
+                  {m}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -483,7 +723,7 @@ function CotizarForm() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="flex flex-col gap-1.5">
                   <span className="text-sm font-medium flex items-center gap-1.5"><CalendarDays size={15} className="text-[var(--rose)]"/> Fecha <span className="text-[var(--rose)]">*</span></span>
-                  <input type="date" value={form.eventDate} onChange={e=>set("eventDate",e.target.value)} min={new Date().toISOString().split("T")[0]} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+                  <DatePicker value={form.eventDate} onChange={(date) => set("eventDate", date)} />
                 </label>
                 <label className="flex flex-col gap-1.5">
                   <span className="text-sm font-medium flex items-center gap-1.5"><Clock size={15} className="text-[var(--rose)]"/> Hora de entrega <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>

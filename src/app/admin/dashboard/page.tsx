@@ -19,12 +19,23 @@ type Order = {
   status: string; assignedTo?: string | null; createdAt: string;
 };
 
+// --- Helpers --- 
 function formatTo12h(time?: string) {
   if (!time) return "No especificada";
   const [h, m] = time.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
   const hour = h % 12 || 12;
   return `${hour}:${m.toString().padStart(2, "0")} ${period}`;
+}
+
+function formatDateEs(date?: string) {
+  if (!date) return "No especificada";
+  const d = new Date(date + "T00:00:00"); // evita bug de zona horaria
+  return d.toLocaleDateString("es-DO", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 const STATUS: Record<string, { label: string; color: string; bg: string; dot: string; border: string }> = {
@@ -270,7 +281,7 @@ function OrderModal({ order, onClose, onUpdate, onDelete }: {
             <div className="grid grid-cols-2 gap-2.5">
               {[
                 { emoji: "🎉", label: "Tipo de evento", value: order.eventType },
-                { emoji: "📅", label: "Fecha", value: order.eventDate },
+                { emoji: "📅", label: "Fecha", value: formatDateEs(order.eventDate) },
                 { emoji: "⏰", label: "Hora de entrega", value: formatTo12h(order.deliveryTime) },
                 { emoji: "👥", label: "Personas", value: order.guestCount },
               ].map(({ emoji, label, value }) => (

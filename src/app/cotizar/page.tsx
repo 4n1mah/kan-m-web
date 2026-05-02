@@ -50,8 +50,16 @@ function CakePopup({ item,onSave,onClose }:{ item:string; onSave:(d:CakeDetail)=
           <div><p className="text-sm font-semibold mb-2">🎂 Masa <span className="text-[var(--rose)]">*</span></p><div className="flex flex-wrap gap-2">{MASAS.map(m=><Pill key={m} label={m} active={d.masa===m} onClick={()=>s("masa",d.masa===m?"":m)}/>)}</div></div>
           <div>
             <p className="text-sm font-semibold mb-2">⚖️ Tamaño <span className="text-[var(--rose)]">*</span></p>
-            <div className="flex flex-wrap gap-2">{["1 libra","1.5 libras","2 libras","3 libras","4 libras","5 libras"].map(sz=><Pill key={sz} label={sz} active={d.size===sz} onClick={()=>s("size",d.size===sz?"":sz)}/>)}</div>
-            <input type="text" placeholder="O escribe el tamaño personalizado..." value={["1 libra","1.5 libras","2 libras","3 libras","4 libras","5 libras"].includes(d.size)?"":d.size} onChange={e=>s("size",e.target.value)} className="mt-2 w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+            <div className="flex flex-wrap gap-2">
+              {["1/4","1/2","3/4","1","1.5","2"].map(n=>{const sz=`${n} libra${n==="1"?"":"s"}`;return <Pill key={sz} label={sz} active={d.size===sz} onClick={()=>s("size",d.size===sz?"":sz)}/>})}
+            </div>
+            <input
+              type="text"
+              placeholder="O escribe el tamaño personalizado..."
+              value={["1/4","1/2","3/4","1","1.5","2"].map(n=>`${n} libra${n==="1"?"":"s"}`).includes(d.size)?"":d.size}
+              onChange={e=>s("size",e.target.value)}
+              className="mt-2 w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"
+            />
           </div>
           <div><p className="text-sm font-semibold mb-2">🎨 Colores para decoración</p><input type="text" placeholder="ej. rosa, dorado, blanco..." value={d.colors} onChange={e=>s("colors",e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
           <div><p className="text-sm font-semibold mb-2">✍️ Mensaje <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></p><input type="text" placeholder="ej. Feliz cumpleaños María..." value={d.message} onChange={e=>s("message",e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
@@ -163,7 +171,7 @@ function CotizarForm() {
         <div className="max-w-md w-full text-center bg-[var(--card)] border border-[var(--border)]/60 rounded-3xl shadow-md p-10">
           <CheckCircle2 size={52} className="mx-auto mb-4" style={{color:"#f07097"}}/>
           <h2 className="font-display text-3xl">¡Solicitud enviada!</h2>
-          <p className="text-[var(--muted-foreground)] mt-3 leading-relaxed">Recibimos tu cotización, <strong>{form.name}</strong>. Te contactamos por WhatsApp pronto.</p>
+          <p className="text-[var(--muted-foreground)] mt-3 leading-relaxed">Recibimos tu encargo, <strong>{form.name}</strong>. Te contactaremos por Whatsapp en unos momentos.</p>
           <div className="mt-5 p-4 rounded-2xl bg-[var(--muted)]/50 text-sm text-left space-y-1">
             <p><span className="font-medium">Evento:</span> {form.eventType}</p>
             <p><span className="font-medium">Fecha:</span> {form.eventDate}{form.deliveryTime?` · ${form.deliveryTime}`:""}</p>

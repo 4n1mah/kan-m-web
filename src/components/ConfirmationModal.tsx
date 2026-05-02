@@ -1,0 +1,109 @@
+"use client";
+import { X, AlertTriangle, Trash2, Check } from "lucide-react";
+
+interface ConfirmationModalProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  isDestructive?: boolean;
+  onConfirm: () => void | Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+  icon?: "delete" | "save" | "warning" | "confirm";
+}
+
+const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+
+export function ConfirmationModal({
+  isOpen,
+  title,
+  message,
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
+  isDestructive = false,
+  onConfirm,
+  onCancel,
+  isLoading = false,
+  icon = "confirm",
+}: ConfirmationModalProps) {
+  if (!isOpen) return null;
+
+  const handleConfirm = async () => {
+    await onConfirm();
+  };
+
+  const getIcon = () => {
+    switch (icon) {
+      case "delete":
+        return <Trash2 size={32} className="text-red-500" />;
+      case "save":
+        return <Check size={32} className="text-green-500" />;
+      case "warning":
+        return <AlertTriangle size={32} className="text-amber-500" />;
+      default:
+        return <AlertTriangle size={32} style={{ color: "#f07097" }} />;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }}>
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0]">
+          <h3 className="font-display text-lg text-gray-900">{title}</h3>
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition disabled:opacity-50"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 flex flex-col items-center gap-4">
+          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-50">
+            {getIcon()}
+          </div>
+          <p className="text-[var(--muted-foreground)] text-sm leading-relaxed text-center">{message}</p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 border-t border-[#f0e8e0] bg-gray-50 rounded-b-3xl">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 py-2.5 rounded-lg text-[#f07097] font-semibold text-sm transition border border-[#f07097] hover:bg-[#fef7f9] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className={`flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+              isDestructive ? "bg-red-500 hover:bg-red-600" : ""
+            }`}
+            style={!isDestructive ? { background: PINK } : {}}
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              </>
+            ) : (
+              confirmText
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

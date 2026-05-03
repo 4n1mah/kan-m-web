@@ -48,6 +48,9 @@ model Order {
   status        OrderStatus @default(PENDING)
   assignedTo    String?     @map("assigned_to")
   agreedPrice   Float?      @map("agreed_price")
+  depositAmount Float?      @map("deposit_amount")
+  paymentStatus String      @default("PENDING") @map("payment_status") // PENDING | PARTIAL | PAID
+  deliveryMethod String?    @map("delivery_method") // "pickup" | "delivery"
   statusLog     Json        @default("[]") @map("status_log")
   createdAt     DateTime    @default(now()) @map("created_at")
 

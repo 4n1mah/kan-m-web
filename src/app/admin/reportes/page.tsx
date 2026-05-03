@@ -65,14 +65,14 @@ export default function ReportesPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "#f7f4f0" }}>
-      <header className="sticky top-0 z-40 border-b border-[#ede8e0] bg-white/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 border-b border-white/20 shadow-sm" style={{ background: PINK }}>
         <div className="max-w-7xl mx-auto px-6 flex items-center gap-4" style={{ height: "3.75rem" }}>
-          <Link href="/admin/dashboard" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition">
+          <Link href="/admin/dashboard" className="flex items-center gap-1.5 text-sm text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/15">
             <ArrowLeft size={15} /> Volver
           </Link>
           <div className="flex items-center gap-2">
-            <TrendingUp size={18} style={{ color: "#f07097" }} />
-            <span className="font-semibold text-sm">Reportes</span>
+            <TrendingUp size={18} className="text-white" />
+            <span className="font-semibold text-sm text-white">Reportes</span>
           </div>
         </div>
       </header>

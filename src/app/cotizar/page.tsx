@@ -19,8 +19,8 @@ const MASAS = ["Vainilla","Chocolate","Marmol cake","Naranja"];
 const BTN = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
 
 type CakeDetail = { filling:string; masa:string; colors:string; message:string; size:string; };
-type FormState = { name:string; phone:string; email:string; eventType:string; eventDate:string; deliveryTime:string; guestCount:string; selectedItems:string[]; notes:string; };
-const EMPTY:FormState = { name:"",phone:"",email:"",eventType:"",eventDate:"",deliveryTime:"",guestCount:"",selectedItems:[],notes:"" };
+type FormState = { name:string; phone:string; email:string; eventType:string; eventDate:string; deliveryTime:string; guestCount:string; selectedItems:string[]; notes:string; deliveryMethod:string; };
+const EMPTY:FormState = { name:"",phone:"",email:"",eventType:"",eventDate:"",deliveryTime:"",guestCount:"",selectedItems:[],notes:"",deliveryMethod:"" };
 const EMPTY_CAKE:CakeDetail = { filling:"",masa:"",colors:"",message:"",size:"" };
 
 function CakePopup({ item,onSave,onClose }:{ item:string; onSave:(d:CakeDetail)=>void; onClose:()=>void }) {
@@ -622,6 +622,20 @@ function CotizarForm() {
                 <label className="flex flex-col gap-1.5 sm:col-span-2">
                   <span className="text-sm font-medium flex items-center gap-1.5"><Users size={15} className="text-[var(--rose)]"/> Personas <span className="text-[var(--rose)]">*</span></span>
                   <input type="number" placeholder="ej. 50" min={1} value={form.guestCount} onChange={e=>set("guestCount",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+                </label>
+                <label className="flex flex-col gap-1.5 sm:col-span-2">
+                  <span className="text-sm font-medium">Método de entrega</span>
+                  <div className="flex gap-3">
+                    {[{id:"pickup",label:"🏠 Recogida en tienda"},{id:"delivery",label:"🚗 Delivery / Envío"}].map(opt=>(
+                      <button key={opt.id} type="button" onClick={()=>set("deliveryMethod",form.deliveryMethod===opt.id?"":opt.id)}
+                        className={`flex-1 px-4 py-2.5 rounded-xl text-sm border-2 font-medium transition ${form.deliveryMethod===opt.id?"text-[var(--rose)] border-[var(--rose)] bg-[var(--rose)]/5":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)]/50"}`}>
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                    El delivery / envío tiene un costo adicional desde RD$250.00.
+                  </span>
                 </label>
               </div>
             </div>

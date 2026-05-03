@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 
@@ -15,6 +16,7 @@ const links = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -23,6 +25,9 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Ocultar el navbar público en rutas de admin (tienen su propio header)
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <header

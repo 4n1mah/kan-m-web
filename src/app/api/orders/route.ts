@@ -25,7 +25,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, phone, email, eventType, eventDate, guestCount, selectedItems, cakeDetails, notes, imageUrls, deliveryTime } = body;
+  const { name, phone, email, eventType, eventDate, guestCount, selectedItems, cakeDetails, notes, imageUrls, deliveryTime, deliveryMethod } = body;
 
   if (!name || !phone || !eventType || !eventDate || !guestCount) {
     return NextResponse.json({ error: "Faltan campos requeridos" }, { status: 400 });
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       notes: notes || null,
       imageUrls: imageUrls ?? [],
       deliveryTime: deliveryTime || null,
+      deliveryMethod: deliveryMethod || null,
       status: "PENDING",
     },
   });

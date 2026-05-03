@@ -1,8 +1,13 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Phone, Mail, Instagram } from "lucide-react";
 import { WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
 export default function Footer() {
+  const pathname = usePathname();
+  // Ocultar el footer público en rutas de admin
+  if (pathname?.startsWith("/admin")) return null;
   return (
     <footer className="mt-24 border-t border-[var(--border)]/60 bg-secondary/40">
       <div className="max-w-7xl mx-auto px-6 py-14 grid md:grid-cols-3 gap-10">

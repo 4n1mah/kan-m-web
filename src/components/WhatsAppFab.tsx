@@ -1,6 +1,10 @@
+"use client";
+import { usePathname } from "next/navigation";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 
 export default function WhatsAppFab() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
   return (
     <a
       href={waLink(WA_MESSAGES.general)}

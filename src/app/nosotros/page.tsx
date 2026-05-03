@@ -1,6 +1,6 @@
 import { IMAGES } from "@/lib/images";
 import Image from "next/image";
-import { MapPin, Phone, Mail, Instagram } from "lucide-react";
+import { MapPin, Phone, Mail, Instagram, Clock } from "lucide-react";
 
 export default function NosotrosPage() {
   return (
@@ -84,6 +84,26 @@ export default function NosotrosPage() {
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{v.d}</p>
           </div>
         ))}
+      </div>
+
+      {/* Horario de atención */}
+      <div className="bg-card rounded-3xl border border-[var(--border)]/60 shadow-card p-7 mt-6 flex flex-col sm:flex-row items-center gap-5 sm:gap-8">
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shrink-0"
+          style={{ background: "linear-gradient(135deg,#f9c4d4 0%,#f07097 100%)" }}
+        >
+          <Clock size={24} />
+        </div>
+        <div className="text-center sm:text-left">
+          <p className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">
+            Horario de atención
+          </p>
+          <p className="font-display text-lg mt-1 leading-snug">
+            Lunes a Jueves <span className="text-rose">·</span> 9:00 am – 7:00 pm
+            <br />
+            Viernes a Domingo <span className="text-rose">·</span> 9:00 am – 10:00 pm
+          </p>
+        </div>
       </div>
     </section>
   );

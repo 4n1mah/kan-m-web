@@ -3,13 +3,15 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
+import { DatePicker, TimePicker } from "@/components/DateTimePickers";
+import { ToastContainer, useToast } from "@/components/Toast";
 import {
   Package, ClipboardList, LogOut, RefreshCw, Plus, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check,
   MessageCircle, User, ShoppingBag, FileText, Download,
   Image as ImageIcon, AlertTriangle, Search, Clock,
   CheckCircle2, Truck, Ban, Info, StickyNote, History,
-  Edit3, Save
+  Edit3, Save, Calendar, BarChart3
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────
@@ -23,6 +25,9 @@ type Order = {
   notes?: string; internalNote?: string; imageUrls: string[];
   status: string; assignedTo?: string | null;
   agreedPrice?: number | null;
+  depositAmount?: number | null;
+  paymentStatus?: string;
+  deliveryMethod?: string | null;
   statusLog?: StatusLogEntry[];
   createdAt: string;
 };
@@ -291,13 +296,11 @@ function OrderEditModal({ order,onClose,onSave }:{ order:Order; onClose:()=>void
     eventType:order.eventType, eventDate:order.eventDate,
     deliveryTime:order.deliveryTime??"", guestCount:order.guestCount,
     notes:order.notes??"", status:order.status,
+    deliveryMethod:order.deliveryMethod??"",
   });
   const [saving,setSaving] = useState(false);
   const { confirm,modal } = useConfirm();
-
-  // Statuses that can be set manually (skip PENDING — handled by action buttons)
   const MANUAL_STATUSES = ["CONFIRMED","NEEDS_INFO","COMPLETED","DELIVERED","REJECTED","CANCELLED"];
-
   useEffect(()=>{ document.body.style.overflow="hidden"; return()=>{ document.body.style.overflow=""; }; },[]);
 
   async function submit(e:React.FormEvent) {
@@ -305,13 +308,13 @@ function OrderEditModal({ order,onClose,onSave }:{ order:Order; onClose:()=>void
     const ok = await confirm({ title:"Guardar cambios", message:"¿Confirmar los cambios en el pedido?", confirmText:"Guardar", icon:"save" });
     if (!ok) return;
     setSaving(true);
-    await onSave({ ...form, email:form.email||undefined, deliveryTime:form.deliveryTime||undefined, notes:form.notes||undefined, changedBy:"Admin (edición)" } as any);
+    await onSave({ ...form, email:form.email||undefined, deliveryTime:form.deliveryTime||undefined, notes:form.notes||undefined, deliveryMethod:form.deliveryMethod||undefined, changedBy:"Admin (edición)" } as any);
     setSaving(false); onClose();
   }
 
-  // Days until event for display
   const days = daysUntil(form.eventDate);
   const dateUrgent = days >= 0 && days <= 3;
+  const inputCls = "w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition";
 
   return(
     <>
@@ -324,100 +327,85 @@ function OrderEditModal({ order,onClose,onSave }:{ order:Order; onClose:()=>void
           </div>
           <form onSubmit={submit} className="p-6 space-y-5">
 
-            {/* Event date banner — prominent */}
-            <div className={`rounded-2xl p-4 border-2 ${dateUrgent ? "border-red-300 bg-red-50" : "border-[#f0e8e0] bg-[#faf8f5]"}`}>
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Fecha y hora del evento</p>
+            {/* Fecha */}
+            <div className={`rounded-2xl p-4 border-2 ${dateUrgent?"border-red-300 bg-red-50":"border-[#f0e8e0] bg-[#faf8f5]"}`}>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Fecha y hora</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Fecha <span className="text-[#f07097]">*</span></label>
-                  <input type="date" required value={form.eventDate} onChange={e=>setForm({...form,eventDate:e.target.value})}
-                    className={`w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none transition ${dateUrgent?"border-red-300 bg-white focus:border-red-400":"border-[#ede8e0] bg-white focus:border-[#f07097]"}`}/>
+                  <label className="text-xs text-gray-500 mb-1.5 block">Fecha *</label>
+                  <DatePicker value={form.eventDate} onChange={d=>setForm({...form,eventDate:d})} placeholder="Selecciona fecha"/>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Hora de entrega</label>
-                  <input type="time" value={form.deliveryTime} onChange={e=>setForm({...form,deliveryTime:e.target.value})}
-                    className="w-full rounded-xl border border-[#ede8e0] bg-white px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition"/>
+                  <label className="text-xs text-gray-500 mb-1.5 block">Hora de entrega</label>
+                  <TimePicker value={form.deliveryTime} onChange={t=>setForm({...form,deliveryTime:t})} placeholder="Selecciona hora"/>
                 </div>
               </div>
-              {/* Countdown chip */}
-              {form.eventDate && (
-                <div className={`mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
-                  days < 0 ? "bg-gray-100 text-gray-500" :
-                  days === 0 ? "bg-red-100 text-red-700" :
-                  days <= 2 ? "bg-orange-100 text-orange-700" :
-                  days <= 7 ? "bg-yellow-100 text-yellow-700" :
-                  "bg-green-100 text-green-700"
-                }`}>
-                  <Clock size={11}/>
-                  {days < 0 ? `Hace ${Math.abs(days)} día${Math.abs(days)!==1?"s":""}` :
-                   days === 0 ? "¡Hoy!" :
-                   days === 1 ? "Mañana" :
-                   `En ${days} días`}
+              {form.eventDate&&(
+                <div className={`mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${days<0?"bg-gray-100 text-gray-500":days===0?"bg-red-100 text-red-700":days<=2?"bg-orange-100 text-orange-700":days<=7?"bg-yellow-100 text-yellow-700":"bg-green-100 text-green-700"}`}>
+                  <Clock size={11}/> {days<0?`Hace ${Math.abs(days)}d`:days===0?"¡Hoy!":days===1?"Mañana":`En ${days} días`}
                 </div>
               )}
             </div>
 
-            {/* Status selector */}
+            {/* Método de entrega */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Método de entrega</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[{id:"pickup",label:"🏠 Recogida"},{id:"delivery",label:"🚗 Delivery"}].map(opt=>(
+                  <button key={opt.id} type="button" onClick={()=>setForm({...form,deliveryMethod:form.deliveryMethod===opt.id?"":opt.id})}
+                    className={`px-3 py-2.5 rounded-xl text-sm border-2 font-medium transition ${form.deliveryMethod===opt.id?"border-transparent text-white":"border-[#f0e8e0] text-gray-600 hover:border-gray-300"}`}
+                    style={form.deliveryMethod===opt.id?{background:PINK}:{}}>{opt.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Estado */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Estado del pedido</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {MANUAL_STATUSES.map(s=>{
-                  const cfg = STATUS[s];
-                  const active = form.status === s;
+                  const cfg=STATUS[s]; const active=form.status===s;
                   return(
                     <button key={s} type="button" onClick={()=>setForm({...form,status:s})}
                       className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border-2 transition ${active?"border-transparent text-white":"border-[#f0e8e0] hover:border-gray-300"}`}
                       style={active?{background:`linear-gradient(135deg,${cfg.dot},${cfg.color})`}:{color:cfg.color,background:cfg.bg}}>
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{background:active?"white":cfg.dot}}/>
-                      {cfg.label}
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{background:active?"white":cfg.dot}}/>{cfg.label}
                     </button>
                   );
                 })}
               </div>
-              {form.status !== order.status && (
+              {form.status!==order.status&&(
                 <p className="text-xs text-amber-600 mt-2 flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-lg">
-                  <AlertTriangle size={11}/> El estado cambiará de <strong>{STATUS[order.status]?.label}</strong> a <strong>{STATUS[form.status]?.label}</strong>
+                  <AlertTriangle size={11}/> Cambia de <strong>{STATUS[order.status]?.label}</strong> a <strong>{STATUS[form.status]?.label}</strong>
                 </p>
               )}
             </div>
 
-            {/* Client info */}
+            {/* Cliente */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Datos del cliente</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <label className="text-xs text-gray-500 mb-1 block">Nombre <span className="text-[#f07097]">*</span></label>
-                  <input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition"/>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Teléfono <span className="text-[#f07097]">*</span></label>
-                  <input required value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition"/>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Email</label>
-                  <input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="(opcional)" className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition"/>
-                </div>
+                <div className="col-span-2"><label className="text-xs text-gray-500 mb-1 block">Nombre *</label>
+                  <input required value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className={inputCls}/></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Teléfono *</label>
+                  <input required value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} className={inputCls}/></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Email</label>
+                  <input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="(opcional)" className={inputCls}/></div>
               </div>
             </div>
 
-            {/* Event info */}
+            {/* Evento */}
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Detalles del evento</p>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Tipo de evento</label>
-                  <select value={form.eventType} onChange={e=>setForm({...form,eventType:e.target.value})} className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition">
+                <div><label className="text-xs text-gray-500 mb-1 block">Tipo</label>
+                  <select value={form.eventType} onChange={e=>setForm({...form,eventType:e.target.value})} className={inputCls}>
                     {EVENT_TYPES.map(t=><option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Personas <span className="text-[#f07097]">*</span></label>
-                  <input type="number" required value={form.guestCount} onChange={e=>setForm({...form,guestCount:e.target.value})} className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition"/>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-gray-500 mb-1 block">Notas del cliente</label>
-                  <textarea value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={3} className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm resize-none focus:outline-none focus:border-[#f07097] transition"/>
-                </div>
+                  </select></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Personas *</label>
+                  <input type="number" required value={form.guestCount} onChange={e=>setForm({...form,guestCount:e.target.value})} className={inputCls}/></div>
+                <div className="col-span-2"><label className="text-xs text-gray-500 mb-1 block">Notas</label>
+                  <textarea value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} rows={3} className={inputCls+" resize-none"}/></div>
               </div>
             </div>
 
@@ -433,17 +421,19 @@ function OrderEditModal({ order,onClose,onSave }:{ order:Order; onClose:()=>void
   );
 }
 
-// ── Order Detail Modal ────────────────────────────────────────
+
 function OrderModal({ order,onClose,onUpdate,onDelete }:{
   order:Order; onClose:()=>void;
   onUpdate:(id:string,data:Partial<Order>)=>Promise<void>;
   onDelete:(id:string)=>Promise<void>;
 }) {
-  const [status,setStatus]       = useState(order.status);
-  const [assigned,setAssigned]   = useState(order.assignedTo??"");
-  const [internalNote,setNote]   = useState(order.internalNote??"");
-  const [agreedPrice,setPrice]   = useState(order.agreedPrice?.toString()??"");
-  const [priceEditing,setPriceEdit] = useState(false);
+  const [status,setStatus]         = useState(order.status);
+  const [assigned,setAssigned]     = useState(order.assignedTo??"");
+  const [internalNote,setNote]     = useState(order.internalNote??"");
+  const [agreedPrice,setPrice]     = useState(order.agreedPrice?.toString()??"");
+  const [depositAmount,setDeposit] = useState(order.depositAmount?.toString()??"");
+  const [paymentStatus,setPayment] = useState(order.paymentStatus??"PENDING");
+  const [priceEditing,setPriceEdit]= useState(false);
   const [noteEditing,setNoteEdit]= useState(false);
   const [saving,setSaving]       = useState(false);
   const [lightboxIdx,setLBIdx]   = useState<number|null>(null);
@@ -492,12 +482,29 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
     setStatus(newStatus);
     await doUpdate({ status:newStatus, changedBy:changedBy??assigned??"Admin" } as any);
   };
+  // Variante con confirmación para botones "Marcar listo" / "Marcar entregado" del modal
+  const handleMarkStatus = async (newStatus:string, changedBy?:string) => {
+    const isReady = newStatus === "COMPLETED";
+    const ok = await confirm({
+      title: isReady ? "Marcar listo" : "Marcar entregado",
+      message: isReady
+        ? "¿Marcar este pedido como listo para entrega o recogida?"
+        : "¿Marcar este pedido como entregado? Pasará al historial.",
+      confirmText: "Confirmar",
+      icon: "confirm",
+    });
+    if (!ok) return;
+    await handleStatusBtn(newStatus, changedBy);
+  };
   const handleSaveNote = async () => {
     await doUpdate({ internalNote });
     setNoteEdit(false);
   };
   const handleSavePrice = async () => {
-    await doUpdate({ agreedPrice: agreedPrice === "" ? null : Number(agreedPrice) });
+    await doUpdate({
+      agreedPrice: agreedPrice === "" ? null : Number(agreedPrice),
+      depositAmount: depositAmount === "" ? null : Number(depositAmount),
+    });
     setPriceEdit(false);
   };
   const handleSaveChanges = async () => {
@@ -512,7 +519,17 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
     onClose();
   };
 
-  const waMsg = encodeURIComponent(`Hola ${localOrder.name} 👋, somos Kan M. Sobre tu cotización para *${localOrder.eventType}* el *${localOrder.eventDate}*${localOrder.deliveryTime?` a las ${fmt12h(localOrder.deliveryTime)}`:""}: `);
+  // Mensaje de WhatsApp según estado del pedido
+  const baker = assigned || "Kan M";
+  const detalles = `*${localOrder.eventType}* el *${localOrder.eventDate}*${localOrder.deliveryTime?` a las ${fmt12h(localOrder.deliveryTime)}`:""}`;
+  const buildWaMsg = () => {
+    const intro = `Hola ${localOrder.name}! Te habla ${baker} de Kan M Repostería y Catering 🎂. Te escribo referente al pedido que solicitaste desde nuestra página: ${detalles}.`;
+    if (status === "COMPLETED") return `${intro} ¿Nos puedes confirmar que toda la información está correcta?`;
+    if (status === "NEEDS_INFO") return `${intro} Necesitaría más información para poder empezar a trabajar con su pedido, ¿tiene disponibilidad ahora?`;
+    if (status === "REJECTED")  return `${intro} Por el momento no trabajamos con este producto.`;
+    return `Hola ${localOrder.name} 👋, somos Kan M. Sobre tu cotización para ${detalles}: `;
+  };
+  const waMsg = encodeURIComponent(buildWaMsg());
 
   return(
     <>
@@ -534,9 +551,11 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
               <span className="text-xs text-gray-400">#{shortId(localOrder.id)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={()=>setShowEdit(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#ede8e0] text-xs font-medium text-gray-600 hover:bg-[#faf8f5] hover:border-[#f07097] transition">
-                <Edit3 size={13}/> Editar
-              </button>
+              {!isPending&&(
+                <button onClick={()=>setShowEdit(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#ede8e0] text-xs font-medium text-gray-600 hover:bg-[#faf8f5] hover:border-[#f07097] transition">
+                  <Edit3 size={13}/> Editar
+                </button>
+              )}
               <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"><X size={16}/></button>
             </div>
           </div>
@@ -570,6 +589,14 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                   <p className="font-semibold text-sm text-gray-800">{emoji} {value}</p>
                 </div>
               ))}
+              {localOrder.deliveryMethod && (
+                <div className="col-span-2 bg-[#faf8f5] rounded-2xl p-3.5">
+                  <p className="text-xs text-gray-400 mb-1">Método de entrega</p>
+                  <p className="font-semibold text-sm text-gray-800">
+                    {localOrder.deliveryMethod === "pickup" ? "🏠 Recogida en tienda" : "🚗 Delivery / Envío"}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Products */}
@@ -606,38 +633,71 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
               </div>
             )}
 
-            {/* Agreed price */}
+            {/* ── Financiero ── (oculto en pedidos PENDING) */}
+            {!isPending&&(
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                  <span>💰</span> Precio acordado
-                </p>
-                {!priceEditing && <button onClick={()=>setPriceEdit(true)} className="text-xs text-[#f07097] hover:underline flex items-center gap-1"><Edit3 size={11}/>{agreedPrice?"Editar":"Agregar"}</button>}
-              </div>
-              {priceEditing ? (
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">RD$</span>
-                    <input type="number" min={0} step={50} value={agreedPrice} onChange={e=>setPrice(e.target.value)}
-                      placeholder="0"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#f07097]/30 bg-[#fef7f9] text-sm focus:outline-none focus:border-[#f07097] transition"/>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-1.5">
+                <span>💰</span> Precio y pago
+              </p>
+              <div className="space-y-3">
+                {/* Agreed price */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-400 mb-1 block">Precio acordado</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">RD$</span>
+                      {priceEditing ? (
+                        <input type="number" min={0} step={50} value={agreedPrice} onChange={e=>setPrice(e.target.value)}
+                          autoFocus placeholder="0"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#f07097]/30 bg-[#fef7f9] text-sm focus:outline-none focus:border-[#f07097] transition"/>
+                      ) : (
+                        <button onClick={()=>setPriceEdit(true)}
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#ede8e0] bg-[#faf8f5] text-sm text-left hover:border-[#f07097]/40 transition">
+                          <span className={agreedPrice?"text-gray-800 font-semibold":"text-gray-400"}>{agreedPrice||"Sin precio"}</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <button onClick={handleSavePrice} className="px-4 py-2 rounded-xl text-white text-xs font-semibold hover:opacity-90 transition" style={{background:"#059669"}}>Guardar</button>
-                  <button onClick={()=>{setPriceEdit(false);setPrice(localOrder.agreedPrice?.toString()??"");}} className="px-3 py-2 rounded-xl border border-[#ede8e0] text-xs text-gray-500 hover:bg-gray-50 transition">×</button>
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-400 mb-1 block">Depositado</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">RD$</span>
+                      <input type="number" min={0} step={50} value={depositAmount} onChange={e=>setDeposit(e.target.value)}
+                        placeholder="0"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#ede8e0] bg-[#faf8f5] text-sm focus:outline-none focus:border-[#f07097] transition"/>
+                    </div>
+                  </div>
                 </div>
-              ) : agreedPrice ? (
-                <div className="bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center justify-between">
-                  <span className="text-green-800 font-bold text-lg">RD${Number(agreedPrice).toLocaleString("es-DO")}</span>
-                  <span className="text-xs text-green-600">Precio confirmado</span>
+                {/* Payment status */}
+                <div>
+                  <label className="text-xs text-gray-400 mb-1.5 block">Estado de pago</label>
+                  <div className="flex gap-2">
+                    {[
+                      {id:"PENDING",label:"Pendiente",color:"#92400e",bg:"#fef3c7"},
+                      {id:"PARTIAL",label:"Anticipación recibida",color:"#1e40af",bg:"#dbeafe"},
+                      {id:"PAID",   label:"Pagado",color:"#065f46",bg:"#d1fae5"},
+                    ].map(ps=>(
+                      <button key={ps.id} type="button" onClick={async()=>{setPayment(ps.id);await doUpdate({paymentStatus:ps.id});}}
+                        className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition ${paymentStatus===ps.id?"border-transparent":"border-[#f0e8e0] hover:border-gray-300"}`}
+                        style={paymentStatus===ps.id?{color:ps.color,background:ps.bg,borderColor:ps.color+"40"}:{color:ps.color,background:ps.bg+"80"}}>
+                        {ps.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <button onClick={()=>setPriceEdit(true)} className="flex items-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-[#ede8e0] text-xs text-gray-400 hover:text-[#f07097] hover:border-[#f07097]/40 transition">
-                  <Plus size={13}/> Agregar precio acordado
-                </button>
-              )}
+                {/* Save price+deposit button */}
+                {priceEditing&&(
+                  <div className="flex gap-2">
+                    <button type="button" onClick={handleSavePrice} className="px-4 py-2 rounded-xl text-white text-xs font-semibold hover:opacity-90 transition" style={{background:"#059669"}}>Guardar precio</button>
+                    <button type="button" onClick={()=>{setPriceEdit(false);setPrice(localOrder.agreedPrice?.toString()??"");}} className="px-3 py-2 rounded-xl border border-[#ede8e0] text-xs text-gray-500 hover:bg-gray-50 transition">Cancelar</button>
+                  </div>
+                )}
+              </div>
             </div>
+            )}
 
-            {/* Internal note */}
+            {/* Internal note (oculto en pedidos PENDING) */}
+            {!isPending&&(
             <div>
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 flex items-center gap-1.5"><StickyNote size={11}/> Nota interna</p>
@@ -660,6 +720,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                 </button>
               )}
             </div>
+            )}
 
             {/* Photos */}
             <div>
@@ -720,8 +781,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                       <CheckCircle2 size={15}/> Aceptar</button>
                     <button onClick={()=>handleAction("NEEDS_INFO")} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition" style={{background:"#e9d5ff",color:"#5b21b6"}}>
                       <Info size={15}/> Más información</button>
-                    <button onClick={()=>handleAction("CANCELLED")} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition" style={{background:"#fecaca",color:"#991b1b"}}>
-                      <Ban size={15}/> Cancelar</button>
+                    <button onClick={()=>handleAction("REJECTED")} className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition" style={{background:"#fecaca",color:"#991b1b"}}>
+                      <Ban size={15}/> Rechazar</button>
                   </div>
                 </div>
               )}
@@ -733,7 +794,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                     <p className="text-sm font-semibold text-blue-800">¿El pedido está listo?</p>
                     <p className="text-xs text-blue-600 mt-0.5">Marca como listo cuando esté preparado para entrega o recogida.</p>
                   </div>
-                  <button onClick={()=>handleStatusBtn("COMPLETED",assigned)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition shrink-0" style={{background:"linear-gradient(135deg,#3b82f6,#1d4ed8)"}}>
+                  <button onClick={()=>handleMarkStatus("COMPLETED",assigned)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition shrink-0" style={{background:"linear-gradient(135deg,#3b82f6,#1d4ed8)"}}>
                     <CheckCircle2 size={15}/> Marcar listo</button>
                 </div>
               )}
@@ -745,7 +806,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                     <p className="text-sm font-semibold text-green-800">¿El pedido fue entregado?</p>
                     <p className="text-xs text-green-600 mt-0.5">Marca como entregado para moverlo al historial.</p>
                   </div>
-                  <button onClick={()=>handleStatusBtn("DELIVERED",assigned)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition shrink-0" style={{background:"linear-gradient(135deg,#059669,#047857)"}}>
+                  <button onClick={()=>handleMarkStatus("DELIVERED",assigned)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition shrink-0" style={{background:"linear-gradient(135deg,#059669,#047857)"}}>
                     <Truck size={15}/> Marcar entregado</button>
                 </div>
               )}
@@ -764,7 +825,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                 </div>
               )}
 
-              {/* Bottom actions */}
+              {/* Bottom actions (oculto en pedidos PENDING) */}
+              {!isPending&&(
               <div className="flex flex-wrap gap-2">
                 <button onClick={handleSaveChanges} disabled={saving}
                   className="flex-1 min-w-[120px] py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
@@ -780,6 +842,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                   <Trash2 size={14}/>
                 </button>
               </div>
+              )}
             </div>
           </div>
         </div>
@@ -846,16 +909,20 @@ function OrderCard({ order,onClick,onQuickAction }:{
             {items.length>0&&<p className="text-gray-400 truncate">🛒 {items.join(", ")}</p>}
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {order.assignedTo&&<p className="text-xs text-[#f07097] flex items-center gap-0.5 font-medium"><User size={10}/> {order.assignedTo.split(" ")[0]}</p>}
+              {order.deliveryMethod&&<span className="text-xs text-gray-500">{order.deliveryMethod==="pickup"?"🏠":"🚗"}</span>}
+              {order.paymentStatus==="PAID"&&<span className="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full">Pagado</span>}
+              {order.paymentStatus==="PARTIAL"&&<span className="text-xs font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full">Anticipo</span>}
               {imgs.length>0&&<p className="text-xs text-gray-400 flex items-center gap-0.5"><ImageIcon size={10}/> {imgs.length}</p>}
               {order.internalNote&&<p className="text-xs text-amber-500 flex items-center gap-0.5"><StickyNote size={10}/></p>}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {order.agreedPrice&&<span className="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full">RD${order.agreedPrice.toLocaleString("es-DO")}</span>}
               <span className="text-xs text-[#f07097] font-medium">Ver →</span>
             </div>
           </div>
+
         </div>
       </button>
 
@@ -895,6 +962,7 @@ export default function Dashboard() {
   const [catSearch,setCatSearch] = useState("");
   const [productModal,setProductModal] = useState<{open:boolean;product:Product|null}>({open:false,product:null});
   const { confirm,modal:confirmModal } = useConfirm();
+  const { toasts,addToast,removeToast } = useToast();
   const prevPendingRef = useRef(0);
 
   async function load(){ const r=await fetch("/api/products"); setProducts(await r.json()); }
@@ -930,13 +998,16 @@ export default function Dashboard() {
   async function logout(){ await fetch("/api/auth/logout",{method:"POST"}); router.push("/admin/login"); }
 
   const updateOrder = useCallback(async (id:string,data:Partial<Order>)=>{
-    await fetch(`/api/orders/${id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    const res = await fetch(`/api/orders/${id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    if (!res.ok) { addToast("Error al guardar los cambios","error"); return; }
     await loadOrders();
     setSelectedOrder(prev=>prev?.id===id?{...prev,...data}:prev);
+    addToast("Cambios guardados","success");
   },[]);
   const deleteOrder = useCallback(async (id:string)=>{
     await fetch(`/api/orders/${id}`,{method:"DELETE"});
     setSelectedOrder(null); loadOrders();
+    addToast("Pedido eliminado","info");
   },[]);
 
   const handleQuickAction = async (id:string,newStatus:string)=>{
@@ -949,12 +1020,13 @@ export default function Dashboard() {
   async function delProduct(id:string){
     await fetch(`/api/products/${id}`,{method:"DELETE"});
     load();
+    addToast("Producto eliminado","info");
   }
 
   const sorted = [...orders].sort((a,b)=>priorityScore(a)-priorityScore(b));
   const tabCfg = ORDER_TABS.find(t=>t.id===orderTab)!;
   const tabOrders = sorted
-    .filter((o) => (tabCfg.statuses as readonly string[]).includes(o.status))
+    .filter(o=>(tabCfg.statuses as readonly string[]).includes(o.status))
     .filter(o=>bakerFilter==="ALL"||o.assignedTo===bakerFilter||(!o.assignedTo&&bakerFilter==="UNASSIGNED"))
     .filter(o=>matchesSearch(o,orderSearch));
   const filteredProducts = products.filter(p=>catFilter==="all"||p.category===catFilter).filter(p=>!catSearch||p.name.toLowerCase().includes(catSearch.toLowerCase()));
@@ -969,25 +1041,18 @@ export default function Dashboard() {
 
   return(
     <div className="min-h-screen" style={{background:"#f7f4f0"}}>
+      <ToastContainer toasts={toasts} removeToast={removeToast}/>
       {confirmModal}
       {selectedOrder&&<OrderModal order={selectedOrder} onClose={()=>setSelectedOrder(null)} onUpdate={updateOrder} onDelete={deleteOrder}/>}
       {productModal.open&&<ProductModal product={productModal.product} onClose={()=>setProductModal({open:false,product:null})} onSave={load} onDelete={delProduct}/>}
 
-      <header className="sticky top-0 z-40 border-b border-[#ede8e0] bg-white/90 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 border-b border-white/20 shadow-sm" style={{background:PINK}}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-4" style={{height:"3.75rem"}}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-bold" style={{background:PINK}}>K</div>
-            <div><p className="font-semibold text-sm leading-tight">Kan M</p><p className="text-xs text-gray-400 leading-tight">Panel de administración</p></div>
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white text-sm font-bold" style={{color:"#e85d82"}}>K</div>
+            <div><p className="font-semibold text-sm leading-tight text-white">Kan M</p><p className="text-xs text-white/75 leading-tight">Panel de administración</p></div>
           </div>
-          <nav className="hidden sm:flex items-center gap-1">
-            <Link href="/admin/calendario" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition">
-              📅 Calendario
-            </Link>
-            <Link href="/admin/reportes" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition">
-              📊 Reportes
-            </Link>
-          </nav>
-          <button onClick={logout} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition px-3 py-1.5 rounded-lg hover:bg-gray-100"><LogOut size={14}/> Salir</button>
+          <button onClick={logout} className="flex items-center gap-1.5 text-sm text-white/90 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-white/15"><LogOut size={14}/> Salir</button>
         </div>
       </header>
 
@@ -1014,7 +1079,7 @@ export default function Dashboard() {
         </div>
 
         {/* Main tabs */}
-        <div className="flex gap-1 mb-6 bg-white border border-[#ede8e0] rounded-xl p-1 w-fit shadow-sm">
+        <div className="flex flex-wrap gap-1 mb-6 bg-white border border-[#ede8e0] rounded-xl p-1 w-fit shadow-sm">
           {[{id:"orders",icon:<ClipboardList size={15}/>,label:"Pedidos",badge:pendingCount},{id:"catalog",icon:<Package size={15}/>,label:"Catálogo"}].map(t=>(
             <button key={t.id} onClick={()=>setMainTab(t.id as typeof mainTab)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab===t.id?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
@@ -1023,6 +1088,12 @@ export default function Dashboard() {
               {t.badge?<span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${mainTab===t.id?"bg-white text-[#f07097]":"bg-[#f07097] text-white"}`}>{t.badge}</span>:null}
             </button>
           ))}
+          <Link href="/admin/calendario" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+            <Calendar size={15}/> Calendario
+          </Link>
+          <Link href="/admin/reportes" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+            <BarChart3 size={15}/> Reportes
+          </Link>
         </div>
 
         {/* ORDERS */}

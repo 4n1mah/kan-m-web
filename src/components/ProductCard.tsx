@@ -38,7 +38,7 @@ export default function ProductCard({ product }: { product: Product }) {
           rel="noopener noreferrer"
           className="mt-5 inline-flex w-full justify-center px-6 py-2.5 rounded-full bg-gradient-rose text-white text-sm shadow-soft hover:opacity-90 transition"
         >
-          Pedir por WhatsApp
+          Preguntar disponibilidad
         </a>
       </div>
     </article>

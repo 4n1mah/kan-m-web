@@ -323,7 +323,7 @@ export default function CalendarioPage() {
             </button>
           </div>
 
-          <h2 className="font-display text-base sm:text-lg capitalize ml-1 mr-auto">{headerTitle}</h2>
+          <MonthYearPicker cursor={cursor} setCursor={setCursor} label={headerTitle}/>
 
           {/* Search */}
           <div className="relative">
@@ -536,7 +536,29 @@ function MonthView({ cursor, byDate, onPickOrder, selectedOrderId, onPickDay }: 
 }
 
 // ──────────────────────────────────────────────────────────────
-// WeekView — 7 columnas, lista cronológica por día
+// Configuración del timeline horario (compartido por Semana y Día)
+// ──────────────────────────────────────────────────────────────
+const HOUR_START = 6;   // 6 AM
+const HOUR_END   = 23;  // 11 PM (última hora visible)
+const HOUR_PX    = 44;  // alto de cada fila de hora en px
+const HOURS = Array.from({ length: HOUR_END - HOUR_START + 1 }, (_, i) => HOUR_START + i);
+
+function fmtHourLabel(h: number) {
+  if (h === 0)  return "12 am";
+  if (h === 12) return "12 pm";
+  return h < 12 ? `${h} am` : `${h - 12} pm`;
+}
+function timeToMinutes(time?: string | null): number | null {
+  if (!time) return null;
+  const [hStr, mStr] = time.split(":");
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr ?? "0", 10);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+// ──────────────────────────────────────────────────────────────
+// WeekView — 7 columnas con timeline horario vertical
 // ──────────────────────────────────────────────────────────────
 function WeekView({ cursor, byDate, onPickOrder, selectedOrderId, onPickDay }: {
   cursor: Date;
@@ -550,16 +572,26 @@ function WeekView({ cursor, byDate, onPickOrder, selectedOrderId, onPickDay }: {
     const d = addDays(ws, i);
     return { date: d, iso: toIso(d) };
   });
+  const totalGridHeight = HOURS.length * HOUR_PX;
+
+  // Línea de "ahora" si la semana incluye hoy
+  const now = new Date();
+  const todayInWeek = days.some(d => d.iso === todayStr);
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const nowOffsetPx = ((nowMinutes / 60) - HOUR_START) * HOUR_PX;
+  const nowVisible = todayInWeek && nowMinutes >= HOUR_START * 60 && nowMinutes <= (HOUR_END + 1) * 60;
 
   return (
     <div className="bg-white border border-[#ede8e0] rounded-2xl shadow-sm overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-[#ede8e0] bg-[#faf8f5]">
+      {/* Top header con días */}
+      <div className="grid border-b border-[#ede8e0] bg-[#faf8f5]" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
+        <div/>
         {days.map(d => {
           const isToday = d.iso === todayStr;
           return (
             <button key={d.iso}
               onClick={() => onPickDay(d.iso)}
-              className={`py-3 text-center border-r border-[#f0e8e0] last:border-r-0 transition hover:bg-[#fef7f9] ${isToday ? "bg-[#fef7f9]" : ""}`}>
+              className={`py-3 text-center border-l border-[#f0e8e0] transition hover:bg-[#fef7f9] ${isToday ? "bg-[#fef7f9]" : ""}`}>
               <div className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">
                 {d.date.toLocaleDateString("es-DO", { weekday: "short" })}
               </div>
@@ -568,26 +600,81 @@ function WeekView({ cursor, byDate, onPickOrder, selectedOrderId, onPickDay }: {
               }`} style={isToday ? { background: PINK_SOLID } : {}}>
                 {d.date.getDate()}
               </div>
+              {(byDate[d.iso]?.length ?? 0) > 0 && (
+                <div className="text-[10px] text-gray-400 mt-0.5">{byDate[d.iso]!.length} pedido{byDate[d.iso]!.length === 1 ? "" : "s"}</div>
+              )}
             </button>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-7 min-h-[480px]">
+      {/* Banda "Sin hora" arriba del timeline */}
+      {(() => {
+        const noTimeAcrossWeek = days.map(d => ({
+          iso: d.iso,
+          orders: (byDate[d.iso] ?? []).filter(o => !o.deliveryTime),
+        }));
+        const anyNoTime = noTimeAcrossWeek.some(d => d.orders.length > 0);
+        if (!anyNoTime) return null;
+        return (
+          <div className="grid border-b border-[#ede8e0] bg-[#fefcf7]" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
+            <div className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 px-2 py-2 text-right border-r border-[#f0e8e0]">
+              Sin hora
+            </div>
+            {noTimeAcrossWeek.map(({ iso, orders }) => (
+              <div key={iso} className="px-1 py-1.5 border-l border-[#f0e8e0] flex flex-col gap-1 min-h-[34px]">
+                {orders.map(o => (
+                  <OrderChip key={o.id} order={o} compact onClick={() => onPickOrder(o.id)} active={o.id === selectedOrderId}/>
+                ))}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Timeline grid */}
+      <div className="relative grid" style={{ gridTemplateColumns: "60px repeat(7, 1fr)", height: totalGridHeight }}>
+        {/* Columna de horas */}
+        <div className="border-r border-[#f0e8e0] bg-[#faf8f5]/50 relative">
+          {HOURS.map((h, i) => (
+            <div key={h} className="absolute left-0 right-0 px-2 text-right" style={{ top: i * HOUR_PX, height: HOUR_PX }}>
+              <span className="text-[10px] font-medium text-gray-400 tabular-nums">{fmtHourLabel(h)}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Columnas de días con eventos */}
         {days.map(d => {
-          const dayOrders = byDate[d.iso] ?? [];
+          const dayOrders = (byDate[d.iso] ?? []).filter(o => !!o.deliveryTime);
           const isToday = d.iso === todayStr;
           return (
-            <div key={d.iso} className={`border-r border-[#f0e8e0] last:border-r-0 p-2 flex flex-col gap-1.5 ${isToday ? "bg-[#fef7f9]/40" : ""}`}>
-              {dayOrders.length === 0 ? (
-                <div className="flex-1 flex items-center justify-center min-h-[100px]">
-                  <span className="text-[10px] text-gray-300">—</span>
+            <div key={d.iso} className={`relative border-l border-[#f0e8e0] ${isToday ? "bg-[#fef7f9]/30" : ""}`}>
+              {/* Líneas horarias */}
+              {HOURS.map((h, i) => (
+                <div key={h} className="absolute left-0 right-0 border-t border-[#f5efe7]" style={{ top: i * HOUR_PX }}/>
+              ))}
+
+              {/* Línea de "ahora" */}
+              {isToday && nowVisible && (
+                <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ top: nowOffsetPx }}>
+                  <div className="relative">
+                    <div className="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full" style={{ background: PINK_SOLID, boxShadow: "0 0 0 3px #fef7f9" }}/>
+                    <div className="border-t-2" style={{ borderColor: PINK_SOLID }}/>
+                  </div>
                 </div>
-              ) : (
-                dayOrders.map(o => (
-                  <OrderChip key={o.id} order={o} onClick={() => onPickOrder(o.id)} active={o.id === selectedOrderId}/>
-                ))
               )}
+
+              {/* Eventos */}
+              {dayOrders.map(o => {
+                const min = timeToMinutes(o.deliveryTime)!;
+                const top = ((min / 60) - HOUR_START) * HOUR_PX;
+                if (top < 0 || top > totalGridHeight) return null;
+                return (
+                  <div key={o.id} className="absolute left-1 right-1" style={{ top, minHeight: HOUR_PX - 4 }}>
+                    <OrderChip order={o} onClick={() => onPickOrder(o.id)} active={o.id === selectedOrderId}/>
+                  </div>
+                );
+              })}
             </div>
           );
         })}
@@ -597,7 +684,7 @@ function WeekView({ cursor, byDate, onPickOrder, selectedOrderId, onPickDay }: {
 }
 
 // ──────────────────────────────────────────────────────────────
-// DayView — timeline vertical por horas, ideal para días con varios pedidos
+// DayView — timeline de un solo día con horas a la izquierda
 // ──────────────────────────────────────────────────────────────
 function DayView({ cursor, byDate, onPickOrder, selectedOrderId }: {
   cursor: Date;
@@ -606,25 +693,41 @@ function DayView({ cursor, byDate, onPickOrder, selectedOrderId }: {
   selectedOrderId: string | null;
 }) {
   const iso = toIso(cursor);
-  const dayOrders = byDate[iso] ?? [];
+  const allDayOrders = byDate[iso] ?? [];
   const isToday = iso === todayStr;
+  const totalGridHeight = HOURS.length * HOUR_PX;
 
-  // Agrupar por franja horaria (mañana / tarde / noche / sin hora)
-  type Bucket = { id: string; label: string; range: string; orders: Order[] };
-  const buckets: Bucket[] = [
-    { id: "morning",   label: "Mañana",   range: "6:00 am – 12:00 pm", orders: [] },
-    { id: "afternoon", label: "Tarde",    range: "12:00 pm – 6:00 pm", orders: [] },
-    { id: "evening",   label: "Noche",    range: "6:00 pm – 12:00 am", orders: [] },
-    { id: "anytime",   label: "Sin hora", range: "Por confirmar",       orders: [] },
-  ];
-  for (const o of dayOrders) {
-    const t = o.deliveryTime ?? "";
-    if (!t) { buckets[3].orders.push(o); continue; }
-    const h = parseInt(t.split(":")[0], 10);
-    if (h < 12)      buckets[0].orders.push(o);
-    else if (h < 18) buckets[1].orders.push(o);
-    else             buckets[2].orders.push(o);
-  }
+  const timed = allDayOrders.filter(o => !!o.deliveryTime);
+  const untimed = allDayOrders.filter(o => !o.deliveryTime);
+
+  // Posiciones con detección de overlaps para que se rendericen lado a lado
+  const positioned = timed.map(o => {
+    const min = timeToMinutes(o.deliveryTime)!;
+    const top = ((min / 60) - HOUR_START) * HOUR_PX;
+    return { order: o, top, minutes: min, lane: 0 };
+  }).sort((a, b) => a.minutes - b.minutes);
+
+  // Asignación simple de "lanes" para overlaps (cada pedido ocupa ~75 min visualmente)
+  const VISUAL_DURATION = 75;
+  positioned.forEach((p, i) => {
+    let lane = 0;
+    while (true) {
+      const conflict = positioned.slice(0, i).some(other =>
+        other.lane === lane && Math.abs(p.minutes - other.minutes) < VISUAL_DURATION
+      );
+      if (!conflict) break;
+      lane++;
+    }
+    p.lane = lane;
+  });
+  const maxLane = positioned.reduce((m, p) => Math.max(m, p.lane), 0);
+  const totalLanes = maxLane + 1;
+
+  // Línea de ahora
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const nowOffsetPx = ((nowMinutes / 60) - HOUR_START) * HOUR_PX;
+  const nowVisible = isToday && nowMinutes >= HOUR_START * 60 && nowMinutes <= (HOUR_END + 1) * 60;
 
   return (
     <div className="bg-white border border-[#ede8e0] rounded-2xl shadow-sm overflow-hidden">
@@ -640,39 +743,118 @@ function DayView({ cursor, byDate, onPickOrder, selectedOrderId }: {
         </div>
         <div className="text-right">
           <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold">Pedidos</p>
-          <p className="font-display text-2xl" style={{ color: PINK_SOLID }}>{dayOrders.length}</p>
+          <p className="font-display text-2xl" style={{ color: PINK_SOLID }}>{allDayOrders.length}</p>
         </div>
       </div>
 
-      {dayOrders.length === 0 ? (
+      {allDayOrders.length === 0 ? (
         <div className="px-5 py-16 text-center">
           <CalendarIcon size={36} className="mx-auto text-gray-200" />
           <p className="text-sm text-gray-400 mt-3">No hay pedidos para este día</p>
         </div>
       ) : (
-        <div className="divide-y divide-[#f0e8e0]">
-          {buckets.filter(b => b.orders.length > 0).map(b => (
-            <div key={b.id} className="px-5 py-4">
-              <div className="flex items-baseline gap-3 mb-3">
-                <h4 className="text-xs font-bold uppercase tracking-widest text-gray-700">{b.label}</h4>
-                <span className="text-[10px] text-gray-400">{b.range}</span>
-                <span className="text-[10px] text-gray-400 ml-auto">{b.orders.length} pedido{b.orders.length === 1 ? "" : "s"}</span>
-              </div>
-              <div className="space-y-2">
-                {b.orders.map(o => (
+        <>
+          {/* Banda de pedidos sin hora */}
+          {untimed.length > 0 && (
+            <div className="border-b border-[#ede8e0] bg-[#fefcf7] px-5 py-3">
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold mb-2">
+                Sin hora confirmada · {untimed.length}
+              </p>
+              <div className="flex flex-col gap-2">
+                {untimed.map(o => (
                   <DayRow key={o.id} order={o} active={o.id === selectedOrderId} onClick={() => onPickOrder(o.id)}/>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
+          )}
+
+          {/* Timeline */}
+          <div className="grid" style={{ gridTemplateColumns: "70px 1fr" }}>
+            {/* Columna de horas */}
+            <div className="border-r border-[#f0e8e0] bg-[#faf8f5]/50 relative" style={{ height: totalGridHeight }}>
+              {HOURS.map((h, i) => (
+                <div key={h} className="absolute left-0 right-0 px-3 text-right" style={{ top: i * HOUR_PX }}>
+                  <span className="text-[11px] font-semibold text-gray-500 tabular-nums">{fmtHourLabel(h)}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Lienzo del día */}
+            <div className="relative" style={{ height: totalGridHeight }}>
+              {/* Líneas horarias */}
+              {HOURS.map((h, i) => (
+                <div key={h} className="absolute left-0 right-0 border-t border-[#f5efe7]" style={{ top: i * HOUR_PX }}>
+                  {/* Marcadores de media hora */}
+                  <div className="absolute left-0 right-0 border-t border-dashed border-[#faf6ef]" style={{ top: HOUR_PX / 2 }}/>
+                </div>
+              ))}
+
+              {/* Línea de "ahora" */}
+              {nowVisible && (
+                <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ top: nowOffsetPx }}>
+                  <div className="relative">
+                    <div className="absolute -left-2 -top-2 w-4 h-4 rounded-full" style={{ background: PINK_SOLID, boxShadow: "0 0 0 4px #fef7f9" }}/>
+                    <div className="border-t-2" style={{ borderColor: PINK_SOLID }}/>
+                    <div className="absolute right-2 -top-2.5 text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: PINK_SOLID, color: "white" }}>
+                      {now.toLocaleTimeString("es-DO", { hour: "numeric", minute: "2-digit" }).toLowerCase()}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Eventos posicionados */}
+              {positioned.map(({ order, top, lane }) => {
+                if (top < 0 || top > totalGridHeight) return null;
+                const widthPct = 100 / totalLanes;
+                return (
+                  <div key={order.id} className="absolute"
+                    style={{
+                      top,
+                      left: `calc(${lane * widthPct}% + 8px)`,
+                      width: `calc(${widthPct}% - 16px)`,
+                    }}>
+                    <DayEventCard order={order} active={order.id === selectedOrderId} onClick={() => onPickOrder(order.id)}/>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
 // ──────────────────────────────────────────────────────────────
-// DayRow — fila ancha con info expandida para vista Día
+// DayEventCard — tarjeta posicionada absolutamente en el timeline
+// ──────────────────────────────────────────────────────────────
+function DayEventCard({ order, active, onClick }: { order: Order; active: boolean; onClick: () => void }) {
+  const s = STATUS[order.status] ?? STATUS.PENDING;
+  const time = order.deliveryTime ? fmt12h(order.deliveryTime) : "—";
+  return (
+    <button onClick={onClick}
+      className={`w-full text-left rounded-xl border transition-all overflow-hidden hover:shadow-md hover:-translate-y-px ${
+        active ? "ring-2 ring-[#f07097] ring-offset-1 shadow-md" : "shadow-sm"
+      }`}
+      style={{ background: s.bg, borderColor: s.border }}>
+      <div className="flex items-stretch">
+        <div className="w-1 shrink-0" style={{ background: s.dot }}/>
+        <div className="flex-1 min-w-0 px-2.5 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono font-bold tabular-nums text-[11px] shrink-0" style={{ color: s.color }}>{time}</span>
+            <span className="font-semibold text-xs truncate" style={{ color: s.color }}>{order.name}</span>
+          </div>
+          <p className="text-[11px] truncate capitalize" style={{ color: s.color, opacity: 0.85 }}>
+            {order.eventType}
+          </p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// DayRow — fila ancha (usado en banda "Sin hora")
 // ──────────────────────────────────────────────────────────────
 function DayRow({ order, active, onClick }: { order: Order; active: boolean; onClick: () => void }) {
   const s = STATUS[order.status] ?? STATUS.PENDING;
@@ -996,6 +1178,97 @@ function DetailPanel({ order, onClose, onPatch }: {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
       `}</style>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// MonthYearPicker — botón que abre un panel para saltar a cualquier mes/año
+// ──────────────────────────────────────────────────────────────
+function MonthYearPicker({ cursor, setCursor, label }: {
+  cursor: Date; setCursor: (d: Date) => void; label: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState(cursor.getFullYear());
+
+  // Cerrar con click afuera
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest("[data-myp]")) setOpen(false);
+    };
+    window.addEventListener("mousedown", onDoc);
+    return () => window.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) setPickerYear(cursor.getFullYear());
+  }, [open, cursor]);
+
+  const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const todayY = new Date().getFullYear();
+  const todayM = new Date().getMonth();
+
+  return (
+    <div className="relative ml-1 mr-auto" data-myp>
+      <button onClick={() => setOpen(o => !o)}
+        className="font-display text-base sm:text-lg capitalize px-2 py-1 rounded-lg hover:bg-[#fef7f9] transition flex items-center gap-1.5 text-gray-800">
+        {label}
+        <ChevronRight size={14} className={`text-gray-400 transition-transform ${open ? "rotate-90" : ""}`}/>
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-2 z-30 bg-white rounded-2xl border border-[#ede8e0] shadow-lg p-3 w-72 animate-[fadeIn_.12s_ease-out]">
+          {/* Year header */}
+          <div className="flex items-center justify-between mb-3">
+            <button onClick={() => setPickerYear(y => y - 1)} aria-label="Año anterior"
+              className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500">
+              <ChevronLeft size={15}/>
+            </button>
+            <span className="font-display text-lg font-semibold tabular-nums">{pickerYear}</span>
+            <button onClick={() => setPickerYear(y => y + 1)} aria-label="Año siguiente"
+              className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500">
+              <ChevronRight size={15}/>
+            </button>
+          </div>
+
+          {/* Month grid */}
+          <div className="grid grid-cols-3 gap-1.5">
+            {months.map((m, idx) => {
+              const isCurrent = pickerYear === cursor.getFullYear() && idx === cursor.getMonth();
+              const isToday = pickerYear === todayY && idx === todayM;
+              return (
+                <button key={m} onClick={() => {
+                    const d = new Date(pickerYear, idx, 1);
+                    setCursor(d);
+                    setOpen(false);
+                  }}
+                  className={`py-2 px-2 rounded-lg text-xs font-semibold transition ${
+                    isCurrent ? "text-white shadow-sm"
+                    : isToday ? "text-[#f07097] bg-[#fef7f9] border border-[#f07097]/40"
+                    : "text-gray-600 hover:bg-[#fef7f9]"
+                  }`}
+                  style={isCurrent ? { background: PINK_SOLID } : {}}>
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick links */}
+          <div className="mt-3 pt-3 border-t border-[#ede8e0] flex justify-between items-center text-[11px]">
+            <button onClick={() => {
+                const d = new Date(); d.setHours(0,0,0,0);
+                setCursor(d); setOpen(false);
+              }}
+              className="text-[#f07097] font-semibold hover:underline">
+              Ir a hoy
+            </button>
+            <span className="text-gray-400">Año actual: {todayY}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,41 +3,63 @@ import { jwtVerify } from "jose";
 
 const ALG = "HS256";
 
-async function isValid(token: string | undefined) {
-  if (!token) return false;
-  const authSecret = process.env.AUTH_SECRET ?? process.env.JWT_SECRET;
-  if (!authSecret) return false;
+async function decodeSession(token: string | undefined) {
+  if (!token) return null;
+  const authSecret = process.env.AUTH_SECRET;
+  if (!authSecret) return null;
   try {
     const secret = new TextEncoder().encode(authSecret);
-    await jwtVerify(token, secret);
-    return true;
+    const { payload } = await jwtVerify(token, secret);
+    return payload as { userId?: string; email?: string; name?: string; role?: string };
   } catch {
-    return false;
+    return null;
   }
 }
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("kanm_session")?.value;
-  const valid = await isValid(token);
+  const session = await decodeSession(token);
+  const isLogged = !!session?.userId;
+  const role = session?.role;
 
-  // Protect /admin/dashboard and admin write APIs
-  const isAdminPage = pathname.startsWith("/admin/dashboard");
+  // Rutas que requieren ser OWNER
+  const isOwnerOnly =
+    pathname.startsWith("/admin/usuarios") ||
+    pathname.startsWith("/api/users");
+
+  // Páginas y APIs protegidas (cualquier usuario logueado)
+  const isAdminPage = pathname.startsWith("/admin") && pathname !== "/admin/login";
   const isWriteApi =
     (pathname.startsWith("/api/products") && req.method !== "GET") ||
-    pathname.startsWith("/api/upload");
+    pathname.startsWith("/api/upload") ||
+    pathname.startsWith("/api/activity");
 
-  if ((isAdminPage || isWriteApi) && !valid) {
-    if (isWriteApi) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const isApiCall = pathname.startsWith("/api/");
+
+  // OWNER-only: bloquear si no es OWNER
+  if (isOwnerOnly && (!isLogged || role !== "OWNER")) {
+    if (!isLogged) {
+      if (isApiCall) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const url = req.nextUrl.clone();
+      url.pathname = "/admin/login";
+      return NextResponse.redirect(url);
     }
+    if (isApiCall) return NextResponse.json({ error: "Solo el dueño puede hacer esto" }, { status: 403 });
+    // página /admin/usuarios — la página misma muestra "acceso restringido"
+    // así que dejamos pasar para no causar loop con el dashboard
+  }
+
+  // Bloqueos generales
+  if ((isAdminPage || isWriteApi) && !isLogged) {
+    if (isApiCall) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);
   }
 
-  // If logged in and visiting login, redirect to dashboard
-  if (pathname === "/admin/login" && valid) {
+  // Si está logueado y va al login, mandar al dashboard
+  if (pathname === "/admin/login" && isLogged) {
     const url = req.nextUrl.clone();
     url.pathname = "/admin/dashboard";
     return NextResponse.redirect(url);
@@ -47,5 +69,11 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/products/:path*", "/api/upload"],
+  matcher: [
+    "/admin/:path*",
+    "/api/products/:path*",
+    "/api/upload",
+    "/api/users/:path*",
+    "/api/activity/:path*",
+  ],
 };

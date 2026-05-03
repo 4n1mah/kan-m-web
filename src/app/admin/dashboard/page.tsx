@@ -53,6 +53,8 @@ const ORDER_TABS = [
 type OrderTabId = typeof ORDER_TABS[number]["id"];
 
 const EVENT_TYPES = ["Cumpleaños","Boda / Compromiso","Baby shower","Corporativo","Graduación","Quinceañera","Otro"];
+// TODO: cuando se contraten más empleados, migrar a fetch de /api/bakers
+// y guardar en estado/contexto. Por ahora, lista fija.
 const BAKERS = ["Karolyn Sierra","Astrid Sierra"];
 const CATEGORIES = [
   {id:"cakes",label:"Pasteles"},{id:"desserts",label:"Postres"},
@@ -948,6 +950,7 @@ function OrderCard({ order,onClick,onQuickAction }:{
 }
 
 // ── Main Dashboard ─────────────────────────────────────────────
+type CurrentUser = { id: string; email: string; name: string; role: "OWNER"|"BAKER"|"ASSISTANT" };
 export default function Dashboard() {
   const router = useRouter();
   const [mainTab,setMainTab] = useState<"orders"|"catalog">("orders");
@@ -961,6 +964,8 @@ export default function Dashboard() {
   const [catFilter,setCatFilter] = useState("all");
   const [catSearch,setCatSearch] = useState("");
   const [productModal,setProductModal] = useState<{open:boolean;product:Product|null}>({open:false,product:null});
+  const [currentUser,setCurrentUser] = useState<CurrentUser|null>(null);
+  const [userMenuOpen,setUserMenuOpen] = useState(false);
   const { confirm,modal:confirmModal } = useConfirm();
   const { toasts,addToast,removeToast } = useToast();
   const prevPendingRef = useRef(0);
@@ -972,8 +977,15 @@ export default function Dashboard() {
     if(r.ok) setOrders(await r.json());
     setOrdersLoading(false);
   }
+  async function loadMe(){
+    const r = await fetch("/api/auth/me");
+    if (r.ok) {
+      const data = await r.json();
+      if (data.user) setCurrentUser(data.user);
+    }
+  }
 
-  useEffect(()=>{ load(); loadOrders(); },[]);
+  useEffect(()=>{ load(); loadOrders(); loadMe(); },[]);
 
   // Auto-refresh every 60s + browser tab title badge
   useEffect(()=>{
@@ -1050,13 +1062,82 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-4" style={{height:"3.75rem"}}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white text-sm font-bold" style={{color:"#e85d82"}}>K</div>
-            <div><p className="font-semibold text-sm leading-tight text-white">Kan M</p><p className="text-xs text-white/75 leading-tight">Panel de administración</p></div>
+            <div>
+              <p className="font-semibold text-sm leading-tight text-white">Kan M</p>
+              <p className="text-xs text-white/75 leading-tight">Panel de administración</p>
+            </div>
           </div>
-          <button onClick={logout} className="flex items-center gap-1.5 text-sm text-white/90 hover:text-white transition px-3 py-1.5 rounded-lg hover:bg-white/15"><LogOut size={14}/> Salir</button>
+
+          {/* User menu */}
+          <div className="relative">
+            <button
+              onClick={()=>setUserMenuOpen(o=>!o)}
+              onBlur={()=>setTimeout(()=>setUserMenuOpen(false),150)}
+              className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 transition text-white"
+              aria-label="Menú de usuario">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center bg-white text-xs font-bold" style={{color:"#e85d82"}}>
+                {currentUser ? currentUser.name.split(" ").map(s=>s[0]).join("").slice(0,2).toUpperCase() : "··"}
+              </div>
+              <div className="text-left hidden sm:block">
+                <p className="text-xs font-semibold leading-tight">{currentUser?.name ?? "Cargando…"}</p>
+                <p className="text-[10px] text-white/75 leading-tight">
+                  {currentUser?.role === "OWNER" ? "Dueña" : currentUser?.role === "BAKER" ? "Repostera" : currentUser?.role === "ASSISTANT" ? "Asistente" : ""}
+                </p>
+              </div>
+              <ChevronRight size={13} className={`transition-transform ${userMenuOpen?"rotate-90":""}`}/>
+            </button>
+
+            {userMenuOpen && currentUser && (
+              <div className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl border border-[#ede8e0] shadow-xl overflow-hidden z-50 animate-[fadeIn_.12s_ease-out]"
+                onMouseDown={e=>e.preventDefault()}>
+                <div className="px-4 py-3 border-b border-[#ede8e0] bg-[#faf8f5]">
+                  <p className="font-semibold text-sm text-gray-800">{currentUser.name}</p>
+                  <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
+                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+                    style={{background:"#fef7f9", color:"#e85d82"}}>
+                    {currentUser.role === "OWNER" ? "Dueña" : currentUser.role === "BAKER" ? "Repostera" : "Asistente"}
+                  </span>
+                </div>
+                <div className="py-1.5">
+                  {currentUser.role === "OWNER" && (
+                    <Link href="/admin/usuarios"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-[#fef7f9] hover:text-[#f07097] transition">
+                      <User size={14}/> Gestión de usuarios
+                    </Link>
+                  )}
+                  <button onClick={logout}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition text-left">
+                    <LogOut size={14}/> Cerrar sesión
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* Bienvenida personalizada */}
+        {currentUser && (
+          <div className="mb-5 flex items-baseline justify-between flex-wrap gap-2">
+            <div>
+              <h1 className="font-display text-2xl sm:text-3xl text-gray-900">
+                Hola, <span style={{color:"#e85d82"}}>{currentUser.name.split(" ")[0]}</span> 👋
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5">
+                {pendingCount > 0
+                  ? `Tienes ${pendingCount} pedido${pendingCount===1?"":"s"} sin atender.`
+                  : orders.length === 0
+                    ? "Aún no hay pedidos. Cuando lleguen los verás aquí."
+                    : "Todo al día. Buen trabajo ✨"}
+              </p>
+            </div>
+            <p className="text-xs text-gray-400 tabular-nums">
+              {new Date().toLocaleDateString("es-DO", { weekday:"long", day:"numeric", month:"long" })}
+            </p>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[

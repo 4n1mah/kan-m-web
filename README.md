@@ -1,117 +1,120 @@
 # Kan M — Repostería y Catering
 
-Boutique bakery & catering site for **Kan M Repostería y Catering** (República Dominicana).
+Sitio web público + panel de administración para Kan M Repostería y Catering. Incluye catálogo, formulario de cotización, calendario de pedidos y reportes.
 
-**Stack:** Next.js 14 (App Router) · TypeScript · Tailwind CSS · Prisma · SQLite
+## Stack
 
-## Features
+- **Framework**: Next.js 14 (App Router) + TypeScript
+- **Estilos**: Tailwind CSS + variables CSS personalizadas
+- **Base de datos**: Neon (Postgres serverless) + Prisma 5
+- **Almacenamiento de imágenes**: Cloudinary
+- **Auth**: JWT (jose) en cookie httpOnly + bcrypt para contraseñas
+- **Hosting**: Vercel
 
-- Public site: Inicio, Catálogo, Catering, Nosotros, Contacto
-- Sticky blurred header, hero, product cards, testimonials, footer, floating WhatsApp FAB
-- Brand color override: **#f17097**
-- All CTAs prefill WhatsApp messages (number: **829-610-7064**)
-- Admin panel at `/admin` (email + password from `.env`) with full product CRUD
-- Catalog reads dynamically from SQLite — admin changes appear instantly
-- JWT session via httpOnly cookie (`jose`); routes protected by Next.js middleware
-- Zod validation on every API endpoint
-
-## Quick start
+## Setup en desarrollo
 
 ```bash
-# 1. Install
+# 1. Instalar dependencias
 npm install
 
-# 2. Configure env
-cp .env.example .env
-# Edit .env — set ADMIN_EMAIL, ADMIN_PASSWORD, AUTH_SECRET (>=32 chars)
-# Generate a secret: openssl rand -base64 32
+# 2. Configurar variables de entorno
+cp .env.example .env.local
+# Edita .env.local con tus valores reales (DB, Cloudinary, etc.)
 
-# 3. Create the SQLite database
-npx prisma migrate dev --name init
+# 3. Aplicar el schema a la base de datos
+npx prisma db push
 
-# 4. Seed sample products (optional)
-npm run db:seed
+# 4. Crear el primer usuario OWNER
+ADMIN_EMAIL=tu@correo.com ADMIN_NAME="Tu Nombre" ADMIN_PASSWORD=miclavefuerte \
+  npx tsx scripts/seed-owner.ts
 
-# 5. Run dev server
+# 5. Levantar el dev server
 npm run dev
 ```
 
-Visit **http://localhost:3000** for the site, **http://localhost:3000/admin** for the panel.
+Abre http://localhost:3000 para el sitio público y http://localhost:3000/admin/login para el panel.
 
-## Project structure
+## Estructura
 
 ```
 src/
-  app/
-    layout.tsx            # Root layout, fonts, navbar/footer/FAB
-    page.tsx              # Home
-    catalogo/page.tsx     # Catalog (reads /api/products)
-    catering/page.tsx
-    nosotros/page.tsx
-    contacto/page.tsx     # WhatsApp-prefill contact form
-    admin/
-      page.tsx            # Redirects to login or dashboard
-      login/page.tsx
-      dashboard/page.tsx  # Product CRUD UI
-    api/
-      auth/login/route.ts
-      auth/logout/route.ts
-      products/route.ts        # GET (public), POST (admin)
-      products/[id]/route.ts   # GET, PUT, DELETE
-  components/
-    Navbar.tsx
-    Footer.tsx
-    ProductCard.tsx
-    WhatsAppFab.tsx
-  lib/
-    db.ts                 # Prisma client singleton
-    auth.ts               # JWT session via jose + httpOnly cookie
-    whatsapp.ts           # wa.me link helper + canned messages
-  middleware.ts           # Protects /admin/dashboard + write APIs
-prisma/
-  schema.prisma           # Product model (SQLite)
-  seed.ts                 # Sample products
+├── app/
+│   ├── (public pages)        Inicio, catálogo, catering, cotizar, etc.
+│   ├── admin/
+│   │   ├── login/            Login (público)
+│   │   ├── dashboard/        Panel principal: pedidos + catálogo
+│   │   ├── calendario/       Vista mes/semana/día con timeline
+│   │   ├── reportes/         Métricas y export CSV
+│   │   └── usuarios/         (solo OWNER) gestión de usuarios y roles
+│   └── api/
+│       ├── auth/             Login, logout, /me
+│       ├── orders/           CRUD de pedidos + upload público
+│       ├── products/         CRUD de productos
+│       ├── upload/           Upload protegido (admin)
+│       ├── users/            (solo OWNER) gestión de usuarios
+│       ├── bakers/           Lista de reposteras activas
+│       └── activity/         Bitácora de cambios
+├── components/               Componentes compartidos
+├── lib/
+│   ├── auth.ts               Sesiones JWT, bcrypt, autorización
+│   ├── activityLog.ts        Helper para bitácora de cambios
+│   ├── rateLimit.ts          Rate limiter en memoria
+│   └── db.ts                 Singleton de Prisma
+└── middleware.ts             Protege /admin/* y APIs sensibles
 ```
 
-## Environment variables
+## Roles y permisos
 
-| Var | Purpose |
-|---|---|
-| `DATABASE_URL` | SQLite file path (`file:./dev.db`) |
-| `ADMIN_EMAIL` | Admin login email |
-| `ADMIN_PASSWORD` | Admin login password |
-| `AUTH_SECRET` | JWT signing secret (≥32 chars) |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Business WhatsApp (E.164, no `+`) |
+| Rol         | Pedidos | Catálogo | Reportes | Usuarios |
+|-------------|---------|----------|----------|----------|
+| `OWNER`     | ✅ todo | ✅ todo  | ✅ todo  | ✅ todo  |
+| `BAKER`     | ✅ todo | ✅ todo  | ✅ todo  | ❌       |
+| `ASSISTANT` | ✅ ver  | ✅ ver   | ✅ ver   | ❌       |
 
-## Deployment
+> Hoy `ASSISTANT` tiene los mismos permisos de lectura que `BAKER` para pedidos. Puedes ajustarlo en `src/lib/auth.ts` (`canEditAnyOrder`, etc.) y en los handlers de API.
 
-### Node hosts (recommended for SQLite)
+## Bitácora de cambios
 
-Works out of the box on **Railway, Render, Fly.io, a VPS** — anywhere with a real persistent filesystem. Set the env vars, run `npm run build`, then `npm start`.
+Cada acción importante (cambio de estado, edición de pedido, creación/eliminación de producto, login, gestión de usuarios) se registra en la tabla `ActivityLog` con quién hizo el cambio y cuándo. Se puede consultar desde `/api/activity?entityType=order&entityId=...`.
 
-### Vercel / Netlify (serverless) — important caveat
+## Variables de entorno
 
-Serverless platforms have **ephemeral filesystems**. The local `dev.db` file will not persist between deployments and may be wiped between cold starts. For these platforms, switch the Prisma datasource to a hosted database:
+Ver [`.env.example`](./.env.example) para la lista completa.
 
-- **Turso** (libSQL, SQLite-compatible, free tier) — recommended for SQLite continuity
-- **Neon / Supabase / PlanetScale** — Postgres / MySQL
+| Variable | Para qué |
+|----------|----------|
+| `DATABASE_URL` | Postgres pooled (Neon) |
+| `DATABASE_URL_UNPOOLED` | Postgres directo, para Prisma migrate |
+| `AUTH_SECRET` | Secreto JWT, ≥32 chars |
+| `CLOUDINARY_*` | Upload de imágenes |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número WhatsApp del negocio |
+| `NEXT_PUBLIC_SITE_URL` | URL pública del sitio |
 
-Edit `prisma/schema.prisma` provider + `DATABASE_URL` accordingly, then `npx prisma migrate deploy`.
+> Los antiguos `ADMIN_EMAIL` y `ADMIN_PASSWORD` ya **no se leen para login**. Solo se usan en el script `seed-owner.ts` para crear el primer usuario.
 
-## Admin usage
+## Deploy a producción
 
-1. Go to `/admin/login`
-2. Sign in with the credentials from `.env`
-3. Add / edit / delete products from the dashboard
-4. Changes appear immediately on `/catalogo` (the catalog uses `force-dynamic` fetch + client revalidation on mount)
+1. Conectar el repo de GitHub a Vercel
+2. Configurar **todas** las variables de entorno en Vercel → Settings → Environment Variables
+3. En Neon, asegurarse de tener un branch de producción separado del de desarrollo
+4. Ejecutar `npx prisma db push` apuntando al branch de producción
+5. Correr `seed-owner.ts` una vez para crear el primer OWNER
+6. Push a `main` → Vercel deploya automáticamente
 
-## Security notes
+## Mantenimiento operacional
 
-- Admin credentials are validated server-side; no localStorage or client-side checks
-- Sessions: signed JWT (HS256) in httpOnly, sameSite=lax cookie, 7-day expiry
-- All write endpoints validated with Zod and protected by middleware
-- For production, replace plain-text password comparison with bcrypt by hashing `ADMIN_PASSWORD` once and storing the hash; `bcryptjs` is already a dependency
+- **Olvidé mi contraseña**: si eres OWNER, otro OWNER puede restablecértela desde `/admin/usuarios`. Si solo hay un OWNER y se olvidó la contraseña, debes resetearla manualmente en la DB con bcrypt.
+- **Cambiar el número de WhatsApp**: editar `NEXT_PUBLIC_WHATSAPP_NUMBER` en Vercel y redeployar.
+- **Bitácora de cambios**: queda en la tabla `activity_log` indefinidamente. Si crece mucho, considera correr una limpieza anual.
 
-## License
+## Seguridad
 
-Private project for Kan M Repostería y Catering.
+- Contraseñas hasheadas con bcrypt (12 rounds)
+- Sesiones JWT firmadas (HS256) en cookie httpOnly + sameSite=lax + secure en prod
+- Rate limit en login (8/5min por IP), cotizaciones (10/10min), uploads (30/10min)
+- Headers HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy
+- Validación zod en todos los endpoints públicos
+- `next/image` restringido a Cloudinary y Unsplash
+- Comparación timing-safe del password (vía bcrypt)
+
+Para auditoría detallada, ver `AUDIT.md`.

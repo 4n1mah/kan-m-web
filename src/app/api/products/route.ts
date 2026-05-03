@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import { logActivity } from "@/lib/activityLog";
 
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -23,12 +25,22 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Auth enforced in middleware
+  // Auth enforced en middleware, pero igual leemos session para el log
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = await req.json().catch(() => null);
   const parsed = productSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const created = await prisma.product.create({ data: parsed.data });
+  await logActivity({
+    user: session,
+    action: "product.create",
+    entityType: "product",
+    entityId: created.id,
+    metadata: { name: created.name, category: created.category },
+  });
   return NextResponse.json(created, { status: 201 });
 }

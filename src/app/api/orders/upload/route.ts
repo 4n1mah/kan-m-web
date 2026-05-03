@@ -2,6 +2,7 @@
 // The admin upload at /api/upload is protected by middleware
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg", "image/jpg", "image/png", "image/webp",
@@ -23,6 +24,16 @@ async function detectMime(file: File): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 30 imágenes cada 10 min por IP
+  const ip = getClientIp(req);
+  const rl = rateLimit({ key: `upload:${ip}`, limit: 30, windowMs: 10 * 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Has subido muchas imágenes. Por favor espera unos minutos." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   const formData = await req.formData().catch(() => null);
   if (!formData) return NextResponse.json({ error: "Solicitud inválida." }, { status: 400 });
 

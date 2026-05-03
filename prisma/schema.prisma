@@ -8,6 +8,50 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+enum UserRole {
+  OWNER     // Acceso total: usuarios, configuración, todo
+  BAKER     // Reposteras: pedidos y catálogo, sin gestión de usuarios
+  ASSISTANT // Empleados: pedidos asignados, lectura de catálogo
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  role         UserRole  @default(BAKER)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  activities   ActivityLog[]
+
+  @@map("users")
+  @@index([email])
+}
+
+// Bitácora de cambios — un registro por cada acción importante.
+// Permite responder "¿quién cambió qué y cuándo?" para pedidos, productos,
+// y usuarios sin meter todo dentro del JSON del recurso.
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String?  @map("user_id")  // null si fue acción del sistema
+  userName   String   @map("user_name") // copia denormalizada por si el user se borra
+  action     String   // "order.create", "order.status", "product.update", etc.
+  entityType String   @map("entity_type") // "order" | "product" | "user"
+  entityId   String   @map("entity_id")
+  metadata   Json?    // cambios detallados, ej: { from: "PENDING", to: "CONFIRMED" }
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("activity_log")
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
 model Product {
   id          String   @id @default(cuid())
   name        String

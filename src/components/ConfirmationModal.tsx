@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { X, AlertTriangle, Trash2, Check } from "lucide-react";
 
 interface ConfirmationModalProps {
@@ -106,4 +107,51 @@ export function ConfirmationModal({
       </div>
     </div>
   );
+}
+
+// ──────────────────────────────────────────────────────────────
+// Hook reutilizable: devuelve { confirm, modal }.
+// `confirm()` es async y resuelve a boolean según la elección del usuario.
+// Renderizar `modal` en el JSX padre para que la confirmación funcione.
+// ──────────────────────────────────────────────────────────────
+type Icon = "delete" | "save" | "warning" | "confirm" | "danger";
+
+export function useConfirm() {
+  const [state, setState] = useState<{
+    open: boolean; title: string; message: string; confirmText: string;
+    isDestructive: boolean; icon: "delete" | "save" | "warning" | "confirm";
+    resolve: (v: boolean) => void;
+  }>({ open: false, title: "", message: "", confirmText: "Confirmar", isDestructive: false, icon: "confirm", resolve: () => {} });
+
+  const confirm = (opts: {
+    title: string; message: string; confirmText?: string;
+    isDestructive?: boolean; icon?: Icon;
+  }) => new Promise<boolean>(resolve => {
+    // "danger" es alias de delete + isDestructive
+    const isDanger = opts.icon === "danger";
+    setState({
+      open: true,
+      title: opts.title,
+      message: opts.message,
+      confirmText: opts.confirmText ?? "Confirmar",
+      isDestructive: opts.isDestructive ?? isDanger,
+      icon: isDanger ? "delete" : (opts.icon ?? "confirm") as "delete" | "save" | "warning" | "confirm",
+      resolve,
+    });
+  });
+
+  const modal = (
+    <ConfirmationModal
+      isOpen={state.open}
+      title={state.title}
+      message={state.message}
+      confirmText={state.confirmText}
+      cancelText="Cancelar"
+      isDestructive={state.isDestructive}
+      icon={state.icon}
+      onConfirm={() => { state.resolve(true); setState(s => ({ ...s, open: false })); }}
+      onCancel={() => { state.resolve(false); setState(s => ({ ...s, open: false })); }}
+    />
+  );
+  return { confirm, modal };
 }

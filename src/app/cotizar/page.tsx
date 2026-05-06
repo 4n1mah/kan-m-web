@@ -3,8 +3,9 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CalendarDays, Users, Cake, Sparkles, ArrowRight,
-  CheckCircle2, ImagePlus, X, Clock, ChevronUp, ChevronDown,
+  CheckCircle2, ImagePlus, X, Clock, ChevronUp, ChevronDown, AlertCircle,
 } from "lucide-react";
+import { formatDominicanPhone, validateDominicanPhone } from "@/lib/phone";
 
 const EVENT_TYPES = ["Cumpleaños","Boda / Compromiso","Baby shower","Corporativo","Graduación","Quinceañera","Otro"];
 const PRODUCT_CATEGORIES = [
@@ -92,7 +93,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
   today.setHours(0, 0, 0, 0); // Asegurar que sea media noche
   
   const minDate = new Date(today);
-  minDate.setDate(minDate.getDate() + 1); // Mañana
+  minDate.setDate(minDate.getDate() + 3); // Mínimo 3 días de antelación
   
   const maxDate = new Date(today);
   maxDate.setMonth(maxDate.getMonth() + 2); // 2 meses desde hoy
@@ -510,7 +511,7 @@ function CotizarForm() {
     setImagePreviews(p=>p.filter((_,idx)=>idx!==i));
   };
 
-  const isValid=!!(form.name.trim()&&form.phone.trim()&&form.eventType&&form.eventDate&&form.guestCount.trim());
+  const isValid=!!(form.name.trim()&&validateDominicanPhone(form.phone)&&form.eventType&&form.eventDate&&form.guestCount.trim());
 
   const handleSubmit=async()=>{
     if(!isValid||submitting)return;
@@ -586,7 +587,8 @@ function CotizarForm() {
                 <input type="text" placeholder="Tu nombre" value={form.name} onChange={e=>set("name",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
               </label>
               <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">WhatsApp / Teléfono <span className="text-[var(--rose)]">*</span></span>
-                <input type="tel" placeholder="+1 809 000 0000" value={form.phone} onChange={e=>set("phone",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+                <input type="tel" placeholder="809-000-0000" value={form.phone} onChange={e=>set("phone",formatDominicanPhone(e.target.value))} maxLength={12} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+                {form.phone.length>0&&!validateDominicanPhone(form.phone)&&<p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={11}/>Ingresa un número dominicano válido, ejemplo: 809-519-5688.</p>}
               </label>
               <label className="flex flex-col gap-1.5 sm:col-span-2"><span className="text-sm font-medium">Correo <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>
                 <input type="email" placeholder="tu@correo.com" value={form.email} onChange={e=>set("email",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
@@ -614,6 +616,7 @@ function CotizarForm() {
                 <label className="flex flex-col gap-1.5">
                   <span className="text-sm font-medium flex items-center gap-1.5"><CalendarDays size={15} className="text-[var(--rose)]"/> Fecha <span className="text-[var(--rose)]">*</span></span>
                   <DatePicker value={form.eventDate} onChange={(date) => set("eventDate", date)} />
+                  <p className="text-xs text-amber-600 flex items-center gap-1 -mt-0.5"><AlertCircle size={11}/>Mínimo 3 días de antelación</p>
                 </label>
                 <label className="flex flex-col gap-1.5">
                   <span className="text-sm font-medium flex items-center gap-1.5"><Clock size={15} className="text-[var(--rose)]"/> Hora de entrega <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>

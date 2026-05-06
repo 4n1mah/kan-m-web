@@ -27,10 +27,17 @@ export async function POST(req: NextRequest) {
   }
   const { email, password } = parsed.data;
 
-  const user = await verifyCredentials(email, password);
-  if (!user) {
+  const result = await verifyCredentials(email, password);
+  if (result === "LOCKED") {
+    return NextResponse.json(
+      { error: "Esta cuenta está bloqueada por varios intentos fallidos. Contacta a la dueña para desbloquearla." },
+      { status: 403 }
+    );
+  }
+  if (!result) {
     return NextResponse.json({ error: "Correo o contraseña incorrectos" }, { status: 401 });
   }
+  const user = result;
 
   await createSession({
     userId: user.id,

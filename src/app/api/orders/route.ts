@@ -3,6 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
+import { validateDominicanPhone } from "@/lib/phone";
+import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
 
 async function isAuthed() {
   const session = await getSession();
@@ -29,8 +31,10 @@ export async function GET() {
 // Limita longitudes para evitar abuso por payloads gigantes.
 const newOrderSchema = z.object({
   name: z.string().trim().min(2).max(80),
-  phone: z.string().trim().min(7).max(30)
-    .regex(/^[+\d\s\-()]+$/, "Teléfono inválido"),
+  phone: z.string().trim().refine(
+    (v) => validateDominicanPhone(v),
+    { message: "Ingresa un número dominicano válido, ejemplo: 809-519-5688." }
+  ),
   email: z.string().trim().max(120).email().optional().or(z.literal("")).nullable(),
   eventType: z.string().trim().min(2).max(60),
   eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha debe ser YYYY-MM-DD"),
@@ -38,7 +42,10 @@ const newOrderSchema = z.object({
   selectedItems: z.array(z.string().max(120)).max(40).optional(),
   cakeDetails: z.record(z.any()).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
-  imageUrls: z.array(z.string().url().max(500)).max(20).optional(),
+  imageUrls: z.array(z.string().url().max(500).refine(
+    (v) => isAllowedCloudinaryImageUrl(v),
+    { message: "Las imagenes deben ser URLs validas de Cloudinary" }
+  )).max(20).optional(),
   deliveryTime: z.string().regex(/^\d{2}:\d{2}$/).optional().nullable().or(z.literal("")),
   deliveryMethod: z.enum(["pickup", "delivery"]).optional().nullable().or(z.literal("")),
 });
@@ -61,10 +68,20 @@ export async function POST(req: NextRequest) {
   }
   const data = parsed.data;
 
-  // Sanity check sobre la fecha del evento (no más de 2 años en el futuro)
-  const eventDateMs = new Date(data.eventDate + "T00:00:00").getTime();
+  // Validar que la fecha sea al menos today + 3 días (zona horaria RD = UTC-4)
+  const nowRD = new Date(Date.now() - 4 * 3600_000);
+  const todayRD = new Date(nowRD.toISOString().slice(0, 10) + "T00:00:00");
+  const minDate = new Date(todayRD);
+  minDate.setDate(minDate.getDate() + 3);
+  const eventDateObj = new Date(data.eventDate + "T00:00:00");
+  if (isNaN(eventDateObj.getTime()) || eventDateObj < minDate) {
+    return NextResponse.json(
+      { error: "Los pedidos personalizados deben realizarse con un mínimo de 3 días de antelación." },
+      { status: 400 }
+    );
+  }
   const twoYears = 2 * 365 * 86400_000;
-  if (isNaN(eventDateMs) || eventDateMs > Date.now() + twoYears) {
+  if (eventDateObj.getTime() > Date.now() + twoYears) {
     return NextResponse.json({ error: "Fecha del evento inválida" }, { status: 400 });
   }
 

@@ -19,6 +19,7 @@ async function detectMime(file: File): Promise<string> {
   if (buf[0]===0xff && buf[1]===0xd8) return "image/jpeg";
   if (buf[0]===0x89 && buf[1]===0x50) return "image/png";
   if (buf[0]===0x47 && buf[1]===0x49) return "image/gif";
+  if (buf[0]===0x52 && buf[1]===0x49 && buf[8]===0x57 && buf[9]===0x45) return "image/webp";
   if (buf[4]===0x66 && buf[5]===0x74) return "image/heic";
   return file.type || "image/jpeg";
 }

@@ -21,7 +21,7 @@ export async function GET() {
     orderBy: [{ active: "desc" }, { createdAt: "desc" }],
     select: {
       id: true, email: true, name: true, role: true,
-      active: true, lastLoginAt: true, createdAt: true,
+      active: true, lastLoginAt: true, lockedUntil: true, createdAt: true,
     },
   });
   return NextResponse.json(users);

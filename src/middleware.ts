@@ -34,6 +34,7 @@ export async function middleware(req: NextRequest) {
     (pathname.startsWith("/api/products") && req.method !== "GET") ||
     pathname.startsWith("/api/upload") ||
     pathname.startsWith("/api/activity");
+  const isAdminApi = pathname.startsWith("/api/admin/");
 
   const isApiCall = pathname.startsWith("/api/");
 
@@ -50,8 +51,19 @@ export async function middleware(req: NextRequest) {
     // así que dejamos pasar para no causar loop con el dashboard
   }
 
+  // ASSISTANT: solo puede acceder a pedidos y calendario.
+  // Reportes y catálogo son exclusivos de OWNER y BAKER.
+  if (isLogged && role === "ASSISTANT") {
+    const blocked = pathname.startsWith("/admin/reportes");
+    if (blocked) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/admin/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Bloqueos generales
-  if ((isAdminPage || isWriteApi) && !isLogged) {
+  if ((isAdminPage || isWriteApi || isAdminApi) && !isLogged) {
     if (isApiCall) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";
@@ -75,5 +87,6 @@ export const config = {
     "/api/upload",
     "/api/users/:path*",
     "/api/activity/:path*",
+    "/api/admin/:path*",
   ],
 };

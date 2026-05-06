@@ -15,15 +15,17 @@ enum UserRole {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  name         String
-  role         UserRole  @default(BAKER)
-  active       Boolean   @default(true)
-  lastLoginAt  DateTime? @map("last_login_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  passwordHash        String    @map("password_hash")
+  name                String
+  role                UserRole  @default(BAKER)
+  active              Boolean   @default(true)
+  lastLoginAt         DateTime? @map("last_login_at")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
   activities   ActivityLog[]
 
@@ -52,17 +54,25 @@ model ActivityLog {
   @@index([createdAt])
 }
 
+enum ProductAvailabilityStatus {
+  AVAILABLE
+  OUT_OF_STOCK
+  HIDDEN
+}
+
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  category    String
-  imageUrl    String   @map("image_url")
-  price       Float?
-  createdAt   DateTime @default(now()) @map("created_at")
+  id                 String                    @id @default(cuid())
+  name               String
+  description        String
+  category           String
+  imageUrl           String                    @map("image_url")
+  price              Float?
+  availabilityStatus ProductAvailabilityStatus @default(AVAILABLE) @map("availability_status")
+  createdAt          DateTime                  @default(now()) @map("created_at")
 
   @@map("products")
   @@index([category])
+  @@index([availabilityStatus])
 }
 
 enum OrderStatus {
@@ -99,6 +109,48 @@ model Order {
   createdAt     DateTime    @default(now()) @map("created_at")
 
   @@map("orders")
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ── Cart Orders ───────────────────────────────────────────────
+// Órdenes generadas desde el carrito del catálogo público.
+// Separadas del modelo Order (cotizaciones) para no mezclar flujos.
+
+enum CartOrderStatus {
+  PENDING
+  CONFIRMED
+  DENIED
+  SENT
+}
+
+enum FulfillmentMethod {
+  DINE_IN
+  PICKUP
+}
+
+enum ExternalSyncStatus {
+  NOT_SENT
+  SENT
+  FAILED
+}
+
+model CartOrder {
+  id                 String             @id @default(cuid())
+  code               String             @unique  // PED-XXXX
+  customerName       String             @map("customer_name")
+  customerPhone      String             @map("customer_phone")
+  fulfillmentMethod  FulfillmentMethod  @map("fulfillment_method")
+  items              Json               // snapshot: [{ id, name, price, quantity, category }]
+  subtotal           Float
+  total              Float
+  receiptImageUrl    String             @map("receipt_image_url")
+  status             CartOrderStatus    @default(PENDING)
+  externalSyncStatus ExternalSyncStatus @default(NOT_SENT) @map("external_sync_status")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  @@map("cart_orders")
   @@index([status])
   @@index([createdAt])
 }

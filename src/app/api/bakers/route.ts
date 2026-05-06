@@ -1,5 +1,5 @@
 // Endpoint para que cualquier usuario logueado obtenga la lista de
-// reposteras + dueñas activas. Útil para llenar dropdowns de "asignar a".
+// miembros del equipo asignables. Incluye OWNER, BAKER y ASSISTANT.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
@@ -11,10 +11,10 @@ export async function GET() {
   const users = await prisma.user.findMany({
     where: {
       active: true,
-      role: { in: ["OWNER", "BAKER"] },
+      role: { in: ["OWNER", "BAKER", "ASSISTANT"] },
     },
     select: { id: true, name: true, role: true },
-    orderBy: { name: "asc" },
+    orderBy: [{ role: "asc" }, { name: "asc" }],
   });
 
   return NextResponse.json(users);

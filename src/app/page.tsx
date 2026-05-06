@@ -10,7 +10,11 @@ import RotatingFeatured from "@/components/RotatingFeatured";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const featured = await prisma.product.findMany({ take: 6, orderBy: { createdAt: "desc" } });
+  const featured = await prisma.product.findMany({
+    where: { availabilityStatus: "AVAILABLE" },
+    take: 6,
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <>
@@ -251,7 +255,7 @@ export default async function HomePage() {
                   </svg>
                   <span className="text-xs font-medium text-muted-foreground">Google Review</span>
                 </div>
-                <div className="font-display text-2xl leading-none" style={{ color: "#f07097" }}>"</div>
+                <div className="font-display text-2xl leading-none" style={{ color: "#f07097" }}>&quot;</div>
                 <p className="text-foreground/80 leading-relaxed mt-1 text-sm">{t.q}</p>
                 <div className="border-t border-[var(--border)]/60 mt-5 pt-4">
                   <div className="font-semibold text-sm">{t.n}</div>

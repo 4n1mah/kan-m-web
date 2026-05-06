@@ -2,7 +2,7 @@
 // ─────────────────────────────────────────────────────────────
 //  /admin/calendario — Vista de Calendario
 //
-//  • Toggle Mes / Semana
+//  • Toggle Mes / Semana / Día
 //  • Hora + cliente + tipo de evento en cada celda
 //  • Slide-over lateral con detalles y acciones rápidas
 //  • Filtros: repostera, estado, búsqueda
@@ -15,6 +15,7 @@ import {
   X, Search, MessageCircle, Phone, MapPin, Clock, User as UserIcon,
   CheckCircle2, Truck, Sparkles, Package, AlertCircle,
 } from "lucide-react";
+import { BakersProvider, useBakers } from "@/components/BakersContext";
 
 // ── Types ─────────────────────────────────────────────────────
 type Order = {
@@ -38,10 +39,11 @@ type Order = {
   createdAt: string;
 };
 
+type CurrentUser = { userId: string; name: string; email?: string; role: string };
+
 // ── Constants ─────────────────────────────────────────────────
 const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
 const PINK_SOLID = "#f07097";
-const BAKERS = ["Karolyn Sierra", "Astrid Sierra"] as const;
 
 const STATUS: Record<string, { label: string; color: string; bg: string; dot: string; border: string; emoji: string }> = {
   PENDING:   { label: "Nuevo",       color: "#92400e", bg: "#fef3c7", dot: "#f59e0b", border: "#fcd34d", emoji: "🆕" },
@@ -110,8 +112,18 @@ function stepCursor(d: Date, view: "month"|"week"|"day", direction: -1 | 1) {
 
 // ── Component ─────────────────────────────────────────────────
 export default function CalendarioPage() {
+  return (
+    <BakersProvider>
+      <CalendarioInner />
+    </BakersProvider>
+  );
+}
+
+function CalendarioInner() {
+  const { bakers } = useBakers();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [view, setView] = useState<"month"|"week"|"day">("month");
   const [cursor, setCursor] = useState<Date>(() => { const d = new Date(); d.setHours(0,0,0,0); return d; });
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -119,6 +131,13 @@ export default function CalendarioPage() {
   const [bakerFilter, setBakerFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [hideCancelled, setHideCancelled] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.ok ? r.json() : null)
+      .then(u => { if (u?.userId) setCurrentUser(u); })
+      .catch(() => {});
+  }, []);
 
   const loadOrders = useCallback(async () => {
     try {
@@ -338,7 +357,7 @@ export default function CalendarioPage() {
             className="px-3 py-1.5 rounded-lg border border-[#ede8e0] bg-[#faf8f5] text-xs font-medium text-gray-600 focus:outline-none focus:border-[#f07097] focus:bg-white transition cursor-pointer">
             <option value="ALL">👩‍🍳 Todas</option>
             <option value="UNASSIGNED">Sin asignar</option>
-            {BAKERS.map(b => <option key={b} value={b}>{b.split(" ")[0]}</option>)}
+            {bakers.map(b => <option key={b} value={b}>{b.split(" ")[0]}</option>)}
           </select>
 
           {/* Status filter */}
@@ -391,7 +410,7 @@ export default function CalendarioPage() {
       </div>
 
       {/* Slide-over detail panel */}
-      <DetailPanel order={selectedOrder} onClose={() => setSelectedOrderId(null)} onPatch={patchOrder}/>
+      <DetailPanel order={selectedOrder} onClose={() => setSelectedOrderId(null)} onPatch={patchOrder} currentUser={currentUser}/>
 
       {/* Animaciones globales del calendario */}
       <style jsx global>{`
@@ -937,9 +956,22 @@ function OrderChip({ order, onClick, compact = false, active = false }: {
 // ──────────────────────────────────────────────────────────────
 // DetailPanel — slide-over con info + acciones rápidas
 // ──────────────────────────────────────────────────────────────
-function DetailPanel({ order, onClose, onPatch }: {
+function DetailPanel({ order, onClose, onPatch, currentUser }: {
   order: Order | null; onClose: () => void; onPatch: (id: string, payload: Record<string, unknown>) => Promise<void>;
+  currentUser: CurrentUser | null;
 }) {
+  const { bakers, teamMembers } = useBakers();
+  const isAssistant = currentUser?.role === "ASSISTANT";
+
+  // Compute who this user can assign orders to
+  const assignableNames: string[] = isAssistant
+    ? []
+    : currentUser?.role === "BAKER"
+    ? [
+        currentUser.name,
+        ...teamMembers.filter(m => m.role === "ASSISTANT").map(m => m.name),
+      ]
+    : teamMembers.map(m => m.name); // OWNER sees everyone
   useEffect(() => {
     if (!order) return;
     const prev = document.body.style.overflow;
@@ -1083,19 +1115,23 @@ function DetailPanel({ order, onClose, onPatch }: {
                   </span>
                   <span className="text-sm font-medium text-gray-800">{order.assignedTo}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  {BAKERS.filter(b => b !== order.assignedTo).map(b => (
-                    <button key={b} onClick={() => onPatch(order.id, { assignedTo: b })}
-                      title={`Reasignar a ${b}`}
-                      className="text-[10px] px-2 py-1 rounded-lg text-gray-500 hover:text-[#f07097] hover:bg-white transition">
-                      ↪ {b.split(" ")[0]}
-                    </button>
-                  ))}
-                </div>
+                {!isAssistant && (
+                  <div className="flex items-center gap-1">
+                    {assignableNames.filter(b => b !== order.assignedTo).map(b => (
+                      <button key={b} onClick={() => onPatch(order.id, { assignedTo: b })}
+                        title={`Reasignar a ${b}`}
+                        className="text-[10px] px-2 py-1 rounded-lg text-gray-500 hover:text-[#f07097] hover:bg-white transition">
+                        ↪ {b.split(" ")[0]}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
+            ) : isAssistant ? (
+              <p className="text-sm text-gray-400 italic px-1">Sin asignar</p>
             ) : (
               <div className="grid grid-cols-2 gap-2">
-                {BAKERS.map(b => (
+                {assignableNames.map(b => (
                   <button key={b} onClick={() => onPatch(order.id, { assignedTo: b })}
                     className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-[#ede8e0] text-xs font-medium text-gray-500 hover:text-[#f07097] hover:border-[#f07097] hover:bg-[#fef7f9] transition">
                     <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ background: PINK }}>
@@ -1127,7 +1163,7 @@ function DetailPanel({ order, onClose, onPatch }: {
         </div>
 
         <div className="border-t border-[#ede8e0] bg-white p-4 space-y-2">
-          {isPending && (
+          {isPending && !isAssistant && (
             <div className="grid grid-cols-3 gap-2">
               <button onClick={() => onPatch(order.id, { status: "CONFIRMED", changedBy: order.assignedTo ?? "Admin" })}
                 className="flex flex-col items-center justify-center gap-1 px-2 py-2.5 rounded-xl text-white font-semibold text-xs hover:opacity-90 transition"
@@ -1146,14 +1182,14 @@ function DetailPanel({ order, onClose, onPatch }: {
               </button>
             </div>
           )}
-          {isActive && (
+          {isActive && !isAssistant && (
             <button onClick={() => onPatch(order.id, { status: "COMPLETED", changedBy: order.assignedTo ?? "Admin" })}
               className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition"
               style={{ background: "linear-gradient(135deg,#3b82f6,#1d4ed8)" }}>
               <CheckCircle2 size={15}/> Marcar listo
             </button>
           )}
-          {isCompleted && (
+          {isCompleted && !isAssistant && (
             <button onClick={() => onPatch(order.id, { status: "DELIVERED", changedBy: order.assignedTo ?? "Admin" })}
               className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition"
               style={{ background: "linear-gradient(135deg,#059669,#047857)" }}>

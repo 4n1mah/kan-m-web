@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession, hashPassword, canManageUsers } from "@/lib/auth";
@@ -18,6 +19,7 @@ const patchSchema = z.object({
   role: z.enum(["OWNER", "BAKER", "ASSISTANT"]).optional(),
   active: z.boolean().optional(),
   newPassword: z.string().min(8).max(200).optional(),
+  unlock: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -41,12 +43,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data: Record<string, any> = {};
+  const data: Prisma.UserUpdateInput = {};
   if (parsed.data.name !== undefined) data.name = parsed.data.name;
   if (parsed.data.role !== undefined) data.role = parsed.data.role;
   if (parsed.data.active !== undefined) data.active = parsed.data.active;
   if (parsed.data.newPassword) data.passwordHash = await hashPassword(parsed.data.newPassword);
+  if (parsed.data.unlock) {
+    data.failedLoginAttempts = 0;
+    data.lockedUntil = null;
+  }
 
   const updated = await prisma.user.update({
     where: { id: params.id },

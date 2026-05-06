@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { canEditCatalog, getSession } from "@/lib/auth";
 
 const MAX_SIZE_MB = 10;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
@@ -30,13 +31,20 @@ async function detectMimeFromBuffer(file: File): Promise<string> {
   if (buf[0] === 0xff && buf[1] === 0xd8) return "image/jpeg";
   if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return "image/png";
   if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return "image/gif";
-  if (buf[0] === 0x52 && buf[4] === 0x57 && buf[5] === 0x45 && buf[6] === 0x42) return "image/webp";
+  // WebP: "RIFF" at 0-3, "WEBP" at 8-11
+  if (buf[0] === 0x52 && buf[1] === 0x49 && buf[8] === 0x57 && buf[9] === 0x45) return "image/webp";
   // HEIC/HEIF: ftyp box at offset 4
   if (buf[4] === 0x66 && buf[5] === 0x74 && buf[6] === 0x79 && buf[7] === 0x70) return "image/heic";
   return file.type || "application/octet-stream";
 }
 
 export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!canEditCatalog(session.role)) {
+    return NextResponse.json({ error: "Sin permisos para subir imagenes al catalogo" }, { status: 403 });
+  }
+
   const formData = await req.formData().catch(() => null);
   if (!formData) {
     return NextResponse.json({ error: "Solicitud inválida." }, { status: 400 });
@@ -53,13 +61,6 @@ export async function POST(req: NextRequest) {
     ALLOWED_TYPES.has(detectedType) ||
     ALLOWED_TYPES.has(file.type) ||
     isAllowedByExtension(file.name);
-
-  console.log("Upload attempt:", {
-    name: file.name,
-    reportedType: file.type,
-    detectedType,
-    sizeMB: Number((file.size / 1024 / 1024).toFixed(2)),
-  });
 
   if (!allowed) {
     return NextResponse.json(

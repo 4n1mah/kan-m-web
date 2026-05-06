@@ -2,6 +2,9 @@
 import { Suspense, useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import ProductCard, { Product } from "@/components/ProductCard";
+import { CartProvider } from "@/components/CartContext";
+import CartFab from "@/components/CartFab";
+import CartDrawer from "@/components/CartDrawer";
 
 const CATEGORIES = [
   { id: "all",       label: "Todo" },
@@ -89,17 +92,21 @@ function CatalogContent() {
 
 export default function CatalogPage() {
   return (
-    <section className="max-w-7xl mx-auto px-6 py-16">
-      <div className="text-center mb-10">
-        <p className="font-script text-2xl text-rose">nuestro catálogo</p>
-        <h1 className="font-display text-4xl md:text-5xl mt-1">Creaciones Kan M</h1>
-        <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-          Explora nuestra colección de pasteles, postres, mesas de dulces y picaderas para eventos.
-        </p>
-      </div>
-      <Suspense fallback={<p className="text-center text-muted-foreground py-10">Cargando…</p>}>
-        <CatalogContent />
-      </Suspense>
-    </section>
+    <CartProvider>
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <div className="text-center mb-10">
+          <p className="font-script text-2xl text-rose">nuestro catálogo</p>
+          <h1 className="font-display text-4xl md:text-5xl mt-1">Creaciones Kan M</h1>
+          <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
+            Explora nuestra colección de pasteles, postres, mesas de dulces y picaderas para eventos.
+          </p>
+        </div>
+        <Suspense fallback={<p className="text-center text-muted-foreground py-10">Cargando…</p>}>
+          <CatalogContent />
+        </Suspense>
+      </section>
+      <CartFab />
+      <CartDrawer />
+    </CartProvider>
   );
 }

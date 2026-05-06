@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { canDeleteOrders, canEditAnyOrder, getSession } from "@/lib/auth";
 import { logActivity } from "@/lib/activityLog";
+import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
+import { validateDominicanPhone } from "@/lib/phone";
 
 const VALID_STATUSES = ["PENDING","CONFIRMED","NEEDS_INFO","COMPLETED","DELIVERED","REJECTED","CANCELLED"];
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!canEditAnyOrder(session.role)) {
+    return NextResponse.json({ error: "Sin permisos para modificar pedidos" }, { status: 403 });
+  }
 
   const body = await req.json();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data: Record<string, any> = {};
+  const data: Record<string, unknown> = {};
   const changes: Record<string, { from: unknown; to: unknown }> = {};
 
   // Cargar el pedido actual para hacer diff y append en statusLog
-  const existing = await prisma.order.findUnique({ where: { id: params.id } }) as any;
-  if (!existing) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
+  const existingOrder = await prisma.order.findUnique({ where: { id: params.id } });
+  if (!existingOrder) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
+  const existing = existingOrder;
 
   if (body.status !== undefined) {
     if (!VALID_STATUSES.includes(body.status))
@@ -35,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   // Helper: solo asigna a `data` si el valor cambia, y registra en `changes`
-  function setIfChanged(field: string, newValue: unknown) {
+  function setIfChanged(field: keyof typeof existing & string, newValue: unknown) {
     const old = existing[field];
     const same = JSON.stringify(old ?? null) === JSON.stringify(newValue ?? null);
     if (!same) {
@@ -44,7 +50,23 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
-  if (body.assignedTo !== undefined)     setIfChanged("assignedTo", body.assignedTo || null);
+  // BAKER puede asignarse a sí misma o a cualquier ASSISTANT activo.
+  // OWNER puede asignar a cualquiera.
+  if (body.assignedTo !== undefined) {
+    if (session.role === "BAKER" && body.assignedTo && body.assignedTo !== session.name) {
+      const target = await prisma.user.findFirst({
+        where: { name: body.assignedTo, active: true, role: "ASSISTANT" },
+        select: { id: true },
+      });
+      if (!target) {
+        return NextResponse.json(
+          { error: "Solo puedes asignarte pedidos a ti misma o a asistentes." },
+          { status: 403 }
+        );
+      }
+    }
+    setIfChanged("assignedTo", body.assignedTo || null);
+  }
   if (body.internalNote !== undefined)   setIfChanged("internalNote", body.internalNote || null);
   if (body.agreedPrice !== undefined) {
     if (body.agreedPrice === "" || body.agreedPrice === null) {
@@ -74,14 +96,51 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: "Método de entrega inválido" }, { status: 400 });
     setIfChanged("deliveryMethod", body.deliveryMethod || null);
   }
-  if (body.name !== undefined)           setIfChanged("name", body.name);
-  if (body.phone !== undefined)          setIfChanged("phone", body.phone);
-  if (body.email !== undefined)          setIfChanged("email", body.email || null);
-  if (body.eventType !== undefined)      setIfChanged("eventType", body.eventType);
-  if (body.eventDate !== undefined)      setIfChanged("eventDate", body.eventDate);
+  if (body.imageUrls !== undefined) {
+    if (!Array.isArray(body.imageUrls))
+      return NextResponse.json({ error: "imageUrls debe ser un array" }, { status: 400 });
+    if (body.imageUrls.length > 20)
+      return NextResponse.json({ error: "Máximo 20 imágenes por pedido" }, { status: 400 });
+    if (!body.imageUrls.every((url: unknown) => typeof url === "string" && isAllowedCloudinaryImageUrl(url)))
+      return NextResponse.json({ error: "Las imagenes deben ser URLs validas de Cloudinary" }, { status: 400 });
+    setIfChanged("imageUrls", body.imageUrls);
+  }
+  if (body.name !== undefined) {
+    if (typeof body.name !== "string" || body.name.trim().length < 1 || body.name.length > 80)
+      return NextResponse.json({ error: "Nombre inválido (máximo 80 caracteres)" }, { status: 400 });
+    setIfChanged("name", body.name);
+  }
+  if (body.phone !== undefined) {
+    if (!validateDominicanPhone(body.phone))
+      return NextResponse.json({ error: "Teléfono inválido. Formato esperado: 809-000-0000" }, { status: 400 });
+    setIfChanged("phone", body.phone);
+  }
+  if (body.email !== undefined) {
+    if (body.email && (typeof body.email !== "string" || body.email.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)))
+      return NextResponse.json({ error: "Email inválido" }, { status: 400 });
+    setIfChanged("email", body.email || null);
+  }
+  if (body.eventType !== undefined) {
+    if (typeof body.eventType !== "string" || body.eventType.trim().length < 1 || body.eventType.length > 60)
+      return NextResponse.json({ error: "Tipo de evento inválido" }, { status: 400 });
+    setIfChanged("eventType", body.eventType);
+  }
+  if (body.eventDate !== undefined) {
+    if (typeof body.eventDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(body.eventDate))
+      return NextResponse.json({ error: "Fecha inválida (formato esperado: YYYY-MM-DD)" }, { status: 400 });
+    setIfChanged("eventDate", body.eventDate);
+  }
   if (body.deliveryTime !== undefined)   setIfChanged("deliveryTime", body.deliveryTime || null);
-  if (body.guestCount !== undefined)     setIfChanged("guestCount", body.guestCount);
-  if (body.notes !== undefined)          setIfChanged("notes", body.notes || null);
+  if (body.guestCount !== undefined) {
+    if (typeof body.guestCount !== "string" || body.guestCount.length > 20)
+      return NextResponse.json({ error: "Cantidad de invitados inválida" }, { status: 400 });
+    setIfChanged("guestCount", body.guestCount);
+  }
+  if (body.notes !== undefined) {
+    if (body.notes && (typeof body.notes !== "string" || body.notes.length > 2000))
+      return NextResponse.json({ error: "Notas demasiado largas (máximo 2000 caracteres)" }, { status: 400 });
+    setIfChanged("notes", body.notes || null);
+  }
 
   // Si nada cambió, no escribir y no loggear ruido
   if (Object.keys(data).length === 0) {
@@ -89,7 +148,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   try {
-    const order = await prisma.order.update({ where: { id: params.id }, data });
+    const order = await prisma.order.update({
+      where: { id: params.id },
+      data: data as Prisma.OrderUncheckedUpdateInput,
+    });
 
     // Log de actividad — separa cambios de estado vs cambios de datos
     if (changes.status) {
@@ -119,6 +181,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!canDeleteOrders(session.role)) {
+    return NextResponse.json({ error: "Solo OWNER puede eliminar pedidos" }, { status: 403 });
+  }
   try {
     await prisma.order.delete({ where: { id: params.id } });
     await logActivity({

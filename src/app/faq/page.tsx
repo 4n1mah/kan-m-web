@@ -9,11 +9,11 @@ import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 const FAQS = [
   {
     q: "¿Con cuánta anticipación debo hacer mi pedido?",
-    a: "Recomendamos hacer tu pedido con al menos 5 días de anticipación para pedidos regulares. Para eventos grandes como bodas o cumpleaños temáticos, lo ideal es contactarnos con 2 a 3 semanas de anticipación para garantizar disponibilidad y tiempo de personalización.",
+    a: "Recomendamos hacer tu pedido con al menos 3 días de anticipación para pedidos regulares. Para eventos grandes como bodas o cumpleaños temáticos, lo ideal es contactarnos con 1 a 2 semanas de anticipación para garantizar disponibilidad y tiempo de personalización.",
   },
   {
     q: "¿Hacen entregas a domicilio?",
-    a: "Sí, hacemos entregas en Santo Domingo y la Zona Colonial. El costo de entrega varía según la distancia. También puedes recoger tu pedido directamente en nuestra tienda sin costo adicional. Escríbenos por WhatsApp para coordinar.",
+    a: "Sí, hacemos entregas en Santo Domingo y la Zona Colonial. El minimo por envio son RD$250, aunque el costo de entrega puede aumentar según la distancia. También puedes recoger tu pedido directamente en nuestra tienda sin costo adicional.",
   },
   {
     q: "¿Pueden personalizar pasteles con fotos o diseños específicos?",

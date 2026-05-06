@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { DatePicker, TimePicker } from "@/components/DateTimePickers";
 import { ToastContainer, useToast } from "@/components/Toast";
+import { BakersProvider, useBakers, type TeamMember } from "@/components/BakersContext";
 import {
   Package, ClipboardList, LogOut, RefreshCw, Plus, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check,
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────
-type Product = { id: string; name: string; description: string; category: string; imageUrl: string; price: number | null; };
+type Product = { id: string; name: string; description: string; category: string; imageUrl: string; price: number | null; availabilityStatus?: "AVAILABLE" | "OUT_OF_STOCK" | "HIDDEN"; };
 type CakeDetail = { filling: string; masa: string; colors: string; message: string; size: string; };
 type StatusLogEntry = { status: string; by: string; at: string; };
 type Order = {
@@ -53,9 +54,9 @@ const ORDER_TABS = [
 type OrderTabId = typeof ORDER_TABS[number]["id"];
 
 const EVENT_TYPES = ["Cumpleaños","Boda / Compromiso","Baby shower","Corporativo","Graduación","Quinceañera","Otro"];
-// TODO: cuando se contraten más empleados, migrar a fetch de /api/bakers
-// y guardar en estado/contexto. Por ahora, lista fija.
-const BAKERS = ["Karolyn Sierra","Astrid Sierra"];
+// La lista de reposteras viene de /api/bakers (vía BakersContext) — los nombres
+// reales de usuarias activas con rol BAKER u OWNER. Si no hay ninguna creada
+// todavía, el contexto cae a un fallback hardcoded.
 const CATEGORIES = [
   {id:"cakes",label:"Pasteles"},{id:"desserts",label:"Postres"},
   {id:"events",label:"Mesa de dulces"},{id:"picaderas",label:"Picaderas"},
@@ -130,6 +131,7 @@ function useConfirm() {
 
 // ── Baker popup ───────────────────────────────────────────────
 function BakerPopup({ onSelect,onClose }:{ onSelect:(b:string)=>void; onClose:()=>void }) {
+  const { bakers } = useBakers();
   useEffect(()=>{
     const fn=(e:KeyboardEvent)=>{ if(e.key==="Escape") onClose(); };
     document.addEventListener("keydown",fn);
@@ -141,7 +143,7 @@ function BakerPopup({ onSelect,onClose }:{ onSelect:(b:string)=>void; onClose:()
         <h3 className="font-display text-xl mb-1">Asignar repostera</h3>
         <p className="text-sm text-gray-500 mb-5">¿Quién se encarga de este pedido?</p>
         <div className="space-y-2.5">
-          {BAKERS.map(b=>(
+          {bakers.map(b=>(
             <button key={b} onClick={()=>onSelect(b)}
               className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 border-[#f0e8e0] hover:border-[#f07097] hover:bg-[#fef7f9] transition text-left group">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0" style={{background:PINK}}>{b[0]}</div>
@@ -193,7 +195,12 @@ function ImgLightbox({ urls,startIdx,onClose }:{ urls:string[]; startIdx:number;
 // ── Product Modal ─────────────────────────────────────────────
 function ProductModal({ product,onClose,onSave,onDelete }:{ product:Product|null; onClose:()=>void; onSave:()=>void; onDelete?:(id:string)=>Promise<void>; }) {
   const isEdit = !!product;
-  const [form,setForm] = useState({ name:product?.name??"", description:product?.description??"", category:product?.category??"cakes", imageUrl:product?.imageUrl??"", price:product?.price?.toString()??"" });
+  const [form,setForm] = useState({
+    name:product?.name??"", description:product?.description??"",
+    category:product?.category??"cakes", imageUrl:product?.imageUrl??"",
+    price:product?.price?.toString()??"",
+    availabilityStatus:(product?.availabilityStatus??"AVAILABLE") as "AVAILABLE"|"OUT_OF_STOCK"|"HIDDEN",
+  });
   const [imgPreview,setImgPreview] = useState(product?.imageUrl??"");
   const [uploading,setUploading] = useState(false);
   const [uploadErr,setUploadErr] = useState("");
@@ -227,7 +234,7 @@ function ProductModal({ product,onClose,onSave,onDelete }:{ product:Product|null
     const ok = await confirm({ title:"Guardar cambios", message:`¿Confirmar ${isEdit?"los cambios en":"el nuevo producto"} "${form.name}"?`, confirmText:"Guardar", icon:"save" });
     if (!ok) return;
     setLoading(true);
-    const body={name:form.name,description:form.description,category:form.category,imageUrl:form.imageUrl,price:form.price===""?null:Number(form.price)};
+    const body={name:form.name,description:form.description,category:form.category,imageUrl:form.imageUrl,price:form.price===""?null:Number(form.price),availabilityStatus:form.availabilityStatus};
     const res=await fetch(isEdit?`/api/products/${product!.id}`:"/api/products",{method:isEdit?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     setLoading(false); if(!res.ok){alert("Error: "+await res.text());return;} onSave(); onClose();
   }
@@ -260,6 +267,16 @@ function ProductModal({ product,onClose,onSave,onDelete }:{ product:Product|null
                   {CATEGORIES.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></div>
               <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">Precio</label>
                 <input type="number" placeholder="RD$ (opcional)" value={form.price} onChange={e=>setForm({...form,price:e.target.value})} className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition"/></div>
+            </div>
+            {/* Availability toggle */}
+            <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">Disponibilidad</label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([["AVAILABLE","Disponible","#10b981"],["OUT_OF_STOCK","Sin stock","#f59e0b"],["HIDDEN","Oculto","#9ca3af"]] as const).map(([val,label,color])=>(
+                  <button key={val} type="button" onClick={()=>setForm({...form,availabilityStatus:val})}
+                    className={`px-2 py-2 rounded-xl text-xs font-semibold border-2 transition ${form.availabilityStatus===val?"border-transparent text-white":"border-[#ede8e0] text-gray-600 hover:border-gray-300"}`}
+                    style={form.availabilityStatus===val?{background:color}:{}}>{label}</button>
+                ))}
+              </div>
             </div>
             <div><label className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">Imagen</label>
               {imgPreview?(
@@ -424,11 +441,14 @@ function OrderEditModal({ order,onClose,onSave }:{ order:Order; onClose:()=>void
 }
 
 
-function OrderModal({ order,onClose,onUpdate,onDelete }:{
+function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
   order:Order; onClose:()=>void;
   onUpdate:(id:string,data:Partial<Order>)=>Promise<void>;
   onDelete:(id:string)=>Promise<void>;
+  currentUser: CurrentUser | null;
 }) {
+  const { bakers, teamMembers } = useBakers();
+  const isAssistant = currentUser?.role === "ASSISTANT";
   const [status,setStatus]         = useState(order.status);
   const [assigned,setAssigned]     = useState(order.assignedTo??"");
   const [internalNote,setNote]     = useState(order.internalNote??"");
@@ -443,6 +463,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
   const [pendingStatus,setPending]= useState<string|null>(null);
   const [showEdit,setShowEdit]   = useState(false);
   const [localOrder,setLocalOrder]= useState(order);
+  const [photoUploading,setPhotoUploading] = useState(false);
+  const photoFileRef = useRef<HTMLInputElement>(null);
   const { confirm,modal } = useConfirm();
 
   const imgs  = Array.isArray(localOrder.imageUrls) ? localOrder.imageUrls.filter(u=>typeof u==="string"&&u.startsWith("http")) : [];
@@ -469,7 +491,19 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
     setSaving(false);
   };
 
-  const handleAction = (newStatus:string) => { setPending(newStatus); setShowBaker(true); };
+  const handleAction = (newStatus:string) => {
+    if (currentUser?.role === "BAKER") {
+      // BAKER se auto-asigna — sin popup de selección
+      handleBakerSelectDirect(currentUser.name, newStatus);
+    } else {
+      setPending(newStatus); setShowBaker(true);
+    }
+  };
+  // Versión directa que no depende del estado pendingStatus
+  const handleBakerSelectDirect = async (baker:string, newStatus:string) => {
+    setStatus(newStatus); setAssigned(baker); setPending(null);
+    await doUpdate({ status:newStatus, assignedTo:baker||null, changedBy:baker||"Admin" } as any);
+  };
   const handleBakerSelect = async (baker:string) => {
     setShowBaker(false);
     const ns = pendingStatus??status;
@@ -521,6 +555,26 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
     onClose();
   };
 
+  const uploadPhoto = async (file: File) => {
+    setPhotoUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/admin/orders/upload", { method: "POST", body: fd });
+    setPhotoUploading(false);
+    if (!res.ok) return;
+    const { url } = await res.json().catch(() => ({}));
+    if (!url) return;
+    const newUrls = [...imgs, url];
+    await doUpdate({ imageUrls: newUrls });
+  };
+
+  const removePhoto = async (idx: number) => {
+    const ok = await confirm({ title:"Eliminar foto", message:"¿Eliminar esta imagen de referencia? No se puede deshacer.", confirmText:"Eliminar", isDestructive:true, icon:"delete" });
+    if (!ok) return;
+    const newUrls = imgs.filter((_, i) => i !== idx);
+    await doUpdate({ imageUrls: newUrls });
+  };
+
   // Mensaje de WhatsApp según estado del pedido
   const baker = assigned || "Kan M";
   const detalles = `*${localOrder.eventType}* el *${localOrder.eventDate}*${localOrder.deliveryTime?` a las ${fmt12h(localOrder.deliveryTime)}`:""}`;
@@ -553,7 +607,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
               <span className="text-xs text-gray-400">#{shortId(localOrder.id)}</span>
             </div>
             <div className="flex items-center gap-2">
-              {!isPending&&(
+              {!isPending&&!isAssistant&&(
                 <button onClick={()=>setShowEdit(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#ede8e0] text-xs font-medium text-gray-600 hover:bg-[#faf8f5] hover:border-[#f07097] transition">
                   <Edit3 size={13}/> Editar
                 </button>
@@ -617,7 +671,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                             <p><span className="font-medium text-gray-700">Relleno:</span> {cd.filling}</p>
                             <p><span className="font-medium text-gray-700">Tamaño:</span> {cd.size}</p>
                             {cd.colors&&<p><span className="font-medium text-gray-700">Colores:</span> {cd.colors}</p>}
-                            {cd.message&&<p className="col-span-2"><span className="font-medium text-gray-700">Mensaje:</span> "{cd.message}"</p>}
+                            {cd.message&&<p className="col-span-2"><span className="font-medium text-gray-700">Mensaje:</span> &quot;{cd.message}&quot;</p>}
                           </div>
                         )}
                       </div>
@@ -631,7 +685,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
             {localOrder.notes&&(
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5"><FileText size={11}/> Notas del cliente</p>
-                <div className="bg-[#faf8f5] rounded-2xl p-4 text-sm text-gray-600 italic leading-relaxed">"{localOrder.notes}"</div>
+                <div className="bg-[#faf8f5] rounded-2xl p-4 text-sm text-gray-600 italic leading-relaxed">&quot;{localOrder.notes}&quot;</div>
               </div>
             )}
 
@@ -648,15 +702,19 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                     <label className="text-xs text-gray-400 mb-1 block">Precio acordado</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">RD$</span>
-                      {priceEditing ? (
+                      {priceEditing && !isAssistant ? (
                         <input type="number" min={0} step={50} value={agreedPrice} onChange={e=>setPrice(e.target.value)}
                           autoFocus placeholder="0"
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#f07097]/30 bg-[#fef7f9] text-sm focus:outline-none focus:border-[#f07097] transition"/>
-                      ) : (
+                      ) : !isAssistant ? (
                         <button onClick={()=>setPriceEdit(true)}
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#ede8e0] bg-[#faf8f5] text-sm text-left hover:border-[#f07097]/40 transition">
                           <span className={agreedPrice?"text-gray-800 font-semibold":"text-gray-400"}>{agreedPrice||"Sin precio"}</span>
                         </button>
+                      ) : (
+                        <div className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#ede8e0] bg-[#faf8f5] text-sm">
+                          <span className={agreedPrice?"text-gray-800 font-semibold":"text-gray-400"}>{agreedPrice||"Sin precio"}</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -664,9 +722,15 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                     <label className="text-xs text-gray-400 mb-1 block">Depositado</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">RD$</span>
-                      <input type="number" min={0} step={50} value={depositAmount} onChange={e=>setDeposit(e.target.value)}
-                        placeholder="0"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#ede8e0] bg-[#faf8f5] text-sm focus:outline-none focus:border-[#f07097] transition"/>
+                      {isAssistant ? (
+                        <div className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#ede8e0] bg-[#faf8f5] text-sm">
+                          <span className={depositAmount?"text-gray-800 font-semibold":"text-gray-400"}>{depositAmount||"0"}</span>
+                        </div>
+                      ) : (
+                        <input type="number" min={0} step={50} value={depositAmount} onChange={e=>setDeposit(e.target.value)}
+                          placeholder="0"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#ede8e0] bg-[#faf8f5] text-sm focus:outline-none focus:border-[#f07097] transition"/>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -679,8 +743,10 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                       {id:"PARTIAL",label:"Anticipación recibida",color:"#1e40af",bg:"#dbeafe"},
                       {id:"PAID",   label:"Pagado",color:"#065f46",bg:"#d1fae5"},
                     ].map(ps=>(
-                      <button key={ps.id} type="button" onClick={async()=>{setPayment(ps.id);await doUpdate({paymentStatus:ps.id});}}
-                        className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition ${paymentStatus===ps.id?"border-transparent":"border-[#f0e8e0] hover:border-gray-300"}`}
+                      <button key={ps.id} type="button"
+                        onClick={isAssistant?undefined:async()=>{setPayment(ps.id);await doUpdate({paymentStatus:ps.id});}}
+                        disabled={isAssistant}
+                        className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition ${paymentStatus===ps.id?"border-transparent":"border-[#f0e8e0]"} ${!isAssistant?"hover:border-gray-300":""} disabled:cursor-default`}
                         style={paymentStatus===ps.id?{color:ps.color,background:ps.bg,borderColor:ps.color+"40"}:{color:ps.color,background:ps.bg+"80"}}>
                         {ps.label}
                       </button>
@@ -703,7 +769,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
             <div>
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 flex items-center gap-1.5"><StickyNote size={11}/> Nota interna</p>
-                {!noteEditing&&<button onClick={()=>setNoteEdit(true)} className="text-xs text-[#f07097] hover:underline flex items-center gap-1"><Edit3 size={11}/>{internalNote?"Editar":"Agregar"}</button>}
+                {!noteEditing&&!isAssistant&&<button onClick={()=>setNoteEdit(true)} className="text-xs text-[#f07097] hover:underline flex items-center gap-1"><Edit3 size={11}/>{internalNote?"Editar":"Agregar"}</button>}
               </div>
               {noteEditing?(
                 <div className="space-y-2">
@@ -716,11 +782,11 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                 </div>
               ):internalNote?(
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-900 leading-relaxed">{internalNote}</div>
-              ):(
+              ):(!isAssistant&&(
                 <button onClick={()=>setNoteEdit(true)} className="flex items-center gap-2 w-full px-4 py-3 rounded-xl border border-dashed border-[#ede8e0] text-xs text-gray-400 hover:text-[#f07097] hover:border-[#f07097]/40 transition">
                   <Plus size={13}/> Agregar nota interna
                 </button>
-              )}
+              ))}
             </div>
             )}
 
@@ -728,25 +794,37 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
                 <ImageIcon size={11}/> Fotos de referencia
-                {imgs.length>0&&<span className="font-normal normal-case tracking-normal">({imgs.length}) — clic para ampliar</span>}
+                {imgs.length>0&&<span className="font-normal normal-case tracking-normal">({imgs.length})</span>}
               </p>
-              {imgs.length>0?(
-                <div className="flex flex-wrap gap-2">
-                  {imgs.map((url,i)=>(
-                    <button key={i} onClick={()=>setLBIdx(i)} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-[#f0e8e0] hover:border-[#f07097] transition cursor-zoom-in group flex-shrink-0">
+              <div className="flex flex-wrap gap-2">
+                {imgs.map((url,i)=>(
+                  <div key={i} className="relative group/photo">
+                    <button onClick={()=>setLBIdx(i)} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-[#f0e8e0] hover:border-[#f07097] transition cursor-zoom-in flex-shrink-0 block">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" onError={e=>{(e.target as HTMLImageElement).style.display="none";}}/>
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <ImageIcon size={16} className="text-white drop-shadow"/>
-                      </div>
+                      <img src={url} alt="" className="w-full h-full object-cover transition-transform duration-200 group-hover/photo:scale-105" onError={e=>{(e.target as HTMLImageElement).style.display="none";}}/>
                     </button>
-                  ))}
-                </div>
-              ):(
-                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#faf8f5] border border-dashed border-[#e8ddd3] text-xs text-gray-400">
-                  <ImageIcon size={14}/> Sin imágenes de referencia
-                </div>
-              )}
+                    {currentUser?.role!=="ASSISTANT"&&(
+                      <button onClick={()=>removePhoto(i)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full items-center justify-center hidden group-hover/photo:flex hover:bg-red-600 transition z-10">
+                        <X size={10}/>
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {currentUser?.role!=="ASSISTANT"&&(
+                  <button onClick={()=>photoFileRef.current?.click()} disabled={photoUploading}
+                    className="w-20 h-20 rounded-xl border-2 border-dashed border-[#ede8e0] flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-[#f07097] hover:text-[#f07097] transition disabled:opacity-50 shrink-0">
+                    {photoUploading?<span className="text-[9px] text-center px-1 leading-tight">Subiendo…</span>:<><Plus size={18}/><span className="text-[10px]">Agregar</span></>}
+                  </button>
+                )}
+                {imgs.length===0&&currentUser?.role==="ASSISTANT"&&(
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#faf8f5] border border-dashed border-[#e8ddd3] text-xs text-gray-400">
+                    <ImageIcon size={14}/> Sin imágenes de referencia
+                  </div>
+                )}
+                <input ref={photoFileRef} type="file" accept="image/*" className="hidden"
+                  onChange={e=>{const f=e.target.files?.[0];if(f)uploadPhoto(f);e.target.value="";}}/>
+              </div>
             </div>
 
             {/* Status log */}
@@ -774,8 +852,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
             {/* Admin controls */}
             <div className="border-t border-[#f0e8e0] pt-5 space-y-4">
 
-              {/* PENDING → Accept / More info / Cancel */}
-              {isPending&&(
+              {/* PENDING → Accept / More info / Cancel — solo OWNER y BAKER */}
+              {isPending&&!isAssistant&&(
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Acción sobre el pedido</p>
                   <div className="flex gap-2 flex-wrap">
@@ -789,8 +867,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                 </div>
               )}
 
-              {/* ACTIVE → Mark ready */}
-              {isActive&&(
+              {/* ACTIVE → Mark ready — solo OWNER y BAKER */}
+              {isActive&&!isAssistant&&(
                 <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-blue-800">¿El pedido está listo?</p>
@@ -801,8 +879,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
                 </div>
               )}
 
-              {/* COMPLETED → Mark delivered */}
-              {isCompleted&&(
+              {/* COMPLETED → Mark delivered — solo OWNER y BAKER */}
+              {isCompleted&&!isAssistant&&(
                 <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-green-800">¿El pedido fue entregado?</p>
@@ -814,35 +892,72 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
               )}
 
               {/* Baker assignment (non-pending) */}
-              {!isPending&&(
+              {!isPending&&currentUser?.role==="OWNER"&&(
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5"><User size={11}/> Repostera asignada</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5"><User size={11}/> Asignada a</p>
                   <div className="flex gap-2 flex-wrap">
                     <button onClick={()=>handleBakerBtn("")} className={`px-4 py-2 rounded-xl text-sm border-2 font-medium transition ${!assigned?"text-white border-transparent":"border-[#f0e8e0] text-gray-400 hover:border-gray-300"}`} style={!assigned?{background:PINK}:{}}>Sin asignar</button>
-                    {BAKERS.map(b=>(
-                      <button key={b} onClick={()=>handleBakerBtn(b)} className={`px-4 py-2 rounded-xl text-sm border-2 font-medium transition ${assigned===b?"text-white border-transparent":"border-[#f0e8e0] text-gray-600 hover:border-gray-300"}`} style={assigned===b?{background:PINK}:{}}>{b}</button>
+                    {teamMembers.map(m=>(
+                      <button key={m.name} onClick={()=>handleBakerBtn(m.name)}
+                        className={`px-4 py-2 rounded-xl text-sm border-2 font-medium transition ${assigned===m.name?"text-white border-transparent":"border-[#f0e8e0] text-gray-600 hover:border-gray-300"}`}
+                        style={assigned===m.name?{background:PINK}:{}}>
+                        {m.name}{m.role==="ASSISTANT"&&<span className="ml-1 text-[10px] opacity-60">(asist.)</span>}
+                      </button>
                     ))}
                     {saving&&<span className="text-xs text-gray-400 self-center">Guardando…</span>}
                   </div>
+                </div>
+              )}
+              {/* BAKER puede asignarse a sí misma o a cualquier asistente */}
+              {!isPending&&currentUser?.role==="BAKER"&&(
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5"><User size={11}/> Asignada a</p>
+                  <div className="flex gap-2 flex-wrap">
+                    <button onClick={()=>handleBakerBtn("")} className={`px-4 py-2 rounded-xl text-sm border-2 font-medium transition ${!assigned?"text-white border-transparent":"border-[#f0e8e0] text-gray-400 hover:border-gray-300"}`} style={!assigned?{background:PINK}:{}}>Sin asignar</button>
+                    <button onClick={()=>handleBakerBtn(currentUser.name)}
+                      className={`px-4 py-2 rounded-xl text-sm border-2 font-medium transition ${assigned===currentUser.name?"text-white border-transparent":"border-[#f0e8e0] text-gray-600 hover:border-gray-300"}`}
+                      style={assigned===currentUser.name?{background:PINK}:{}}>
+                      {currentUser.name} <span className="text-[10px] opacity-60">(yo)</span>
+                    </button>
+                    {teamMembers.filter(m=>m.role==="ASSISTANT").map(m=>(
+                      <button key={m.name} onClick={()=>handleBakerBtn(m.name)}
+                        className={`px-4 py-2 rounded-xl text-sm border-2 font-medium transition ${assigned===m.name?"text-white border-transparent":"border-[#f0e8e0] text-gray-600 hover:border-gray-300"}`}
+                        style={assigned===m.name?{background:PINK}:{}}>
+                        {m.name}<span className="ml-1 text-[10px] opacity-60">(asist.)</span>
+                      </button>
+                    ))}
+                    {saving&&<span className="text-xs text-gray-400 self-center">Guardando…</span>}
+                  </div>
+                </div>
+              )}
+              {/* ASSISTANT: solo ve quién está asignada */}
+              {!isPending&&isAssistant&&assigned&&(
+                <div className="flex items-center gap-2 bg-[#fef7f9] border border-[#f07097]/20 rounded-2xl px-4 py-2.5">
+                  <User size={13} className="text-[#f07097]"/>
+                  <span className="text-sm text-gray-700">Asignada a: <strong>{assigned}</strong></span>
                 </div>
               )}
 
               {/* Bottom actions (oculto en pedidos PENDING) */}
               {!isPending&&(
               <div className="flex flex-wrap gap-2">
-                <button onClick={handleSaveChanges} disabled={saving}
-                  className="flex-1 min-w-[120px] py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
-                  style={{background:PINK}}>
-                  {saving?"Guardando…":<><Check size={14}/> Guardar cambios</>}
-                </button>
+                {!isAssistant&&(
+                  <button onClick={handleSaveChanges} disabled={saving}
+                    className="flex-1 min-w-[120px] py-2.5 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    style={{background:PINK}}>
+                    {saving?"Guardando…":<><Check size={14}/> Guardar cambios</>}
+                  </button>
+                )}
                 <a href={`https://wa.me/${localOrder.phone.replace(/\D/g,"")}?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition"
                   style={{background:"#bbf7d0",color:"#065f46"}}>
                   <MessageCircle size={14}/> WhatsApp
                 </a>
-                <button onClick={handleDelete} className="px-3 py-2.5 rounded-xl border-2 border-red-100 text-red-400 hover:bg-red-50 hover:border-red-200 transition">
-                  <Trash2 size={14}/>
-                </button>
+                {!isAssistant&&(
+                  <button onClick={handleDelete} className="px-3 py-2.5 rounded-xl border-2 border-red-100 text-red-400 hover:bg-red-50 hover:border-red-200 transition">
+                    <Trash2 size={14}/>
+                  </button>
+                )}
               </div>
               )}
             </div>
@@ -854,9 +969,10 @@ function OrderModal({ order,onClose,onUpdate,onDelete }:{
 }
 
 // ── Order Card ────────────────────────────────────────────────
-function OrderCard({ order,onClick,onQuickAction }:{
+function OrderCard({ order,onClick,onQuickAction,currentUser }:{
   order:Order; onClick:()=>void;
   onQuickAction:(id:string,status:string)=>void;
+  currentUser: CurrentUser | null;
 }) {
   const st = STATUS[order.status]??STATUS.PENDING;
   const imgs = Array.isArray(order.imageUrls)?order.imageUrls.filter(u=>typeof u==="string"):[];
@@ -928,8 +1044,8 @@ function OrderCard({ order,onClick,onQuickAction }:{
         </div>
       </button>
 
-      {/* Quick action buttons at bottom of card */}
-      {(isActive||isCompleted)&&(
+      {/* Quick action buttons — solo OWNER y BAKER */}
+      {(isActive||isCompleted)&&currentUser?.role!=="ASSISTANT"&&(
         <div className="px-4 pb-4">
           {isActive&&(
             <button onClick={e=>{e.stopPropagation();onQuickAction(order.id,"COMPLETED");}}
@@ -951,7 +1067,17 @@ function OrderCard({ order,onClick,onQuickAction }:{
 
 // ── Main Dashboard ─────────────────────────────────────────────
 type CurrentUser = { id: string; email: string; name: string; role: "OWNER"|"BAKER"|"ASSISTANT" };
+
 export default function Dashboard() {
+  return (
+    <BakersProvider>
+      <DashboardInner/>
+    </BakersProvider>
+  );
+}
+
+function DashboardInner() {
+  const { bakers } = useBakers();
   const router = useRouter();
   const [mainTab,setMainTab] = useState<"orders"|"catalog">("orders");
   const [orders,setOrders] = useState<Order[]>([]);
@@ -966,6 +1092,8 @@ export default function Dashboard() {
   const [productModal,setProductModal] = useState<{open:boolean;product:Product|null}>({open:false,product:null});
   const [currentUser,setCurrentUser] = useState<CurrentUser|null>(null);
   const [userMenuOpen,setUserMenuOpen] = useState(false);
+  const [cartOrderBadge,setCartOrderBadge] = useState(0);
+  const [availabilityFilter,setAvailabilityFilter] = useState<"all"|"AVAILABLE"|"OUT_OF_STOCK"|"HIDDEN">("all");
   const { confirm,modal:confirmModal } = useConfirm();
   const { toasts,addToast,removeToast } = useToast();
   const prevPendingRef = useRef(0);
@@ -974,6 +1102,7 @@ export default function Dashboard() {
   async function loadOrders(){
     setOrdersLoading(true);
     const r=await fetch("/api/orders");
+    if(r.status===401){router.push("/admin/login");setOrdersLoading(false);return;}
     if(r.ok) setOrders(await r.json());
     setOrdersLoading(false);
   }
@@ -984,14 +1113,22 @@ export default function Dashboard() {
       if (data.user) setCurrentUser(data.user);
     }
   }
+  async function loadCartOrderBadge(){
+    const r = await fetch("/api/admin/cart-orders");
+    if(r.status===401){router.push("/admin/login");return;}
+    if (r.ok) {
+      const data = await r.json();
+      setCartOrderBadge((Array.isArray(data)?data:[]).filter((o:{status:string})=>o.status==="PENDING").length);
+    }
+  }
 
-  useEffect(()=>{ load(); loadOrders(); loadMe(); },[]);
+  useEffect(()=>{ load(); loadOrders(); loadMe(); loadCartOrderBadge(); },[]);
 
   // Auto-refresh every 60s + browser tab title badge
   useEffect(()=>{
-    const id = setInterval(()=>{ loadOrders(); }, 60_000);
+    const id = setInterval(()=>{ loadOrders(); loadCartOrderBadge(); }, 60_000);
     return ()=>clearInterval(id);
-  },[]);
+  },[addToast]);
 
   // Update browser tab title with pending count
   useEffect(()=>{
@@ -1015,7 +1152,7 @@ export default function Dashboard() {
     await loadOrders();
     setSelectedOrder(prev=>prev?.id===id?{...prev,...data}:prev);
     addToast("Cambios guardados","success");
-  },[]);
+  },[addToast]);
   const deleteOrder = useCallback(async (id:string)=>{
     await fetch(`/api/orders/${id}`,{method:"DELETE"});
     setSelectedOrder(null); loadOrders();
@@ -1041,7 +1178,10 @@ export default function Dashboard() {
     .filter(o=>(tabCfg.statuses as readonly string[]).includes(o.status))
     .filter(o=>bakerFilter==="ALL"||o.assignedTo===bakerFilter||(!o.assignedTo&&bakerFilter==="UNASSIGNED"))
     .filter(o=>matchesSearch(o,orderSearch));
-  const filteredProducts = products.filter(p=>catFilter==="all"||p.category===catFilter).filter(p=>!catSearch||p.name.toLowerCase().includes(catSearch.toLowerCase()));
+  const filteredProducts = products
+    .filter(p=>catFilter==="all"||p.category===catFilter)
+    .filter(p=>availabilityFilter==="all"||(p.availabilityStatus??"AVAILABLE")===availabilityFilter)
+    .filter(p=>!catSearch||p.name.toLowerCase().includes(catSearch.toLowerCase()));
   const pendingCount = orders.filter(o=>o.status==="PENDING").length;
   const tabCounts:Record<OrderTabId,number> = {
     PENDING:   orders.filter(o=>o.status==="PENDING").length,
@@ -1055,7 +1195,7 @@ export default function Dashboard() {
     <div className="min-h-screen" style={{background:"#f7f4f0"}}>
       <ToastContainer toasts={toasts} removeToast={removeToast}/>
       {confirmModal}
-      {selectedOrder&&<OrderModal order={selectedOrder} onClose={()=>setSelectedOrder(null)} onUpdate={updateOrder} onDelete={deleteOrder}/>}
+      {selectedOrder&&<OrderModal order={selectedOrder} onClose={()=>setSelectedOrder(null)} onUpdate={updateOrder} onDelete={deleteOrder} currentUser={currentUser}/>}
       {productModal.open&&<ProductModal product={productModal.product} onClose={()=>setProductModal({open:false,product:null})} onSave={load} onDelete={delProduct}/>}
 
       <header className="sticky top-0 z-40 border-b border-white/20 shadow-sm" style={{background:PINK}}>
@@ -1161,20 +1301,31 @@ export default function Dashboard() {
 
         {/* Main tabs */}
         <div className="flex flex-wrap gap-1 mb-6 bg-white border border-[#ede8e0] rounded-xl p-1 w-fit shadow-sm">
-          {[{id:"orders",icon:<ClipboardList size={15}/>,label:"Pedidos",badge:pendingCount},{id:"catalog",icon:<Package size={15}/>,label:"Catálogo"}].map(t=>(
-            <button key={t.id} onClick={()=>setMainTab(t.id as typeof mainTab)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab===t.id?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
-              style={mainTab===t.id?{background:PINK}:{}}>
-              {t.icon} {t.label}
-              {t.badge?<span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${mainTab===t.id?"bg-white text-[#f07097]":"bg-[#f07097] text-white"}`}>{t.badge}</span>:null}
+          <button onClick={()=>setMainTab("orders")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="orders"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
+            style={mainTab==="orders"?{background:PINK}:{}}>
+            <ClipboardList size={15}/> Pedidos
+            {pendingCount>0&&<span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${mainTab==="orders"?"bg-white text-[#f07097]":"bg-[#f07097] text-white"}`}>{pendingCount}</span>}
+          </button>
+          {currentUser?.role!=="ASSISTANT"&&(
+            <button onClick={()=>setMainTab("catalog")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="catalog"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
+              style={mainTab==="catalog"?{background:PINK}:{}}>
+              <Package size={15}/> Catálogo
             </button>
-          ))}
+          )}
           <Link href="/admin/calendario" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
             <Calendar size={15}/> Calendario
           </Link>
-          <Link href="/admin/reportes" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
-            <BarChart3 size={15}/> Reportes
+          <Link href="/admin/ordenes" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+            <ShoppingBag size={15}/> Órdenes
+            {cartOrderBadge>0&&<span className="w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold bg-[#f07097] text-white">{cartOrderBadge}</span>}
           </Link>
+          {currentUser?.role!=="ASSISTANT"&&(
+            <Link href="/admin/reportes" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+              <BarChart3 size={15}/> Reportes
+            </Link>
+          )}
         </div>
 
         {/* ORDERS */}
@@ -1206,7 +1357,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-2 px-4 py-3 border-t border-[#f0e8e0]">
                 <span className="text-xs text-gray-400 shrink-0">Repostera:</span>
                 <div className="flex gap-1.5 flex-wrap">
-                  {[{id:"ALL",label:"Todas"},{id:"UNASSIGNED",label:"Sin asignar"},...BAKERS.map(b=>({id:b,label:b.split(" ")[0]}))].map(f=>(
+                  {[{id:"ALL",label:"Todas"},{id:"UNASSIGNED",label:"Sin asignar"},...bakers.map(b=>({id:b,label:b.split(" ")[0]}))].map(f=>(
                     <button key={f.id} onClick={()=>setBakerFilter(f.id)}
                       className={`px-3 py-1 rounded-full text-xs font-medium border transition ${bakerFilter===f.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
                       style={bakerFilter===f.id?{background:PINK}:{}}>{f.label}</button>
@@ -1230,7 +1381,7 @@ export default function Dashboard() {
               </div>
             ):(
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {tabOrders.map(o=><OrderCard key={o.id} order={o} onClick={()=>setSelectedOrder(o)} onQuickAction={handleQuickAction}/>)}
+                {tabOrders.map(o=><OrderCard key={o.id} order={o} onClick={()=>setSelectedOrder(o)} onQuickAction={handleQuickAction} currentUser={currentUser}/>)}
               </div>
             )}
           </div>
@@ -1250,12 +1401,21 @@ export default function Dashboard() {
                 <input type="text" placeholder="Buscar productos…" value={catSearch} onChange={e=>setCatSearch(e.target.value)}
                   className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-[#ede8e0] bg-white focus:outline-none focus:border-[#f07097] transition"/>
               </div>
+              <div className="flex flex-col gap-2">
               <div className="flex flex-wrap gap-1.5">
                 {[{id:"all",label:`Todo (${products.length})`},...CATEGORIES.map(c=>({id:c.id,label:`${c.label} (${products.filter(p=>p.category===c.id).length})`}))].map(c=>(
                   <button key={c.id} onClick={()=>setCatFilter(c.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${catFilter===c.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
                     style={catFilter===c.id?{background:PINK}:{}}>{c.label}</button>
                 ))}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {([["all","Todas","#6b7280"],["AVAILABLE","Disponibles","#10b981"],["OUT_OF_STOCK","Sin stock","#f59e0b"],["HIDDEN","Ocultas","#9ca3af"]] as const).map(([id,label,color])=>(
+                  <button key={id} onClick={()=>setAvailabilityFilter(id as typeof availabilityFilter)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${availabilityFilter===id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
+                    style={availabilityFilter===id?{background:color}:{}}>{label}</button>
+                ))}
+              </div>
               </div>
             </div>
             <h3 className="font-display text-lg mb-4">Productos <span className="text-gray-400 font-normal text-base">({filteredProducts.length})</span></h3>
@@ -1269,8 +1429,15 @@ export default function Dashboard() {
                     <img src={p.imageUrl} alt={p.name} className="w-full aspect-[4/3] object-cover"/>
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <span className="inline-block text-xs font-semibold text-white px-2 py-0.5 rounded-full" style={{background:PINK}}>{catLabel(p.category)}</span>
-                        <span className="text-xs text-gray-300">#{shortId(p.id)}</span>
+                        <div className="flex flex-wrap gap-1">
+                          <span className="inline-block text-xs font-semibold text-white px-2 py-0.5 rounded-full" style={{background:PINK}}>{catLabel(p.category)}</span>
+                          {(p.availabilityStatus??"AVAILABLE")!=="AVAILABLE"&&(
+                            <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${p.availabilityStatus==="OUT_OF_STOCK"?"bg-amber-100 text-amber-700":"bg-gray-100 text-gray-500"}`}>
+                              {p.availabilityStatus==="OUT_OF_STOCK"?"Sin stock":"Oculto"}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-300 shrink-0">#{shortId(p.id)}</span>
                       </div>
                       <h3 className="font-display text-base leading-tight">{p.name}</h3>
                       <p className="text-xs text-gray-500 line-clamp-2 mt-1">{p.description}</p>

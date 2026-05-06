@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, Plus, Trash2, KeyRound, X, Check,
-  Shield, ChefHat, User as UserIcon, AlertCircle,
+  Shield, ChefHat, User as UserIcon, AlertCircle, LockOpen, Lock,
 } from "lucide-react";
 import { ToastContainer, useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmationModal";
@@ -19,8 +19,14 @@ type User = {
   role: Role;
   active: boolean;
   lastLoginAt: string | null;
+  lockedUntil: string | null;
   createdAt: string;
 };
+
+function isLocked(u: User): boolean {
+  if (!u.lockedUntil) return false;
+  return new Date(u.lockedUntil) > new Date();
+}
 
 const ROLE_META: Record<Role, { label: string; icon: React.ReactNode; bg: string; color: string; description: string }> = {
   OWNER: {
@@ -56,16 +62,16 @@ export default function UsersPage() {
   const { toasts, addToast, removeToast } = useToast();
   const { confirm, modal: confirmModal } = useConfirm();
 
-  async function loadUsers() {
+  const loadUsers = useCallback(async () => {
     setLoading(true);
     const r = await fetch("/api/users");
     if (r.status === 403) { setForbidden(true); setLoading(false); return; }
     if (r.status === 401) { router.push("/admin/login"); return; }
     if (r.ok) setUsers(await r.json());
     setLoading(false);
-  }
+  }, [router]);
 
-  useEffect(() => { loadUsers(); }, []);
+  useEffect(() => { loadUsers(); }, [loadUsers]);
 
   async function patchUser(id: string, payload: Record<string, unknown>) {
     const r = await fetch(`/api/users/${id}`, {
@@ -194,6 +200,11 @@ export default function UsersPage() {
                           Desactivada
                         </span>
                       )}
+                      {isLocked(u) && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-100 text-red-600">
+                          <Lock size={9}/> Bloqueada
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-gray-500 truncate mt-0.5">{u.email}</p>
                     <p className="text-[11px] text-gray-400 mt-0.5">
@@ -213,6 +224,14 @@ export default function UsersPage() {
                       className="p-2 rounded-lg text-gray-400 hover:text-[#f07097] hover:bg-[#fef7f9] transition">
                       <KeyRound size={14}/>
                     </button>
+                    {isLocked(u) && (
+                      <button
+                        onClick={()=>patchUser(u.id, { unlock: true })}
+                        title="Desbloquear cuenta"
+                        className="p-2 rounded-lg text-red-400 hover:text-emerald-600 hover:bg-emerald-50 transition">
+                        <LockOpen size={14}/>
+                      </button>
+                    )}
                     {u.active ? (
                       <button onClick={()=>deactivateUser(u)}
                         title="Desactivar"

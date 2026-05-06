@@ -1,33 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { canEditCatalog, getSession } from "@/lib/auth";
 import { logActivity } from "@/lib/activityLog";
+import { isAllowedStoredImageUrl } from "@/lib/cloudinary";
 
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().min(1).max(1000),
   category: z.enum(["cakes", "desserts", "events", "picaderas", "brunch", "drinks"]),
   imageUrl: z.string().max(500).refine(
-    (v) => v.startsWith("/uploads/") || /^https?:\/\//.test(v),
-    { message: "Debe ser una URL válida o una imagen subida al servidor" }
+    (v) => isAllowedStoredImageUrl(v),
+    { message: "Debe ser una imagen valida de Cloudinary" }
   ),
   price: z.number().nonnegative().nullable().optional(),
+  availabilityStatus: z.enum(["AVAILABLE", "OUT_OF_STOCK", "HIDDEN"]).optional(),
 });
 
 export async function GET(req: NextRequest) {
   const cat = req.nextUrl.searchParams.get("category");
+  const session = await getSession();
+  const isAdmin = !!session;
+
+  // Public users only see orderable products. Admin users see every status.
+  const where: Prisma.ProductWhereInput = {};
+  if (cat) where.category = cat;
+  if (!isAdmin) where.availabilityStatus = { in: ["AVAILABLE", "OUT_OF_STOCK"] };
+
   const products = await prisma.product.findMany({
-    where: cat ? { category: cat } : undefined,
+    where,
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json(products);
 }
 
 export async function POST(req: NextRequest) {
-  // Auth enforced en middleware, pero igual leemos session para el log
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!canEditCatalog(session.role)) {
+    return NextResponse.json({ error: "Sin permisos para modificar el catalogo" }, { status: 403 });
+  }
 
   const body = await req.json().catch(() => null);
   const parsed = productSchema.safeParse(body);

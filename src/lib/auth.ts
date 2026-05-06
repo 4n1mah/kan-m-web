@@ -42,7 +42,27 @@ export async function getSession(): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secret());
     if (!payload.userId || !payload.email || !payload.role) return null;
-    return payload as unknown as SessionPayload;
+
+    const user = await prisma.user.findUnique({
+      where: { id: String(payload.userId) },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        active: true,
+        lockedUntil: true,
+      },
+    });
+    if (!user || !user.active) return null;
+    if (user.lockedUntil && user.lockedUntil > new Date()) return null;
+
+    return {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
   } catch {
     return null;
   }
@@ -51,6 +71,9 @@ export async function getSession(): Promise<SessionPayload | null> {
 export function destroySession() {
   cookies().delete(COOKIE);
 }
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutos, auto-expira
 
 // ── Comparación timing-safe a través de bcrypt (bcrypt.compare ya es timing-safe) ──
 export async function verifyCredentials(email: string, password: string) {
@@ -61,12 +84,34 @@ export async function verifyCredentials(email: string, password: string) {
   // de respuesta sea similar y un atacante no pueda enumerar emails válidos.
   const DUMMY_HASH = "$2a$12$abcdefghijklmnopqrstuv0000000000000000000000000000000000";
   const ok = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
-  if (!user || !ok || !user.active) return null;
-  // Actualizar lastLoginAt sin esperar (best effort)
+
+  if (!user || !user.active) return null;
+
+  // Verificar bloqueo temporal (auto-expira)
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    return "LOCKED" as const;
+  }
+
+  if (!ok) {
+    const newCount = (user.failedLoginAttempts ?? 0) + 1;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: newCount,
+        ...(newCount >= MAX_FAILED_ATTEMPTS
+          ? { lockedUntil: new Date(Date.now() + LOCK_DURATION_MS) }
+          : {}),
+      },
+    });
+    return null;
+  }
+
+  // Login exitoso: resetear contador y actualizar lastLoginAt
   prisma.user.update({
     where: { id: user.id },
-    data: { lastLoginAt: new Date() },
+    data: { lastLoginAt: new Date(), failedLoginAttempts: 0, lockedUntil: null },
   }).catch(() => {});
+
   return user;
 }
 
@@ -82,5 +127,11 @@ export function canEditCatalog(role: SessionPayload["role"]) {
   return role === "OWNER" || role === "BAKER";
 }
 export function canEditAnyOrder(role: SessionPayload["role"]) {
+  return role === "OWNER" || role === "BAKER";
+}
+export function canDeleteOrders(role: SessionPayload["role"]) {
+  return role === "OWNER";
+}
+export function canManageCartOrders(role: SessionPayload["role"]) {
   return role === "OWNER" || role === "BAKER";
 }

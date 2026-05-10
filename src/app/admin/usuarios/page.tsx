@@ -150,7 +150,7 @@ export default function UsersPage() {
           <button onClick={()=>setCreateOpen(true)}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-sm hover:opacity-95 transition"
             style={{ background: PINK }}>
-            <Plus size={15}/> Nueva usuario
+            <Plus size={15}/> Nuevo usuario
           </button>
         </div>
 

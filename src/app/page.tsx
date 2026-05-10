@@ -242,7 +242,7 @@ export default async function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-5">
             {[
-              { q: "Mi repostería favorita, hacen los mejores bizcochos y postres que he probado.", n: "Rosalis García", r: "⭐⭐⭐⭐⭐ · Hace 2 años" },
+              { q: "Mi repostería favorita, hacen los mejores bizcochos y postres que he probado.", n: "Rosalis García", r: "⭐⭐⭐⭐⭐ · Local Guide" },
               { q: "Maravilloso lugar, los mejores postres de la Zona Colonial, sus galletas, brownies, empanadas son TOP, espero volver pronto.", n: "Miguel Antonio Sierra Castro", r: "⭐⭐⭐⭐⭐ · Local Guide" },
               { q: "Sus dulces son la gloria, especialmente ese bizcocho de Fresa y alfajores 🍓💗 hicieron que nuestra noche fuera mejor, gracias por el excelente servicio y los postres 💗 volveremos sin lugar a dudas 100/5", n: "Franchesca Nicole Romero", r: "⭐⭐⭐⭐⭐ · Local Guide" },
             ].map((t, i) => (

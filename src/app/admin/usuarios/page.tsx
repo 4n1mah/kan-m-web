@@ -30,7 +30,7 @@ function isLocked(u: User): boolean {
 
 const ROLE_META: Record<Role, { label: string; icon: React.ReactNode; bg: string; color: string; description: string }> = {
   OWNER: {
-    label: "Dueña",
+    label: "Admin",
     icon: <Shield size={13}/>,
     bg: "#fef7f9",
     color: "#e85d82",
@@ -112,7 +112,7 @@ export default function UsersPage() {
         <div className="bg-white border border-[#ede8e0] rounded-3xl shadow-md p-10 max-w-md text-center">
           <AlertCircle size={36} className="mx-auto text-amber-500 mb-3"/>
           <h2 className="font-display text-xl text-gray-800">Acceso restringido</h2>
-          <p className="text-sm text-gray-500 mt-2">Solo el dueño del panel puede gestionar usuarios.</p>
+          <p className="text-sm text-gray-500 mt-2">Solo el admin del panel puede gestionar usuarios.</p>
           <Link href="/admin/dashboard"
             className="inline-flex items-center gap-1.5 mt-5 px-4 py-2 rounded-xl text-white text-sm font-semibold" style={{ background: PINK }}>
             <ArrowLeft size={14}/> Volver al panel
@@ -150,7 +150,7 @@ export default function UsersPage() {
           <button onClick={()=>setCreateOpen(true)}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold shadow-sm hover:opacity-95 transition"
             style={{ background: PINK }}>
-            <Plus size={15}/> Nueva usuaria
+            <Plus size={15}/> Nueva usuario
           </button>
         </div>
 
@@ -197,12 +197,12 @@ export default function UsersPage() {
                       </span>
                       {!u.active && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-gray-200 text-gray-500">
-                          Desactivada
+                          Desactivado
                         </span>
                       )}
                       {isLocked(u) && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-100 text-red-600">
-                          <Lock size={9}/> Bloqueada
+                          <Lock size={9}/> Bloqueado
                         </span>
                       )}
                     </div>
@@ -215,7 +215,7 @@ export default function UsersPage() {
                     <select value={u.role}
                       onChange={e=>patchUser(u.id, { role: e.target.value as Role })}
                       className="text-xs px-2 py-1.5 rounded-lg border border-[#ede8e0] bg-[#faf8f5] text-gray-600 focus:outline-none focus:border-[#f07097] cursor-pointer">
-                      <option value="OWNER">Dueña</option>
+                      <option value="OWNER">Admin</option>
                       <option value="BAKER">Repostera</option>
                       <option value="ASSISTANT">Asistente</option>
                     </select>
@@ -253,7 +253,7 @@ export default function UsersPage() {
         )}
 
         <p className="text-xs text-gray-400 text-center pt-2">
-          Las usuarias desactivadas conservan su historial de cambios pero no pueden iniciar sesión.
+          Los usuarios desactivados conservan su historial de cambios pero no pueden iniciar sesión.
         </p>
       </div>
 
@@ -289,7 +289,7 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}/>
       <form onSubmit={submit} className="relative bg-white w-full max-w-md rounded-3xl shadow-xl border border-[#ede8e0] p-6 sm:p-7 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl">Nueva usuaria</h2>
+          <h2 className="font-display text-xl">Nuevo usuario</h2>
           <button type="button" onClick={onClose}
             className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
             <X size={15}/>
@@ -323,7 +323,7 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
             className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#f07097] cursor-pointer">
             <option value="BAKER">Repostera (recomendado)</option>
             <option value="ASSISTANT">Asistente</option>
-            <option value="OWNER">Dueña</option>
+            <option value="OWNER">Admin</option>
           </select>
           <p className="text-[10px] text-gray-400 mt-1">{ROLE_META[form.role].description}</p>
         </div>

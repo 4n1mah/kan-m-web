@@ -20,7 +20,7 @@ const productSchema = z.object({
 
 export async function GET(req: NextRequest) {
   const cat = req.nextUrl.searchParams.get("category");
-  const session = await getSession();
+  const session = await getSession(req);
   const isAdmin = !!session;
 
   // Public users only see orderable products. Admin users see every status.
@@ -32,11 +32,20 @@ export async function GET(req: NextRequest) {
     where,
     orderBy: { createdAt: "desc" },
   });
-  return NextResponse.json(products);
+
+  // Cache público en CDN: 60s fresh, hasta 5 min stale-while-revalidate.
+  // Admin no debe ver respuestas cacheadas (incluye HIDDEN, sensible al rol).
+  const headers = new Headers();
+  if (!isAdmin) {
+    headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+  } else {
+    headers.set("Cache-Control", "private, no-store");
+  }
+  return NextResponse.json(products, { headers });
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canEditCatalog(session.role)) {
     return NextResponse.json({ error: "Sin permisos para modificar el catalogo" }, { status: 403 });

@@ -12,7 +12,7 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   // Rate limit: máximo 8 intentos cada 5 minutos por IP
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: `login:${ip}`, limit: 8, windowMs: 5 * 60_000 });
+  const rl = await rateLimit({ key: `login:${ip}`, limit: 8, windowMs: 5 * 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Demasiados intentos. Espera unos minutos antes de reintentar." },
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   }
   const user = result;
 
-  await createSession({
+  const token = await createSession({
     userId: user.id,
     email: user.email,
     name: user.name,
@@ -54,5 +54,19 @@ export async function POST(req: NextRequest) {
     entityId: user.id,
   });
 
-  return NextResponse.json({ ok: true, user: { name: user.name, role: user.role } });
+  // Si el cliente es una app móvil (header X-Client-Type: mobile),
+  // devolvemos el JWT en el body para que la app lo guarde en su storage
+  // seguro. El cookie también se setea, pero la app lo ignora.
+  const isMobile = req.headers.get("x-client-type")?.toLowerCase() === "mobile";
+
+  return NextResponse.json({
+    ok: true,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    },
+    ...(isMobile ? { token, expiresInSeconds: 60 * 60 * 24 * 7 } : {}),
+  });
 }

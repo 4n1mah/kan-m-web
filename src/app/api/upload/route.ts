@@ -39,7 +39,7 @@ async function detectMimeFromBuffer(file: File): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canEditCatalog(session.role)) {
     return NextResponse.json({ error: "Sin permisos para subir imagenes al catalogo" }, { status: 403 });

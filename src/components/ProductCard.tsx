@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
-import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
-import { Plus, Check } from "lucide-react";
+import Link from "next/link";
+import { Plus, Check, Sparkles } from "lucide-react";
 import { useCartOptional } from "./CartContext";
 import { useState } from "react";
 
@@ -15,6 +15,9 @@ export type Product = {
   availabilityStatus?: "AVAILABLE" | "OUT_OF_STOCK" | "HIDDEN";
 };
 
+const PINK_GRADIENT =
+  "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+
 export default function ProductCard({ product }: { product: Product }) {
   const cart = useCartOptional();
   const [added, setAdded] = useState(false);
@@ -25,7 +28,6 @@ export default function ProductCard({ product }: { product: Product }) {
 
   function handleAdd() {
     if (!cart || isOutOfStock) return;
-
     cart.add({
       id: product.id,
       name: product.name,
@@ -58,64 +60,64 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="text-sm text-muted-foreground mt-2 leading-relaxed flex-1">
           {product.description}
         </p>
-        {product.price != null && (
+        {hasPrice && (
           <p className="text-sm font-medium text-rose mt-3">
-            Desde RD${product.price.toLocaleString("es-DO")}
+            Desde RD${product.price!.toLocaleString("es-DO")}
           </p>
         )}
 
         <div className="mt-5 flex flex-col gap-2">
-          {/* Add to cart button — only shows when product has a price */}
           {hasPrice && !isOutOfStock && (
-            <button
-              onClick={handleAdd}
-              className={`inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
-                added
-                  ? "bg-green-500 text-white"
-                  : inCart
-                  ? "bg-[#fef7f9] text-[#e85d82] border-2 border-[#f07097]/30 hover:border-[#f07097]"
-                  : "bg-gradient-rose text-white shadow-soft hover:opacity-90"
-              }`}
-              style={
-                !added && !inCart
-                  ? {
-                      background:
-                        "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)",
-                    }
-                  : {}
-              }
-            >
-              {added ? (
-                <><Check size={15} /> ¡Agregado!</>
-              ) : inCart ? (
-                <><Check size={15} /> En el carrito ({inCart.quantity})</>
-              ) : (
-                <><Plus size={15} /> Agregar al carrito</>
-              )}
-            </button>
+            cart ? (
+              // Dentro del catálogo: agrega al carrito
+              <button
+                onClick={handleAdd}
+                className={`inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  added
+                    ? "bg-green-500 text-white"
+                    : inCart
+                    ? "bg-[#fef7f9] text-[#e85d82] border-2 border-[#f07097]/30 hover:border-[#f07097]"
+                    : "text-white shadow-soft hover:opacity-90"
+                }`}
+                style={!added && !inCart ? { background: PINK_GRADIENT } : {}}
+              >
+                {added ? (
+                  <><Check size={15} /> ¡Agregado!</>
+                ) : inCart ? (
+                  <><Check size={15} /> En el carrito ({inCart.quantity})</>
+                ) : (
+                  <><Plus size={15} /> Agregar al carrito</>
+                )}
+              </button>
+            ) : (
+              // Fuera del catálogo (ej. home destacados): lleva al catálogo
+              <Link
+                href={`/catalogo?cat=${encodeURIComponent(product.category)}`}
+                className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white shadow-soft hover:opacity-90 transition"
+                style={{ background: PINK_GRADIENT }}
+              >
+                <Plus size={15} /> Ordenar en el catálogo
+              </Link>
+            )
           )}
 
-          {/* WhatsApp button — always shown */}
-          <a
-            href={waLink(WA_MESSAGES.product(product.name))}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`inline-flex w-full justify-center px-6 py-2.5 rounded-full text-sm transition ${
-              hasPrice
-                ? "border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--rose)]/50 hover:text-[var(--rose)]"
-                : "bg-gradient-rose text-white shadow-soft hover:opacity-90"
-            }`}
-            style={
-              !hasPrice
-                ? {
-                    background:
-                      "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)",
-                  }
-                : {}
-            }
-          >
-            Preguntar disponibilidad
-          </a>
+          {/* Productos sin precio fijo (mesas dulces, eventos personalizados) van a /cotizar */}
+          {!hasPrice && (
+            <Link
+              href={`/cotizar?item=${encodeURIComponent(product.name)}`}
+              className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white shadow-soft hover:opacity-90 transition"
+              style={{ background: PINK_GRADIENT }}
+            >
+              <Sparkles size={15} /> Solicitar cotización
+            </Link>
+          )}
+
+          {/* Productos sin stock con precio: mostrar mensaje claro, sin botón */}
+          {hasPrice && isOutOfStock && (
+            <p className="text-xs text-center text-muted-foreground py-2">
+              Vuelve pronto — disponible próximamente
+            </p>
+          )}
         </div>
       </div>
     </article>

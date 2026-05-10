@@ -4,8 +4,8 @@ import { prisma } from "@/lib/db";
 import { getSession, hashPassword, canManageUsers } from "@/lib/auth";
 import { logActivity } from "@/lib/activityLog";
 
-async function requireOwner() {
-  const session = await getSession();
+async function requireOwner(req: Request) {
+  const session = await getSession(req);
   if (!session) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }), session: null };
   if (!canManageUsers(session.role)) {
     return { error: NextResponse.json({ error: "Solo el dueño puede gestionar usuarios" }, { status: 403 }), session: null };
@@ -13,8 +13,8 @@ async function requireOwner() {
   return { error: null, session };
 }
 
-export async function GET() {
-  const { error, session } = await requireOwner();
+export async function GET(req: NextRequest) {
+  const { error, session } = await requireOwner(req);
   if (error) return error;
 
   const users = await prisma.user.findMany({
@@ -35,7 +35,7 @@ const newUserSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { error, session } = await requireOwner();
+  const { error, session } = await requireOwner(req);
   if (error) return error;
 
   const body = await req.json().catch(() => null);

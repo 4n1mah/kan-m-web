@@ -6,11 +6,23 @@ import { sendOrderToExternalApi } from "@/lib/externalApi";
 
 const VALID_STATUSES = ["PENDING", "CONFIRMED", "DENIED", "SENT"];
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await getSession(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const order = await prisma.cartOrder.findUnique({ where: { id: params.id } });
+  if (!order) return NextResponse.json({ error: "Orden no encontrada" }, { status: 404 });
+  return NextResponse.json(order, { headers: { "Cache-Control": "private, no-store" } });
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canManageCartOrders(session.role)) {
     return NextResponse.json({ error: "Sin permisos para modificar ordenes online" }, { status: 403 });

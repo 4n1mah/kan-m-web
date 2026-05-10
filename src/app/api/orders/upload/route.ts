@@ -27,7 +27,7 @@ async function detectMime(file: File): Promise<string> {
 export async function POST(req: NextRequest) {
   // Rate limit: 30 imágenes cada 10 min por IP
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: `upload:${ip}`, limit: 30, windowMs: 10 * 60_000 });
+  const rl = await rateLimit({ key: `upload:${ip}`, limit: 30, windowMs: 10 * 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Has subido muchas imágenes. Por favor espera unos minutos." },

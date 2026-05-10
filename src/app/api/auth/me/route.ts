@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { destroySession, getSession } from "@/lib/auth";
 
-export async function GET() {
-  const session = await getSession();
+export async function GET(req: NextRequest) {
+  const session = await getSession(req);
   if (!session) {
-    destroySession();
+    // Solo borramos el cookie si el cliente vino por cookie y la sesión es inválida.
+    // Para clientes con Bearer no hay cookie que borrar (lo hacen ellos del lado app).
+    const hadCookie = !!req.cookies.get("kanm_session");
+    if (hadCookie) destroySession();
     return NextResponse.json({ user: null }, { status: 401 });
   }
   return NextResponse.json({

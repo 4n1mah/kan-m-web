@@ -6,25 +6,53 @@ import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { validateDominicanPhone } from "@/lib/phone";
 import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
 
-async function isAuthed() {
-  const session = await getSession();
+async function isAuthed(req?: Request) {
+  const session = await getSession(req);
   return !!session;
 }
 
-export async function GET() {
-  if (!await isAuthed()) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" } });
+export async function GET(req: NextRequest) {
+  if (!await isAuthed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Paginación opcional. Por defecto trae las 200 más recientes para no
+  // romper compatibilidad con el dashboard actual. Cuando el dashboard se
+  // actualice puede pasar `?limit=50&cursor=...` para paginar de verdad.
+  const url = req.nextUrl;
+  const limitRaw = Number(url.searchParams.get("limit"));
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 500) : 200;
+  const cursor = url.searchParams.get("cursor") || undefined;
+
+  const orders = await prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit + 1, // +1 para saber si hay más
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+  });
+
+  const hasMore = orders.length > limit;
+  const slice = hasMore ? orders.slice(0, limit) : orders;
+  const nextCursor = hasMore ? slice[slice.length - 1].id : null;
 
   // Normalize Json fields — Prisma returns them as Prisma.JsonValue (object),
   // but the frontend expects plain arrays/objects
-  const normalized = orders.map(o => ({
+  const normalized = slice.map(o => ({
     ...o,
     selectedItems: Array.isArray(o.selectedItems) ? o.selectedItems : [],
     imageUrls: Array.isArray(o.imageUrls) ? o.imageUrls : [],
     cakeDetails: o.cakeDetails && typeof o.cakeDetails === "object" ? o.cakeDetails : null,
   }));
 
-  return NextResponse.json(normalized);
+  // Si el cliente NO pidió paginación explícita, devuelve solo el array
+  // (compat con dashboard actual). Si pasó `limit` o `cursor`, devuelve
+  // un objeto con metadata.
+  if (!url.searchParams.has("limit") && !url.searchParams.has("cursor")) {
+    return NextResponse.json(normalized, {
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  }
+  return NextResponse.json(
+    { orders: normalized, nextCursor, hasMore },
+    { headers: { "Cache-Control": "private, no-store" } }
+  );
 }
 
 // Esquema de validación para POST público.
@@ -53,7 +81,7 @@ const newOrderSchema = z.object({
 export async function POST(req: NextRequest) {
   // Rate limit: máximo 10 pedidos cada 10 min por IP
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: `order:${ip}`, limit: 10, windowMs: 10 * 60_000 });
+  const rl = await rateLimit({ key: `order:${ip}`, limit: 10, windowMs: 10 * 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Has enviado muchas solicitudes. Por favor espera unos minutos." },

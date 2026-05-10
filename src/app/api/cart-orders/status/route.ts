@@ -4,7 +4,7 @@ import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function GET(req: NextRequest) {
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: `order-status:${ip}`, limit: 20, windowMs: 5 * 60_000 });
+  const rl = await rateLimit({ key: `order-status:${ip}`, limit: 20, windowMs: 5 * 60_000 });
   if (!rl.ok) {
     return NextResponse.json({ error: "Demasiadas consultas. Espera unos minutos." }, { status: 429 });
   }

@@ -17,8 +17,8 @@ const productSchema = z.object({
   availabilityStatus: z.enum(["AVAILABLE", "OUT_OF_STOCK", "HIDDEN"]).optional(),
 });
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getSession();
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession(req);
   const product = await prisma.product.findUnique({ where: { id: params.id } });
   if (!product) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!session && product.availabilityStatus !== "AVAILABLE") {
@@ -28,7 +28,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canEditCatalog(session.role)) {
     return NextResponse.json({ error: "Sin permisos para modificar el catalogo" }, { status: 403 });
@@ -64,8 +64,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getSession();
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canEditCatalog(session.role)) {
     return NextResponse.json({ error: "Sin permisos para modificar el catalogo" }, { status: 403 });

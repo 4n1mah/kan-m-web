@@ -5,8 +5,8 @@ import { prisma } from "@/lib/db";
 import { getSession, hashPassword, canManageUsers } from "@/lib/auth";
 import { logActivity } from "@/lib/activityLog";
 
-async function requireOwner() {
-  const session = await getSession();
+async function requireOwner(req: Request) {
+  const session = await getSession(req);
   if (!session) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }), session: null };
   if (!canManageUsers(session.role)) {
     return { error: NextResponse.json({ error: "Solo el dueño puede gestionar usuarios" }, { status: 403 }), session: null };
@@ -23,7 +23,7 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const { error, session } = await requireOwner();
+  const { error, session } = await requireOwner(req);
   if (error) return error;
 
   const body = await req.json().catch(() => null);
@@ -73,8 +73,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(updated);
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  const { error, session } = await requireOwner();
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const { error, session } = await requireOwner(req);
   if (error) return error;
 
   if (params.id === session!.userId) {

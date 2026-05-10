@@ -7,7 +7,9 @@ import DeliveryButtons from "@/components/DeliveryButtons";
 import HeroCarousel from "@/components/HeroCarousel";
 import RotatingFeatured from "@/components/RotatingFeatured";
 
-export const dynamic = "force-dynamic";
+// ISR: regenera el HTML cada 60s. El home no necesita estado live;
+// reduce queries a Neon y mejora LCP / TTFB de SEO.
+export const revalidate = 60;
 
 export default async function HomePage() {
   const featured = await prisma.product.findMany({
@@ -57,8 +59,8 @@ export default async function HomePage() {
         }
       `}</style>
 
-      {/* HERO */}
-      <HeroCarousel images={IMAGES.heroCarousel}>
+      {/* HERO — priorityFirst para que la primera imagen sea LCP candidate */}
+      <HeroCarousel images={IMAGES.heroCarousel} priorityFirst>
         <div className="max-w-7xl mx-auto px-6 py-14 md:py-20">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white">

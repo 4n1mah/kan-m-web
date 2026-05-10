@@ -45,7 +45,7 @@ async function generateUniqueCode(): Promise<string> {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-  const rl = rateLimit({ key: `cart-order:${ip}`, limit: 5, windowMs: 10 * 60_000 });
+  const rl = await rateLimit({ key: `cart-order:${ip}`, limit: 5, windowMs: 10 * 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Demasiadas solicitudes. Espera unos minutos." },
@@ -128,25 +128,48 @@ export async function POST(req: NextRequest) {
   const subtotal = Math.round(
     orderItems.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0) * 100
   ) / 100;
-  const code = await generateUniqueCode();
 
-  const order = await prisma.cartOrder.create({
-    data: {
-      code,
-      customerName,
-      customerPhone,
-      fulfillmentMethod: "PICKUP",
-      items: orderItems,
-      subtotal,
-      total: subtotal,
-      receiptImageUrl,
-      status: "PENDING",
-      externalSyncStatus: "NOT_SENT",
-    },
-  });
+  // Retry hasta 3 veces si la unique-constraint en `code` choca por race entre
+  // dos órdenes simultáneas. Tras 3 intentos respondemos 503 para que el
+  // cliente reintente (en lugar de fallar con 500 silencioso).
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const code = await generateUniqueCode();
+    try {
+      const order = await prisma.cartOrder.create({
+        data: {
+          code,
+          customerName,
+          customerPhone,
+          fulfillmentMethod: "PICKUP",
+          items: orderItems,
+          subtotal,
+          total: subtotal,
+          receiptImageUrl,
+          status: "PENDING",
+          externalSyncStatus: "NOT_SENT",
+        },
+      });
 
-  return NextResponse.json(
-    { code: order.code, id: order.id, total: order.total },
-    { status: 201 }
-  );
+      return NextResponse.json(
+        { code: order.code, id: order.id, total: order.total },
+        { status: 201 }
+      );
+    } catch (err) {
+      // P2002 = unique constraint violation. Reintentar con código nuevo.
+      const isUniqueErr =
+        typeof err === "object" && err !== null &&
+        (err as { code?: string }).code === "P2002";
+      if (!isUniqueErr || attempt === 2) {
+        console.error("[cart-orders] create failed:", err);
+        return NextResponse.json(
+          { error: "No pudimos crear la orden ahora mismo. Intenta de nuevo en un momento." },
+          { status: 503 }
+        );
+      }
+      // si es colisión, el for vuelve a generar otro code
+    }
+  }
+
+  // Inalcanzable, pero TypeScript lo necesita
+  return NextResponse.json({ error: "Error inesperado" }, { status: 500 });
 }

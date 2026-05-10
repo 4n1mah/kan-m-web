@@ -8,8 +8,27 @@ import { validateDominicanPhone } from "@/lib/phone";
 
 const VALID_STATUSES = ["PENDING","CONFIRMED","NEEDS_INFO","COMPLETED","DELIVERED","REJECTED","CANCELLED"];
 
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const order = await prisma.order.findUnique({ where: { id: params.id } });
+  if (!order) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
+
+  // Normaliza JSON fields como hace el listing
+  return NextResponse.json(
+    {
+      ...order,
+      selectedItems: Array.isArray(order.selectedItems) ? order.selectedItems : [],
+      imageUrls: Array.isArray(order.imageUrls) ? order.imageUrls : [],
+      cakeDetails: order.cakeDetails && typeof order.cakeDetails === "object" ? order.cakeDetails : null,
+    },
+    { headers: { "Cache-Control": "private, no-store" } }
+  );
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getSession();
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canEditAnyOrder(session.role)) {
     return NextResponse.json({ error: "Sin permisos para modificar pedidos" }, { status: 403 });
@@ -178,8 +197,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  const session = await getSession();
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canDeleteOrders(session.role)) {
     return NextResponse.json({ error: "Solo OWNER puede eliminar pedidos" }, { status: 403 });

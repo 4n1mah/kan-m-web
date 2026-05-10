@@ -20,7 +20,10 @@ export type SessionPayload = {
   role: "OWNER" | "BAKER" | "ASSISTANT";
 };
 
-export async function createSession(user: SessionPayload) {
+// Crea el JWT y lo setea como cookie httpOnly (web).
+// Devuelve el token también, para que el endpoint de login lo pueda
+// devolver en el body cuando el cliente sea una app móvil.
+export async function createSession(user: SessionPayload): Promise<string> {
   const token = await new SignJWT({ ...user })
     .setProtectedHeader({ alg: ALG })
     .setIssuedAt()
@@ -34,11 +37,33 @@ export async function createSession(user: SessionPayload) {
     path: "/",
     maxAge: 60 * 60 * 24 * SESSION_DAYS,
   });
+
+  return token;
 }
 
-export async function getSession(): Promise<SessionPayload | null> {
-  const token = cookies().get(COOKIE)?.value;
+// Lee la sesión del cliente. Acepta dos formatos:
+//   1. Authorization: Bearer <jwt>   (apps móviles, clientes nativos)
+//   2. Cookie kanm_session            (navegador web)
+//
+// Si pasas `req`, intenta primero el Bearer header; si no hay req o no
+// existe el header, cae al cookie. Mantiene compatibilidad con todas las
+// rutas existentes que llaman `getSession()` sin argumentos.
+export async function getSession(req?: Request): Promise<SessionPayload | null> {
+  let token: string | undefined;
+
+  if (req) {
+    const auth = req.headers.get("authorization");
+    if (auth?.toLowerCase().startsWith("bearer ")) {
+      token = auth.slice(7).trim();
+    }
+  }
+
+  if (!token) {
+    token = cookies().get(COOKIE)?.value;
+  }
+
   if (!token) return null;
+
   try {
     const { payload } = await jwtVerify(token, secret());
     if (!payload.userId || !payload.email || !payload.role) return null;

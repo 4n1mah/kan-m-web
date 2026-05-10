@@ -20,7 +20,7 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
       "font-src 'self'",
-      "connect-src 'self' https://va.vercel-insights.com",
+      "connect-src 'self' https://va.vercel-insights.com https://vitals.vercel-insights.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

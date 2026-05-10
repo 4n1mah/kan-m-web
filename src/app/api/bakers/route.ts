@@ -1,11 +1,11 @@
 // Endpoint para que cualquier usuario logueado obtenga la lista de
 // miembros del equipo asignables. Incluye OWNER, BAKER y ASSISTANT.
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
-export async function GET() {
-  const session = await getSession();
+export async function GET(req: NextRequest) {
+  const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const users = await prisma.user.findMany({
@@ -17,5 +17,7 @@ export async function GET() {
     orderBy: [{ role: "asc" }, { name: "asc" }],
   });
 
-  return NextResponse.json(users);
+  return NextResponse.json(users, {
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }

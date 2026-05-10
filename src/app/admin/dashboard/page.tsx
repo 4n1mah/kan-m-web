@@ -1124,10 +1124,23 @@ function DashboardInner() {
 
   useEffect(()=>{ load(); loadOrders(); loadMe(); loadCartOrderBadge(); },[]);
 
-  // Auto-refresh every 60s + browser tab title badge
+  // Auto-refresh every 60s — solo si la pestaña está visible.
+  // Esto evita las llamadas 401 cada minuto desde pestañas en background con sesión expirada,
+  // y reduce drásticamente el ruido en logs Vercel y el costo de invocations.
   useEffect(()=>{
-    const id = setInterval(()=>{ loadOrders(); loadCartOrderBadge(); }, 60_000);
-    return ()=>clearInterval(id);
+    const tick = ()=>{
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+      loadOrders();
+      loadCartOrderBadge();
+    };
+    const id = setInterval(tick, 60_000);
+    // Cuando la pestaña vuelve a estar visible, refresca de inmediato.
+    const onVisibility = ()=>{ if (document.visibilityState === "visible") tick(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    return ()=>{
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   },[addToast]);
 
   // Update browser tab title with pending count
@@ -1180,7 +1193,13 @@ function DashboardInner() {
     .filter(o=>matchesSearch(o,orderSearch));
   const filteredProducts = products
     .filter(p=>catFilter==="all"||p.category===catFilter)
-    .filter(p=>availabilityFilter==="all"||(p.availabilityStatus??"AVAILABLE")===availabilityFilter)
+    .filter(p=>{
+      // Por defecto ("all") los HIDDEN no se muestran en el panel — quedan
+      // archivados invisibles. Para verlos hay que elegir el filtro "Ocultas".
+      const status = p.availabilityStatus ?? "AVAILABLE";
+      if (availabilityFilter === "all") return status !== "HIDDEN";
+      return status === availabilityFilter;
+    })
     .filter(p=>!catSearch||p.name.toLowerCase().includes(catSearch.toLowerCase()));
   const pendingCount = orders.filter(o=>o.status==="PENDING").length;
   const tabCounts:Record<OrderTabId,number> = {
@@ -1403,18 +1422,33 @@ function DashboardInner() {
               </div>
               <div className="flex flex-col gap-2">
               <div className="flex flex-wrap gap-1.5">
-                {[{id:"all",label:`Todo (${products.length})`},...CATEGORIES.map(c=>({id:c.id,label:`${c.label} (${products.filter(p=>p.category===c.id).length})`}))].map(c=>(
-                  <button key={c.id} onClick={()=>setCatFilter(c.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${catFilter===c.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
-                    style={catFilter===c.id?{background:PINK}:{}}>{c.label}</button>
-                ))}
+                {(()=>{
+                  // Conteo por categoría EXCLUYE HIDDEN (porque por defecto no se ven)
+                  const visibleProducts = products.filter(p=>(p.availabilityStatus??"AVAILABLE")!=="HIDDEN");
+                  const items = [{id:"all",label:`Todo (${visibleProducts.length})`},...CATEGORIES.map(c=>({id:c.id,label:`${c.label} (${visibleProducts.filter(p=>p.category===c.id).length})`}))];
+                  return items.map(c=>(
+                    <button key={c.id} onClick={()=>setCatFilter(c.id)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${catFilter===c.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
+                      style={catFilter===c.id?{background:PINK}:{}}>{c.label}</button>
+                  ));
+                })()}
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {([["all","Todas","#6b7280"],["AVAILABLE","Disponibles","#10b981"],["OUT_OF_STOCK","Sin stock","#f59e0b"],["HIDDEN","Ocultas","#9ca3af"]] as const).map(([id,label,color])=>(
-                  <button key={id} onClick={()=>setAvailabilityFilter(id as typeof availabilityFilter)}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${availabilityFilter===id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
-                    style={availabilityFilter===id?{background:color}:{}}>{label}</button>
-                ))}
+              <div className="flex flex-wrap gap-1.5 items-center">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mr-1">Estado:</span>
+                {(()=>{
+                  const hiddenCount = products.filter(p=>p.availabilityStatus==="HIDDEN").length;
+                  const filters: ReadonlyArray<readonly [typeof availabilityFilter, string, string]> = [
+                    ["all",          "Visibles",   "#6b7280"],
+                    ["AVAILABLE",    "Disponibles","#10b981"],
+                    ["OUT_OF_STOCK", "Sin stock",  "#f59e0b"],
+                    ["HIDDEN",       `Ocultas${hiddenCount>0?` (${hiddenCount})`:""}`, "#9ca3af"],
+                  ];
+                  return filters.map(([id,label,color])=>(
+                    <button key={id} onClick={()=>setAvailabilityFilter(id)}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${availabilityFilter===id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
+                      style={availabilityFilter===id?{background:color}:{}}>{label}</button>
+                  ));
+                })()}
               </div>
               </div>
             </div>

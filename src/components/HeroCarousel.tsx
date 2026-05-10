@@ -6,9 +6,17 @@ interface Props {
   children: React.ReactNode;
   autoplayMs?: number;
   minHeight?: string;
+  /** Si true, la primera imagen se carga eagerly con fetchpriority=high (mejora LCP en home). */
+  priorityFirst?: boolean;
 }
 
-export default function HeroCarousel({ images, children, autoplayMs = 4000, minHeight = "92vh" }: Props) {
+export default function HeroCarousel({
+  images,
+  children,
+  autoplayMs = 4000,
+  minHeight = "92vh",
+  priorityFirst = false,
+}: Props) {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
@@ -19,13 +27,25 @@ export default function HeroCarousel({ images, children, autoplayMs = 4000, minH
 
   return (
     <section className="relative flex items-center overflow-hidden" style={{ minHeight }}>
-      {images.map((src, i) => (
-        <div key={src + i} className="absolute inset-0 transition-opacity duration-1000" style={{ opacity: i === current ? 1 : 0 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="" className="w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/60" />
-        </div>
-      ))}
+      {images.map((src, i) => {
+        const isFirst = i === 0;
+        return (
+          <div key={src + i} className="absolute inset-0 transition-opacity duration-1000" style={{ opacity: i === current ? 1 : 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt=""
+              className="w-full h-full object-cover"
+              loading={isFirst ? "eager" : "lazy"}
+              {...(priorityFirst && isFirst
+                ? { fetchPriority: "high" as const }
+                : {})}
+              decoding={isFirst ? "sync" : "async"}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/60" />
+          </div>
+        );
+      })}
       <div className="relative z-10 w-full">{children}</div>
       {images.length > 1 && (
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">

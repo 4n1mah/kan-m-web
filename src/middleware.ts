@@ -16,9 +16,20 @@ async function decodeSession(token: string | undefined) {
   }
 }
 
+// Extrae el JWT de la request: primero `Authorization: Bearer ...`
+// (apps móviles), luego cookie `kanm_session` (web). Coincide con la
+// lógica de `getSession()` en `src/lib/auth.ts`.
+function extractToken(req: NextRequest): string | undefined {
+  const auth = req.headers.get("authorization");
+  if (auth?.toLowerCase().startsWith("bearer ")) {
+    return auth.slice(7).trim();
+  }
+  return req.cookies.get("kanm_session")?.value;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = req.cookies.get("kanm_session")?.value;
+  const token = extractToken(req);
   const session = await decodeSession(token);
   const isLogged = !!session?.userId;
   const role = session?.role;

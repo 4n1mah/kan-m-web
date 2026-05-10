@@ -1240,7 +1240,7 @@ function DashboardInner() {
               <div className="text-left hidden sm:block">
                 <p className="text-xs font-semibold leading-tight">{currentUser?.name ?? "Cargando…"}</p>
                 <p className="text-[10px] text-white/75 leading-tight">
-                  {currentUser?.role === "OWNER" ? "Dueña" : currentUser?.role === "BAKER" ? "Repostera" : currentUser?.role === "ASSISTANT" ? "Asistente" : ""}
+                  {currentUser?.role === "OWNER" ? "Admin" : currentUser?.role === "BAKER" ? "Repostera" : currentUser?.role === "ASSISTANT" ? "Asistente" : ""}
                 </p>
               </div>
               <ChevronRight size={13} className={`transition-transform ${userMenuOpen?"rotate-90":""}`}/>
@@ -1254,7 +1254,7 @@ function DashboardInner() {
                   <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
                   <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
                     style={{background:"#fef7f9", color:"#e85d82"}}>
-                    {currentUser.role === "OWNER" ? "Dueña" : currentUser.role === "BAKER" ? "Repostera" : "Asistente"}
+                    {currentUser.role === "OWNER" ? "Admin" : currentUser.role === "BAKER" ? "Repostera" : "Asistente"}
                   </span>
                 </div>
                 <div className="py-1.5">

@@ -34,10 +34,12 @@ export async function middleware(req: NextRequest) {
   const isLogged = !!session?.userId;
   const role = session?.role;
 
-  // Rutas que requieren ser OWNER
+  // Rutas que requieren ser OWNER. `/api/users/fcm-token` es la excepción:
+  // cualquier usuario logueado (incluido BAKER) tiene que poder registrar el
+  // token FCM de su dispositivo móvil. La autorización fina vive en la ruta.
   const isOwnerOnly =
     pathname.startsWith("/admin/usuarios") ||
-    pathname.startsWith("/api/users");
+    (pathname.startsWith("/api/users") && pathname !== "/api/users/fcm-token");
 
   // Páginas y APIs protegidas (cualquier usuario logueado)
   const isAdminPage = pathname.startsWith("/admin") && pathname !== "/admin/login";

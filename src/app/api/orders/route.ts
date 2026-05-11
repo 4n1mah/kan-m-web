@@ -132,13 +132,18 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Avisamos al equipo (OWNER/BAKER) por push. Errores no bloquean la
-  // respuesta al cliente público — sólo se loguean dentro del helper.
-  await notifyOnNewOrder({
-    id: order.id,
-    name: order.name,
-    eventDate: order.eventDate,
-  });
+  // Avisamos al equipo (OWNER/BAKER) por push. Errores nunca rompen el
+  // create del Order — un fallo de FCM o un DB hiccup leyendo tokens no
+  // debería decirle "fallo" al cliente público que ya creó su pedido.
+  try {
+    await notifyOnNewOrder({
+      id: order.id,
+      name: order.name,
+      eventDate: order.eventDate,
+    });
+  } catch (e) {
+    console.error("[orders] notifyOnNewOrder failed:", e);
+  }
 
   return NextResponse.json(order, { status: 201 });
 }

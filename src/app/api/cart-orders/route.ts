@@ -151,12 +151,16 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      await notifyOnNewCartOrder({
-        id: order.id,
-        code: order.code,
-        customerName: order.customerName,
-        total: order.total,
-      });
+      try {
+        await notifyOnNewCartOrder({
+          id: order.id,
+          code: order.code,
+          customerName: order.customerName,
+          total: order.total,
+        });
+      } catch (e) {
+        console.error("[cart-orders] notifyOnNewCartOrder failed:", e);
+      }
 
       return NextResponse.json(
         { code: order.code, id: order.id, total: order.total },

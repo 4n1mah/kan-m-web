@@ -588,7 +588,7 @@ function CotizarForm() {
               </label>
               <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">WhatsApp / Teléfono <span className="text-[var(--rose)]">*</span></span>
                 <input type="tel" placeholder="809-000-0000" value={form.phone} onChange={e=>set("phone",formatDominicanPhone(e.target.value))} maxLength={12} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
-                {form.phone.length>0&&!validateDominicanPhone(form.phone)&&<p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={11}/>Ingresa un número dominicano válido, ejemplo: 809-519-5688.</p>}
+                {form.phone.length>0&&!validateDominicanPhone(form.phone)&&<p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={11}/>Ingresa un número dominicano válido, ejemplo: 809-555-6666.</p>}
               </label>
               <label className="flex flex-col gap-1.5 sm:col-span-2"><span className="text-sm font-medium">Correo <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>
                 <input type="email" placeholder="tu@correo.com" value={form.email} onChange={e=>set("email",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>

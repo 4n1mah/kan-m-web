@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { validateDominicanPhone } from "@/lib/phone";
 import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
+import { notifyOnNewCartOrder } from "@/lib/push";
 
 const MAX_CART_ITEMS = 40;
 const MAX_ITEM_QUANTITY = 99;
@@ -148,6 +149,13 @@ export async function POST(req: NextRequest) {
           status: "PENDING",
           externalSyncStatus: "NOT_SENT",
         },
+      });
+
+      await notifyOnNewCartOrder({
+        id: order.id,
+        code: order.code,
+        customerName: order.customerName,
+        total: order.total,
       });
 
       return NextResponse.json(

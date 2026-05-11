@@ -24,6 +24,10 @@ model User {
   lastLoginAt         DateTime? @map("last_login_at")
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime? @map("locked_until")
+  // Token FCM del último dispositivo móvil que registró este usuario.
+  // Asumimos un dispositivo activo por usuario; si en el futuro hay más
+  // dispositivos, migrar a una tabla FcmDevice.
+  fcmToken            String?   @map("fcm_token")
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
 

@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { validateDominicanPhone } from "@/lib/phone";
 import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
+import { notifyOnNewOrder } from "@/lib/push";
 
 async function isAuthed(req?: Request) {
   const session = await getSession(req);
@@ -129,6 +130,14 @@ export async function POST(req: NextRequest) {
       deliveryMethod: data.deliveryMethod || null,
       status: "PENDING",
     },
+  });
+
+  // Avisamos al equipo (OWNER/BAKER) por push. Errores no bloquean la
+  // respuesta al cliente público — sólo se loguean dentro del helper.
+  await notifyOnNewOrder({
+    id: order.id,
+    name: order.name,
+    eventDate: order.eventDate,
   });
 
   return NextResponse.json(order, { status: 201 });

@@ -19,17 +19,21 @@ type Escalation = {
   updatedAt: string;
 };
 
-type Member = { id: string; name: string; role: string };
+type CurrentUser = { id: string; email: string; name: string; role: string };
 
 function motivoLabel(motivo: string): {
   label: string; color: string; bg: string;
 } {
   const map: Record<string, { label: string; color: string; bg: string }> = {
-    manual:            { label: "Pidió persona",    color: "#065f46", bg: "#d1fae5" },
-    precio_sin_match:  { label: "Precio",           color: "#1e40af", bg: "#dbeafe" },
-    faq_sin_match:     { label: "FAQ sin respuesta", color: "#5b21b6", bg: "#f3e8ff" },
-    web_no_disponible: { label: "Web caída",        color: "#991b1b", bg: "#fee2e2" },
-    pedido:            { label: "Quiere ordenar",   color: "#92400e", bg: "#fef3c7" },
+    manual:              { label: "Pidió persona",    color: "#065f46", bg: "#d1fae5" },
+    usuario_pidio_humano:{ label: "Pidió persona",    color: "#065f46", bg: "#d1fae5" },
+    precio_sin_match:    { label: "Precio",           color: "#1e40af", bg: "#dbeafe" },
+    faq_sin_match:       { label: "FAQ sin respuesta", color: "#5b21b6", bg: "#f3e8ff" },
+    web_no_disponible:   { label: "Web caída",        color: "#991b1b", bg: "#fee2e2" },
+    pedido:              { label: "Quiere ordenar",   color: "#92400e", bg: "#fef3c7" },
+    cotizar:             { label: "Quiere cotizar",   color: "#92400e", bg: "#fef3c7" },
+    catalogo:            { label: "Vio catálogo",     color: "#1e40af", bg: "#dbeafe" },
+    faq:                 { label: "Pregunta FAQ",     color: "#5b21b6", bg: "#f3e8ff" },
   };
   return map[motivo] ?? { label: motivo, color: "#374151", bg: "#f3f4f6" };
 }
@@ -44,67 +48,41 @@ function timeAgo(iso: string): string {
   return `hace ${Math.floor(h / 24)}d`;
 }
 
-function AtenderButtons({
+function AtenderButton({
   phoneClean,
   clientName,
+  currentUser,
 }: {
   phoneClean: string;
   clientName: string;
+  currentUser: { name: string } | null;
 }) {
-  const [members, setMembers] = useState<Member[]>([]);
-
-  useEffect(() => {
-    fetch("/api/bakers")
-      .then(r => r.ok ? r.json() : [])
-      .then((data: Member[]) => {
-        if (Array.isArray(data)) {
-          setMembers(data.filter(m => m.role !== "ASSISTANT"));
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   const nombre = clientName !== "Cliente" ? `, ${clientName}` : "";
-
-  if (!members.length) {
-    const intro = encodeURIComponent(
-      `¡Hola${nombre}! Somos el equipo de Kan M 🍰 Vi que necesitabas ayuda, cuéntame.`
-    );
-    return (
-      <a href={`whatsapp://send?phone=${phoneClean}&text=${intro}`}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition"
-        style={{ background: "#25D366" }}>
-        <MessageCircle size={14} /> Abrir WhatsApp
-      </a>
-    );
-  }
-
+  const agente = currentUser?.name ?? "el equipo de Kan M";
+  const intro = encodeURIComponent(
+    `¡Hola${nombre}! Soy ${agente} de Kan M 🍰 Vi que necesitabas ayuda, cuéntame.`
+  );
+  const link = `whatsapp://send?phone=${phoneClean}&text=${intro}`;
   return (
-    <div className="flex flex-col gap-1.5">
-      {members.map(member => {
-        const intro = encodeURIComponent(
-          `¡Hola${nombre}! Soy ${member.name} de Kan M 🍰 Vi que necesitabas ayuda, cuéntame.`
-        );
-        return (
-          <a key={member.id}
-            href={`whatsapp://send?phone=${phoneClean}&text=${intro}`}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition"
-            style={{ background: "#25D366" }}>
-            <MessageCircle size={14} />
-            Atender como {member.name.split(" ")[0]}
-          </a>
-        );
-      })}
-    </div>
+    <a
+      href={link}
+      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition"
+      style={{ background: "#25D366" }}
+    >
+      <MessageCircle size={14} />
+      Escribir por WhatsApp
+    </a>
   );
 }
 
 function EscalationCard({
   esc,
   onResolve,
+  currentUser,
 }: {
   esc: Escalation;
   onResolve: (id: string) => void;
+  currentUser: CurrentUser | null;
 }) {
   const mt = motivoLabel(esc.motivo);
   const phoneClean = esc.phone.replace(/\D/g, "");
@@ -167,9 +145,10 @@ function EscalationCard({
       )}
 
       <div className="px-5 py-4 flex flex-col gap-2">
-        <AtenderButtons
+        <AtenderButton
           phoneClean={phoneClean}
           clientName={esc.clientName}
+          currentUser={currentUser}
         />
         <button
           onClick={() => onResolve(esc.id)}
@@ -185,6 +164,7 @@ function EscalationCard({
 export default function WhatsappBandejaPage() {
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const { toasts, addToast, removeToast } = useToast();
 
   const load = useCallback(async () => {
@@ -192,6 +172,15 @@ export default function WhatsappBandejaPage() {
     const r = await fetch("/api/whatsapp/escalations");
     if (r.ok) setEscalations(await r.json());
     setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.user) setCurrentUser(data.user);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -266,6 +255,7 @@ export default function WhatsappBandejaPage() {
                 key={esc.id}
                 esc={esc}
                 onResolve={handleResolve}
+                currentUser={currentUser}
               />
             ))}
             <p className="text-xs text-gray-400 text-center pt-2">

@@ -3,37 +3,12 @@ import { useState } from "react";
 import { ChevronDown, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import { FAQS as FAQ_SOURCE } from "@/lib/bizInfo";
 
-// ─── EDITA AQUÍ TUS PREGUNTAS Y RESPUESTAS ────────────────────────────────────
-// Para agregar más, copia un bloque { q: "...", a: "..." } y pégalo al final.
-const FAQS = [
-  {
-    q: "¿Con cuánta anticipación debo hacer mi pedido?",
-    a: "Recomendamos hacer tu pedido con al menos 3 días de anticipación para pedidos regulares. Para eventos grandes como bodas o cumpleaños temáticos, lo ideal es contactarnos con 1 a 2 semanas de anticipación para garantizar disponibilidad y tiempo de personalización.",
-  },
-  {
-    q: "¿Hacen entregas a domicilio?",
-    a: "Sí, hacemos entregas en Santo Domingo y la Zona Colonial. El minimo por envio son RD$250, aunque el costo de entrega puede aumentar según la distancia. También puedes recoger tu pedido directamente en nuestra tienda sin costo adicional.",
-  },
-  {
-    q: "¿Pueden personalizar pasteles con fotos o diseños específicos?",
-    a: "¡Absolutamente! Nos especializamos en pasteles completamente personalizados. Puedes compartir referencias de diseño, colores, temáticas o fotos comestibles. Cuéntanos tu idea por WhatsApp y la hacemos realidad.",
-  },
-  {
-    q: "¿Qué métodos de pago aceptan?",
-    a: "Aceptamos transferencias bancarias, pago en efectivo y tarjetas de crédito/débito. Para pedidos de eventos, solicitamos un depósito del 50% al confirmar el pedido y el resto al momento de la entrega.",
-  },
-  {
-    q: "¿Tienen opciones para personas con restricciones alimentarias (sin gluten, vegano, etc.)?",
-    a: "Sí, tenemos opciones adaptadas para distintas necesidades. Contamos con preparaciones sin gluten y opciones veganas en algunos de nuestros productos. Contáctanos para que podamos orientarte sobre qué opciones se ajustan mejor a ti.",
-  },
-  // ── Agrega más preguntas aquí ──────────────────────────────────────────────
-  // {
-  //   q: "¿Otra pregunta?",
-  //   a: "Respuesta aquí.",
-  // },
-];
-// ──────────────────────────────────────────────────────────────────────────────
+// Las FAQs viven en src/lib/bizInfo.ts (fuente única de verdad consumida
+// también por el bot externo de WhatsApp). Para editar el contenido, ir
+// a bizInfo.ts. Acá sólo proyectamos { q, a } para el render.
+const FAQS: { q: string; a: string }[] = FAQ_SOURCE.map(({ q, a }) => ({ q, a }));
 
 export default function FAQPage() {
   const [open, setOpen] = useState<number | null>(null);

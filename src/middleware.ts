@@ -48,6 +48,16 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/upload") ||
     pathname.startsWith("/api/activity");
   const isAdminApi = pathname.startsWith("/api/admin/");
+  // /api/whatsapp/*: el GET (bandeja de escalaciones) requiere sesión.
+  // El POST lo llama el bot externo y se protege con `x-bot-api-key` adentro
+  // de la ruta — debe pasar sin cookie.
+  // El cron de Vercel (GET /api/whatsapp/escalations/cron) se autentica con
+  // `Authorization: Bearer CRON_SECRET` dentro de la ruta, así que también
+  // pasa sin cookie.
+  const isWhatsappReadApi =
+    pathname.startsWith("/api/whatsapp/") &&
+    req.method === "GET" &&
+    pathname !== "/api/whatsapp/escalations/cron";
 
   const isApiCall = pathname.startsWith("/api/");
 
@@ -76,7 +86,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Bloqueos generales
-  if ((isAdminPage || isWriteApi || isAdminApi) && !isLogged) {
+  if ((isAdminPage || isWriteApi || isAdminApi || isWhatsappReadApi) && !isLogged) {
     if (isApiCall) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const url = req.nextUrl.clone();
     url.pathname = "/admin/login";
@@ -101,5 +111,9 @@ export const config = {
     "/api/users/:path*",
     "/api/activity/:path*",
     "/api/admin/:path*",
+    // /api/whatsapp/*: el middleware corre para todos los métodos, pero la
+    // lógica adentro (isWhatsappReadApi) sólo bloquea GET sin sesión. POST
+    // del bot externo pasa sin auth y se valida por API key en la ruta.
+    "/api/whatsapp/:path*",
   ],
 };

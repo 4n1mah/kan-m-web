@@ -158,3 +158,18 @@ model CartOrder {
   @@index([status])
   @@index([createdAt])
 }
+
+model WhatsappEscalation {
+  id          String    @id @default(cuid())
+  phone       String    @unique
+  clientName  String    @map("client_name")
+  motivo      String
+  summary     String    @db.Text
+  resolvedAt  DateTime? @map("resolved_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("whatsapp_escalations")
+  @@index([resolvedAt])
+  @@index([createdAt])
+}

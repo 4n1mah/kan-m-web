@@ -124,3 +124,19 @@ export async function notifyOnNewCartOrder(order: {
     total: order.total,
   });
 }
+
+export async function notifyOnEscalation(escalation: {
+  id: string;
+  phone: string;
+  clientName: string;
+  motivo: string;
+}): Promise<void> {
+  const tokens = await tokensForRoles(["OWNER", "BAKER"]);
+  await sendToTokens(tokens, {
+    type: "whatsapp_escalation",
+    entityId: escalation.id,
+    phone: escalation.phone,
+    clientName: escalation.clientName,
+    motivo: escalation.motivo,
+  });
+}

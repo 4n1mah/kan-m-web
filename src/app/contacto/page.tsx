@@ -3,6 +3,7 @@ import DeliveryButtons from "@/components/DeliveryButtons";
 import Link from "next/link";
 import { Phone, Mail, Instagram, MapPin, ArrowRight } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import { BUSINESS } from "@/lib/bizInfo";
 
 export default function ContactoPage() {
   return (
@@ -29,7 +30,7 @@ export default function ContactoPage() {
             </p>
 
             <a
-              href="https://maps.app.goo.gl/D1i89Ui3vx92FubCA"
+              href={BUSINESS.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="glass rounded-2xl p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-all duration-200 group block"
@@ -39,12 +40,12 @@ export default function ContactoPage() {
               </div>
               <div>
                 <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Ubicación</div>
-                <div className="font-semibold text-sm mt-0.5">C. Espaillat 58, Zona Colonial, Santo Domingo</div>
+                <div className="font-semibold text-sm mt-0.5">{BUSINESS.address}</div>
               </div>
             </a>
 
             <a
-              href="tel:+18296107064"
+              href={`tel:${BUSINESS.phoneTel}`}
               className="glass rounded-2xl p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-all duration-200 group block"
             >
               <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-white" style={{ background: "linear-gradient(135deg,#f9c4d4 0%,#f07097 100%)" }}>
@@ -52,12 +53,12 @@ export default function ContactoPage() {
               </div>
               <div>
                 <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Teléfono</div>
-                <div className="font-semibold text-sm mt-0.5">+1 (829) 610-7064</div>
+                <div className="font-semibold text-sm mt-0.5">{BUSINESS.phoneDisplay}</div>
               </div>
             </a>
 
             <a
-              href="mailto:kanmreposteriaycatering@gmail.com"
+              href={`mailto:${BUSINESS.email}`}
               className="glass rounded-2xl p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-all duration-200 group block"
             >
               <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-white" style={{ background: "linear-gradient(135deg,#f9c4d4 0%,#f07097 100%)" }}>
@@ -65,7 +66,7 @@ export default function ContactoPage() {
               </div>
               <div>
                 <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Email</div>
-                <div className="font-semibold text-sm mt-0.5">kanmreposteriaycatering@gmail.com</div>
+                <div className="font-semibold text-sm mt-0.5">{BUSINESS.email}</div>
               </div>
             </a>
 
@@ -87,7 +88,7 @@ export default function ContactoPage() {
             </a>
 
             <a
-              href="https://www.instagram.com/kanm.reposteriacafe/"
+              href={BUSINESS.instagram}
               target="_blank"
               rel="noopener noreferrer"
               className="glass rounded-2xl p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-all duration-200 group block"
@@ -102,7 +103,7 @@ export default function ContactoPage() {
             </a>
 
             <a
-              href="https://www.tiktok.com/@kanmreposteriacafe"
+              href={BUSINESS.tiktok}
               target="_blank"
               rel="noopener noreferrer"
               className="glass rounded-2xl p-3 flex items-center gap-3 hover:-translate-y-0.5 transition-all duration-200 group block"

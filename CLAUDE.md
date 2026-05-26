@@ -1,387 +1,144 @@
-Actúa como senior Next.js / TypeScript / Prisma / Vercel production reviewer.
-
-Estoy trabajando en el proyecto Kan M Repostería y Catering.
-
-Necesito que revises el estado actual del proyecto después de varios cambios hechos por Claude Code y Codex. Quiero saber si está listo para producción o qué falta corregir.
-
-IMPORTANTE:
-No hagas cambios todavía.
-No edites archivos.
-No instales paquetes.
-No corras npm audit fix.
-No toques Prisma schema.
-No corras migraciones.
-Primero analiza y dame un reporte.
-
----
-
-# Contexto del proyecto
-
-Stack:
-- Next.js App Router
-- TypeScript
-- Prisma
-- Neon PostgreSQL
-- Cloudinary
-- Vercel
-- Admin panel con roles
-- Catálogo público
-- Cotizaciones desde “Cotizar”
-- Órdenes online desde carrito
-
-Roles:
-- OWNER / Dueña
-- BAKER / Repostera
-- ASSISTANT / Asistente
-
----
-
-# Funcionalidades implementadas recientemente
-
-## 1. Carrito en catálogo público
-
-Se agregó carrito de compras desde /catalogo.
-
-Debe permitir:
-- Agregar productos.
-- Cambiar cantidades.
-- Eliminar productos.
-- Persistir en localStorage aunque se refresque o cierre la página.
-- Expirar después de 48 horas.
-- Mostrar subtotal.
-- Crear orden online.
-- Limpiarse solo después de una orden exitosa.
-
-Importante:
-- El backend debe recalcular precios desde DB.
-- No se debe confiar en precios del frontend.
-- Productos HIDDEN u OUT_OF_STOCK no deben poder comprarse.
-- El carrito es solo para “Pasar a recoger”.
-- No hay delivery para órdenes online.
-- Debe mostrar datos bancarios y permitir subir comprobante.
-
-Datos bancarios usados:
-- BHD: 23842820013, cuenta de ahorro
-- Banreservas: 9606681469, cuenta de ahorro
-- Titular: Karolyn Sierra
-- Cédula: 40227956733
-
-## 2. Órdenes online en admin
-
-Se agregó sección admin /admin/ordenes.
-
-Debe mostrar órdenes del carrito con:
-- Código PED-####
-- Cliente
-- Teléfono
-- Items
-- Total
-- Comprobante
-- Estado
-- Fecha
-- Acción de confirmar/negar
-- Botón WhatsApp para reconfirmar
-
-También se preparó integración futura con API externa usando:
-- EXTERNAL_ORDERS_API_URL
-
-Si la variable no existe, no debe romper.
-
-## 3. Cotizaciones
-
-En /cotizar:
-- Se agregó mínimo 3 días de antelación desde hoy.
-- Debe validarse en frontend y backend.
-- Debe mostrar mensaje claro al cliente.
-- Teléfono debe tener formato RD.
-
-## 4. Teléfono RD
-
-En carrito y cotizar:
-- Formato esperado: 809-519-5688
-- Prefijos válidos: 809, 829, 849
-- Máximo 10 dígitos reales / 12 caracteres con guiones.
-- Guiones automáticos.
-- Validación frontend y backend.
-
-## 5. Fotos en admin
-
-En órdenes/cotizaciones del admin:
-- OWNER y BAKER pueden agregar fotos de referencia.
-- OWNER y BAKER pueden eliminar fotos.
-- Subida usando Cloudinary.
-- ASSISTANT no debe hacer acciones peligrosas.
-
-## 6. Reportes
-
-En admin reportes:
-- Se agregaron métricas aparte para órdenes online.
-- No deben mezclarse de forma confusa con cotizaciones.
-
-## 7. Seguridad login
-
-Se agregó o revisó:
-- Max attempts en login.
-- Bloqueo tras varios intentos fallidos.
-- Dueña puede desbloquear usuario.
-- Usuarios desactivados o bloqueados no deben seguir usando sesión vieja.
-- /api/auth/me debe limpiar cookie o invalidar sesión si el usuario ya no es válido.
-
-## 8. Productos fuera de stock / fuera del menú
-
-En catálogo/admin:
-- Productos pueden estar AVAILABLE, OUT_OF_STOCK, HIDDEN.
-- Público solo debe ver productos disponibles.
-- Admin debe poder ver y filtrar todos.
-- OUT_OF_STOCK y HIDDEN no deben poder ordenarse.
-
----
-
-# Cambios P0 ya aplicados por Codex
-
-Codex aplicó una primera fase de seguridad/integridad.
-
-Archivos cambiados:
-- src/lib/cloudinary.ts
-  - Nuevo helper para validar URLs Cloudinary.
-- src/lib/auth.ts
-  - Sesiones se invalidan si usuario está inactivo o bloqueado.
-- src/app/api/auth/me/route.ts
-  - Limpia cookie si la sesión ya no es válida.
-- src/app/api/cart-orders/route.ts
-  - Recalcula precios desde DB y valida disponibilidad.
-- src/app/api/orders/route.ts
-  - Valida URLs Cloudinary en cotizaciones.
-- src/app/api/orders/[id]/route.ts
-  - Bloquea ASSISTANT para edición.
-  - DELETE queda OWNER-only.
-  - Valida URLs Cloudinary.
-  - Se corrigió error TypeScript donde existing podía ser null.
-- src/app/api/products/route.ts
-  - Crear productos solo OWNER/BAKER.
-  - URLs restringidas.
-- src/app/api/products/[id]/route.ts
-  - Público no ve hidden/out-of-stock.
-  - Mutaciones OWNER/BAKER.
-- src/app/api/upload/route.ts
-  - Upload de catálogo requiere OWNER/BAKER.
-- src/app/api/admin/cart-orders/[id]/route.ts
-  - ASSISTANT no puede confirmar/negar órdenes online.
-- src/app/page.tsx
-  - Home solo muestra productos AVAILABLE.
-
-Qué corrigió:
-- Backend ya no confía en precios del frontend para carrito.
-- Valida existencia, disponibilidad y precio real del producto.
-- Rechaza HIDDEN, OUT_OF_STOCK, productos inexistentes y cantidades abusivas.
-- ASSISTANT bloqueado en mutaciones peligrosas.
-- Sesiones viejas de usuarios inactivos/bloqueados quedan inválidas.
-- URLs arbitrarias de imágenes/comprobantes restringidas a Cloudinary esperado.
-
-No tocó:
-- Prisma schema.
-- Migraciones.
-- Diseño.
-- Paginación.
-- Polling.
-- Caching.
-- Paquetes, excepto después para Next.js.
-- Commit/push inicialmente.
-
----
-
-# Build y verificaciones locales
-
-Se creó script seguro:
-
-"build:safe": "prisma generate && next build"
-
-Esto evita correr prisma migrate deploy durante la prueba local.
-
-Resultados actuales:
-
-npm.cmd run build:safe: OK
-npm.cmd run lint: OK con 1 warning
-npx.cmd prisma validate: OK
-
-Warning existente:
-
-src/app/admin/dashboard/page.tsx
-1114:5 Warning: React Hook useCallback has a missing dependency: 'addToast'.
-
-Este warning no bloquea build.
-
----
-
-# Next.js update
-
-Se actualizó Next.js solo dentro de la rama 14.2.x.
-
-Antes:
-next@14.2.18
-
-Ahora:
-next@14.2.35
-
-Archivos modificados:
-- package.json
-- package-lock.json
-
-Confirmado:
-npm.cmd ls next --depth=0 → next@14.2.35
-
-Después de actualizar:
-npm.cmd run build:safe: OK
-npm.cmd run lint: OK con el mismo warning addToast
-npx.cmd prisma validate: OK
-
-No se migró a Next 15/16.
-
----
-
-# npm audit
-
-Se corrió npm.cmd audit.
-
-Resultado:
-- 5 vulnerabilities
-- 1 moderate
-- 4 high
-
-No se ejecutó npm audit fix --force.
-
-Motivo:
-- El fix automático intentaría subir a next@16.2.4 y eslint-config-next@16.2.4.
-- Eso sería un salto mayor y puede romper compatibilidad.
-- Se decidió no hacerlo automáticamente.
-
-Resumen audit:
-- glob vía eslint-config-next: tooling/dev, no runtime.
-- Vulnerabilidades Next: audit recomienda Next 16, pero el proyecto quedó en 14.2.35.
-- PostCSS moderate: posible vía dependencia bundled.
-- Recomendación previa: no forzar, tratar como fase separada si se decide migrar mayor.
-
----
-
-# Logs de Vercel
-
-Logs anteriores no mostraban 500.
-
-Se vio patrón:
-GET /api/orders → 401 cada minuto
-
-Probable causa:
-- Polling automático de /api/orders cada 60s sin sesión válida.
-- La API está protegida porque responde 401.
-- No parece crash.
-- No se consideró prioridad inmediata por ahora, pero debe revisarse si hay tiempo.
-
-Quiero que confirmes:
-- Si /api/orders solo se llama desde admin.
-- Si hay polling innecesario.
-- Si un 401 detiene polling o no.
-- Si esto genera costo/ruido en Vercel.
-
----
-
-# Lo que necesito de ti ahora
-
-Quiero una revisión final como senior dev.
-
-NO hagas cambios todavía.
-
-Revisa:
-
-## A. Seguridad
-1. APIs admin protegidas.
-2. Roles OWNER/BAKER/ASSISTANT aplicados en backend.
-3. Usuarios bloqueados/inactivos no pueden seguir usando sesiones.
-4. Login max attempts correcto.
-5. Logout limpia sesión.
-6. No hay datos admin expuestos en rutas públicas.
-7. Cloudinary upload seguro.
-8. Validación de URLs Cloudinary correcta.
-9. Teléfono validado backend.
-10. Fecha mínima de cotización validada backend.
-
-## B. Carrito y órdenes online
-1. Backend recalcula precios desde DB.
-2. Productos ocultos/out-of-stock no se pueden ordenar.
-3. Cantidades tienen límites.
-4. Total no puede manipularse desde frontend.
-5. Comprobante obligatorio.
-6. Orden llega correctamente al admin.
-7. Confirmar/negar respeta permisos.
-8. API externa no rompe si falta EXTERNAL_ORDERS_API_URL.
-
-## C. Cotizaciones
-1. Mínimo 3 días funciona en frontend y backend.
-2. Upload de fotos funciona.
-3. Admin puede agregar/eliminar fotos.
-4. BAKER se autoasigna si corresponde.
-5. OWNER puede asignar manualmente.
-
-## D. Productos/catálogo
-1. Público solo ve AVAILABLE.
-2. Admin puede ver todos.
-3. Filtros funcionan.
-4. HIDDEN y OUT_OF_STOCK no se pueden comprar.
-5. Home no muestra productos ocultos.
-
-## E. Prisma/Neon
-1. Revisar schema y migraciones.
-2. Ver si hay riesgo de drift porque antes pudo haberse usado db push.
-3. No tocar producción todavía.
-4. Decirme cómo revisar safely el estado de migraciones.
-5. Decirme si conviene staging/copia antes de tocar DB.
-6. Ver si npm run build actual sigue corriendo prisma migrate deploy y si eso es seguro para Vercel.
-
-## F. Vercel/producción
-1. Variables de entorno necesarias.
-2. Cookies/session config en producción.
-3. Middleware.
-4. Cache de páginas públicas.
-5. Logs esperados vs sospechosos.
-6. /api/orders 401 cada minuto.
-
-## G. Performance
-1. Polling.
-2. Paginación en /api/orders.
-3. Queries potencialmente caras.
-4. Imágenes.
-5. Bundle/client components.
-6. Caching.
-
----
-
-# Entrega el reporte así
-
-## 1. Veredicto
-- Listo para producción: Sí / No / Casi
-- Nivel de riesgo: Bajo / Medio / Alto
-
-## 2. Bloqueadores reales
-Solo cosas que impiden publicar.
-
-## 3. Debe corregirse antes de uso público
-Cosas importantes pero no necesariamente fatales.
-
-## 4. Puede esperar
-Mejoras no urgentes.
-
-## 5. Sobre Prisma/migraciones
-Explica claramente qué revisar antes de tocar producción.
-
-## 6. Sobre npm audit
-Explica si conviene quedarse en Next 14.2.35 o migrar a Next 16 ahora.
-
-## 7. Sobre /api/orders 401 cada minuto
-Explica si requiere cambio y dónde revisar.
-
-## 8. Checklist manual final
-Dame pruebas exactas que debo hacer en producción.
-
-## 9. Si recomiendas cambios
-Lista el orden exacto de fases.
-
-No apliques cambios sin que yo confirme.
+Actúa como senior Next.js / TypeScript / Prisma engineer trabajando en el proyecto
+Kan M Repostería y Catering (Next.js 14 App Router, Prisma, Neon Postgres, Vercel).
+
+OBJETIVO (Fase 0): crear la FUENTE ÚNICA DE VERDAD del negocio y exponerla por
+endpoints públicos de solo lectura, para que un bot de WhatsApp externo (proyecto
+Python/FastAPI aparte) la consuma sin contradecir a la web. NO construir el bot aquí.
+
+REGLAS:
+- No toques el schema de Prisma todavía salvo donde se indica explícitamente abajo.
+- No cambies la apariencia visual de ninguna página.
+- No instales paquetes nuevos.
+- TypeScript estricto, mismo estilo del proyecto.
+
+────────────────────────────────────────────────────────────
+PASO 1 — Crear src/lib/bizInfo.ts (fuente única de verdad)
+────────────────────────────────────────────────────────────
+Exporta constantes tipadas con:
+
+- RD_UTC_OFFSET_HOURS = -4 (RD sin horario de verano).
+- SCHEDULE: Record<number, {open:number; close:number}> con día 0=domingo..6=sábado.
+  Horario REAL: Lun–Jue 9–19, Vie–Dom 9–22 (domingo=9-22, sáb=9-22, vie=9-22,
+  lun a jue=9-19).
+- SCHEDULE_TEXT = "Lunes a jueves de 9:00 AM a 7:00 PM. Viernes a domingo de
+  9:00 AM a 10:00 PM."
+- HOLIDAY_OVERRIDES: objeto vacío {} por ahora (dejar comentario de cómo extender).
+- BUSINESS: { name, greeting:"¡Hola, bienvenido a Kan M Repostería y Catering!",
+  address:"C. Espaillat 58, Zona Colonial, Santo Domingo",
+  mapsUrl:"https://maps.app.goo.gl/D1i89Ui3vx92FubCA",
+  phoneDisplay:"+1 (829) 610-7064", phoneTel:"+18296107064",
+  email:"kanmreposteriaycatering@gmail.com",
+  instagram, tiktok } (toma instagram/tiktok de src/app/contacto/page.tsx).
+- LINKS: home, catalogo, catalogoCategoria(cat), cotizar, catering, faq, contacto,
+  maps, uberEats, pedidosYa. SITE_URL desde
+  process.env.NEXT_PUBLIC_SITE_URL || "https://kan-m-reposteria.vercel.app",
+  sin slash final. Los links uberEats/pedidosYa cópialos EXACTOS desde
+  src/components/DeliveryButtons.tsx.
+- CATALOG_CATEGORIES: mismas 6 que src/app/catalogo/CatalogClient.tsx
+  (cakes/Pasteles, desserts/Postres, events/Mesa de dulces,
+  picaderas/Picaderas para eventos, brunch/Brunch, drinks/Bebidas).
+- RULES: { minLeadDays:3, bigEventLeadText:"1 a 2 semanas para eventos grandes
+  (bodas, cumpleaños temáticos)", deliveryMinAmountRD:250, eventDepositPercent:50,
+  botMayShareBankInfo:false }.
+  (minLeadDays DEBE coincidir con la regla de 3 días ya validada en
+  src/app/api/orders/route.ts — no cambies orders, solo deja un comentario
+  indicando que este es el valor canónico).
+- FAQS: array de { id, q, a, tags:string[] } con estas 13 preguntas, redactadas
+  amables y en tuteo, usando los valores de arriba (no hardcodear, interpolar):
+  1) horario  2) ubicación  3) delivery (3 opciones: pickup gratis / entrega
+  propia mínimo RD$250 según distancia / Uber Eats + PedidosYa)
+  4) cómo ordenar  5) pasteles personalizados (→ link cotizar)
+  6) anticipación (3 días / eventos grandes 1-2 semanas)
+  7) cotizar evento (web preferido, si insiste → humano)
+  8) precios: SOLO si está en el catálogo el bot dice lo que hay; si NO está,
+     conecta con humano avisando que no tiene esa info al momento
+  9) métodos de pago: transferencia/efectivo/tarjeta + 50% depósito eventos;
+     IMPORTANTE: nunca enviar números de cuenta por WhatsApp
+  10) Uber Eats / PedidosYa (sí, ambos, con links)
+  11) qué productos tienen (orienta por categorías + link, no lista 1x1)
+  12) opciones sin gluten / veganas (sí, escala a humano para orientación)
+  13) catering / corporativo (sí, se cotiza según evento)
+  `tags` deben ser palabras clave en minúscula sin tildes para que el bot
+  matchee texto libre.
+
+────────────────────────────────────────────────────────────
+PASO 2 — Helper de horario en src/lib/bizInfo.ts
+────────────────────────────────────────────────────────────
+Agrega export function isOpenNow(now?: Date): { open:boolean; schedule:string }
+que calcule la hora local RD aplicando RD_UTC_OFFSET_HOURS (mismo patrón que
+src/app/api/orders/route.ts usa: Date.now() - 4*3600_000), consulte SCHEDULE
+por día, y devuelva si está abierto + SCHEDULE_TEXT. Considerar HOLIDAY_OVERRIDES
+aunque esté vacío (preparado para el futuro).
+
+────────────────────────────────────────────────────────────
+PASO 3 — Endpoints públicos de solo lectura
+────────────────────────────────────────────────────────────
+Crear:
+- src/app/api/public/business-info/route.ts → GET que devuelve
+  { business, address, mapsUrl, phone, email, socials, schedule:SCHEDULE_TEXT,
+    isOpenNow, links, rules, categories }. Público, sin auth.
+  Cache-Control: "public, s-maxage=300, stale-while-revalidate=600".
+- src/app/api/public/faq/route.ts → GET que devuelve FAQS.
+  Mismo header de cache. Soporta ?q= opcional: si viene, filtra FAQS por match
+  simple en q/a/tags (normalizando minúsculas/sin tildes) y devuelve las que
+  matcheen; si no, devuelve todas.
+- Ambos: export const revalidate = 300; runtime nodejs.
+- Reutiliza el catálogo existente: NO crees endpoint nuevo de productos,
+  el bot usará el GET /api/products que ya existe.
+
+IMPORTANTE sobre middleware: revisa src/middleware.ts. El matcher actual NO
+cubre /api/public/*, así que estos endpoints quedan públicos por defecto —
+verifícalo y, si hiciera falta, asegúralo explícitamente, pero NO agregues
+auth a /api/public/*.
+
+────────────────────────────────────────────────────────────
+PASO 4 — Refactor SIN cambiar apariencia
+────────────────────────────────────────────────────────────
+- src/app/faq/page.tsx: reemplaza el array local FAQS por import desde
+  src/lib/bizInfo.ts (mapea {q,a}). El render, estilos y animaciones quedan
+  idénticos. No toques el JSX de presentación.
+- src/app/contacto/page.tsx: reemplaza los strings hardcodeados de dirección,
+  teléfono, email, instagram, tiktok, mapsUrl por los de BUSINESS/LINKS.
+  Apariencia idéntica.
+- No toques lib/whatsapp.ts ni DeliveryButtons.tsx en esta fase (solo se
+  copiaron sus valores a bizInfo; unificarlos es fase posterior).
+
+────────────────────────────────────────────────────────────
+PASO 5 — Modelo Escalation + endpoint (preparación para Fase 2)
+────────────────────────────────────────────────────────────
+- En prisma/schema.prisma agrega modelo Escalation:
+  id (cuid), customerPhone, customerName?, summary (String), state (String),
+  status (enum: OPEN | HANDLED, default OPEN), handledBy?, handledAt?,
+  createdAt (default now). @@map("whatsapp_escalations"), índices en
+  status y createdAt.
+  NO corras migraciones tú: deja el schema listo y documenta el comando
+  exacto en un comentario al final del prompt de salida.
+- Crear src/app/api/whatsapp/escalations/route.ts:
+  POST: lo llama el bot externo. Protección por header
+  x-bot-api-key === process.env.BOT_API_KEY (comparación timing-safe;
+  si no hay env, responde 503). Valida body con zod
+  (customerPhone requerido formato dominicano usando lib/phone.ts,
+  customerName opcional, summary string 1..2000, state string). Crea
+  Escalation. Tras crear, dispara la notificación push existente
+  reutilizando el patrón de src/lib/push.ts (notifica a OWNER/BAKER;
+  si push falla, NO rompas el POST, solo console.error — mismo patrón
+  que /api/orders).
+  GET: protegido con getSession (cualquier usuario logueado), lista
+  escalations OPEN ordenadas por createdAt desc. Cache private no-store.
+- Añade /api/whatsapp/ al matcher de src/middleware.ts SOLO para el GET
+  (el POST se protege por API key, no por sesión; revisa que el matcher
+  no bloquee el POST del bot — el POST debe poder entrar sin cookie).
+- Actualiza .env.example agregando BOT_API_KEY="" con comentario.
+
+────────────────────────────────────────────────────────────
+PASO 6 — Verificación final
+────────────────────────────────────────────────────────────
+- npx tsc --noEmit debe pasar.
+- npm run lint debe pasar.
+- Lista de archivos creados/modificados.
+- El comando exacto de migración Prisma para que YO lo corra manualmente
+  (no lo ejecutes tú).
+- NO crees el bot, NO toques el panel admin UI (la bandeja visual es Fase 2).
+
+Cuando termines, dame un resumen de qué creaste, qué modificaste, y confirma
+que faq/contacto se ven igual que antes.

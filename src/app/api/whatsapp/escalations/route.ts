@@ -3,6 +3,27 @@ import { prisma } from "@/lib/db";
 import { notifyOnEscalation } from "@/lib/push";
 import { timingSafeEqual } from "crypto";
 
+async function liberarEstadoBot(phone: string): Promise<void> {
+  // Libera el estado del bot en wa_conversations directamente
+  // en la DB compartida. Usa SQL crudo porque Prisma no modela
+  // las tablas wa_* (son del bot Python).
+  try {
+    await prisma.$executeRawUnsafe(
+      `UPDATE wa_conversations
+          SET state = 'menu_principal',
+              escalated_at = NULL,
+              context = COALESCE(context, '{}'::jsonb) ||
+                        '{"escalado_aviso_enviado": false,
+                          "escalado_motivo": null}'::jsonb,
+              updated_at = now()
+        WHERE phone = $1`,
+      phone
+    );
+  } catch (e) {
+    console.error("[escalations] liberarEstadoBot failed:", e);
+  }
+}
+
 function verifyBotKey(req: NextRequest): boolean {
   const key = req.headers.get("x-bot-api-key") || "";
   const expected = process.env.BOT_API_KEY || "";
@@ -84,11 +105,20 @@ export async function DELETE(req: NextRequest) {
   if (!phone && !id) {
     return NextResponse.json({ error: "phone o id requerido" }, { status: 400 });
   }
+  let phoneToUse: string | null = phone;
   try {
     if (phone) {
       await prisma.whatsappEscalation.delete({ where: { phone } });
     } else {
+      const esc = await prisma.whatsappEscalation.findUnique({
+        where: { id: id! },
+        select: { phone: true },
+      });
+      phoneToUse = esc?.phone ?? null;
       await prisma.whatsappEscalation.delete({ where: { id: id! } });
+    }
+    if (phoneToUse) {
+      await liberarEstadoBot(phoneToUse);
     }
   } catch {
     // Idempotente: si no existe, ok igual

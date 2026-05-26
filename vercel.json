@@ -1,11 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run vercel-build",
-  "outputDirectory": ".next",
-  "crons": [
-    {
-      "path": "/api/whatsapp/escalations/cron",
-      "schedule": "0 * * * *"
-    }
-  ]
+  "outputDirectory": ".next"
 }

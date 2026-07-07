@@ -77,6 +77,8 @@ const newOrderSchema = z.object({
   )).max(20).optional(),
   deliveryTime: z.string().regex(/^\d{2}:\d{2}$/).optional().nullable().or(z.literal("")),
   deliveryMethod: z.enum(["pickup", "delivery"]).optional().nullable().or(z.literal("")),
+  // Solo se respeta si hay sesión activa (repostera/admin agendando en persona).
+  source: z.enum(["ONLINE", "IN_PERSON"]).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -97,15 +99,25 @@ export async function POST(req: NextRequest) {
   }
   const data = parsed.data;
 
-  // Validar que la fecha sea al menos today + 3 días (zona horaria RD = UTC-4)
+  // Pedido tomado EN PERSONA: requiere sesión activa (OWNER/BAKER/ASSISTANT).
+  // Sin sesión, `source` se ignora y el pedido entra como ONLINE normal.
+  const session = data.source === "IN_PERSON" ? await getSession(req) : null;
+  const isInPerson = data.source === "IN_PERSON" && !!session;
+
+  // Validar que la fecha sea al menos today + 3 días (zona horaria RD = UTC-4).
+  // En persona la repostera decide la fecha — solo exigimos que no sea pasada.
   const nowRD = new Date(Date.now() - 4 * 3600_000);
   const todayRD = new Date(nowRD.toISOString().slice(0, 10) + "T00:00:00");
   const minDate = new Date(todayRD);
-  minDate.setDate(minDate.getDate() + 3);
+  if (!isInPerson) minDate.setDate(minDate.getDate() + 3);
   const eventDateObj = new Date(data.eventDate + "T00:00:00");
   if (isNaN(eventDateObj.getTime()) || eventDateObj < minDate) {
     return NextResponse.json(
-      { error: "Los pedidos personalizados deben realizarse con un mínimo de 3 días de antelación." },
+      {
+        error: isInPerson
+          ? "La fecha del evento no puede ser una fecha pasada."
+          : "Los pedidos personalizados deben realizarse con un mínimo de 3 días de antelación.",
+      },
       { status: 400 }
     );
   }
@@ -128,6 +140,8 @@ export async function POST(req: NextRequest) {
       imageUrls: data.imageUrls ?? [],
       deliveryTime: data.deliveryTime || null,
       deliveryMethod: data.deliveryMethod || null,
+      source: isInPerson ? "IN_PERSON" : "ONLINE",
+      takenBy: isInPerson ? session!.name : null,
       status: "PENDING",
     },
   });

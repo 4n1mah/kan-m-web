@@ -12,12 +12,18 @@ import {
   MessageCircle, User, ShoppingBag, FileText, Download,
   Image as ImageIcon, AlertTriangle, Search, Clock,
   CheckCircle2, Truck, Ban, Info, StickyNote, History,
-  Edit3, Save, Calendar, BarChart3
+  Edit3, Save, Calendar, BarChart3, Store, Bell, CalendarPlus
 } from "lucide-react";
+import CakePopup from "@/components/CakePopup";
+import { type CakeDetail as MenuCakeDetail } from "@/lib/cakeMenu";
+import { formatDominicanPhone, validateDominicanPhone } from "@/lib/phone";
+import { enablePushNotifications, pushSupported } from "@/lib/fcmClient";
 
 // ── Types ─────────────────────────────────────────────────────
 type Product = { id: string; name: string; description: string; category: string; imageUrl: string; price: number | null; availabilityStatus?: "AVAILABLE" | "OUT_OF_STOCK" | "HIDDEN"; };
-type CakeDetail = { filling: string; masa: string; colors: string; message: string; size: string; };
+// Pedidos viejos solo tienen filling/masa; los nuevos traen también
+// cakeType/flavor/decoration/estimatedPrice (ver src/lib/cakeMenu.ts).
+type CakeDetail = { filling: string; masa: string; colors: string; message: string; size: string; cakeType?: string; flavor?: string; decoration?: string; estimatedPrice?: number | null; };
 type StatusLogEntry = { status: string; by: string; at: string; };
 type Order = {
   id: string; name: string; phone: string; email?: string;
@@ -29,6 +35,8 @@ type Order = {
   depositAmount?: number | null;
   paymentStatus?: string;
   deliveryMethod?: string | null;
+  source?: "ONLINE" | "IN_PERSON";
+  takenBy?: string | null;
   statusLog?: StatusLogEntry[];
   createdAt: string;
 };
@@ -604,6 +612,13 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
                 <span className="w-1.5 h-1.5 rounded-full" style={{background:st.dot}}/>{st.label}
               </span>
               {urgent&&<span className="inline-flex items-center gap-1 bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full"><AlertTriangle size={10}/> {days===0?"¡Hoy!":`${days}d`}</span>}
+              {localOrder.source==="IN_PERSON"?(
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700" title={localOrder.takenBy?`Agendado por ${localOrder.takenBy}`:undefined}>
+                  <Store size={10}/> En persona{localOrder.takenBy?` · ${localOrder.takenBy.split(" ")[0]}`:""}
+                </span>
+              ):(
+                <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700">🌐 En línea</span>
+              )}
               <span className="text-xs text-gray-400">#{shortId(localOrder.id)}</span>
             </div>
             <div className="flex items-center gap-2">
@@ -667,10 +682,16 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
                         <p className="text-sm font-semibold text-gray-800">🎂 {item}</p>
                         {cd&&(
                           <div className="mt-1.5 grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs text-gray-600">
-                            <p><span className="font-medium text-gray-700">Masa:</span> {cd.masa}</p>
-                            <p><span className="font-medium text-gray-700">Relleno:</span> {cd.filling}</p>
+                            {cd.flavor?(
+                              <p><span className="font-medium text-gray-700">Sabor:</span> {cd.flavor}{cd.cakeType==="especialidad"?" (especialidad)":cd.cakeType==="clasico"?" (clásico)":""}</p>
+                            ):(<>
+                              <p><span className="font-medium text-gray-700">Masa:</span> {cd.masa}</p>
+                              <p><span className="font-medium text-gray-700">Relleno:</span> {cd.filling}</p>
+                            </>)}
+                            {cd.decoration&&<p><span className="font-medium text-gray-700">Decoración:</span> {cd.decoration}</p>}
                             <p><span className="font-medium text-gray-700">Tamaño:</span> {cd.size}</p>
                             {cd.colors&&<p><span className="font-medium text-gray-700">Colores:</span> {cd.colors}</p>}
+                            {cd.estimatedPrice!=null&&<p><span className="font-medium text-gray-700">Precio menú:</span> RD${cd.estimatedPrice.toLocaleString("es-DO")}</p>}
                             {cd.message&&<p className="col-span-2"><span className="font-medium text-gray-700">Mensaje:</span> &quot;{cd.message}&quot;</p>}
                           </div>
                         )}
@@ -1006,6 +1027,7 @@ function OrderCard({ order,onClick,onQuickAction,currentUser }:{
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{background:st.dot}}/>{st.label}
               </span>
               {urgent&&<span className="inline-flex items-center gap-0.5 bg-red-100 text-red-600 text-xs font-bold px-1.5 py-0.5 rounded-full"><AlertTriangle size={9}/> {days===0?"¡Hoy!":`${days}d`}</span>}
+              {order.source==="IN_PERSON"&&<span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700"><Store size={9}/> En persona</span>}
             </div>
             <span className="text-xs text-gray-400 shrink-0">{dateR}</span>
           </div>
@@ -1065,6 +1087,172 @@ function OrderCard({ order,onClick,onQuickAction,currentUser }:{
   );
 }
 
+// ── Agendar pedido en persona ─────────────────────────────────
+// Para cuando una repostera/admin toma un pedido en la repostería.
+// Crea un Order normal pero con source=IN_PERSON y takenBy=usuario actual.
+function ScheduleOrderModal({ onClose, onCreated, addToast }:{
+  onClose:()=>void; onCreated:()=>void; addToast:(msg:string,type?:"success"|"error"|"info")=>void;
+}) {
+  const [form,setForm] = useState({
+    name:"", phone:"", email:"", eventType:"Otro", eventDate:"", deliveryTime:"",
+    guestCount:"1", deliveryMethod:"pickup", notes:"", otherItems:"",
+  });
+  const [cakes,setCakes] = useState<{label:string;detail:MenuCakeDetail}[]>([]);
+  const [cakePopup,setCakePopup] = useState<{open:boolean;editIdx:number|null}>({open:false,editIdx:null});
+  const [saving,setSaving] = useState(false);
+  const [error,setError] = useState("");
+  const inputCls = "w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2.5 text-sm focus:outline-none focus:border-[#f07097] transition";
+
+  useEffect(()=>{ document.body.style.overflow="hidden"; return()=>{ document.body.style.overflow=""; }; },[]);
+
+  const cakeLabel = (d:MenuCakeDetail, idx:number) => {
+    const base = d.flavor || `Pastel ${d.masa}`.trim();
+    const dupes = cakes.filter((c,i)=>i!==idx&&c.label.startsWith(base)).length;
+    return dupes>0 ? `${base} (${dupes+1})` : base;
+  };
+  const saveCake = (d:MenuCakeDetail) => {
+    setCakes(prev=>{
+      if(cakePopup.editIdx!=null){ const n=[...prev]; n[cakePopup.editIdx]={...n[cakePopup.editIdx],detail:d}; return n; }
+      return [...prev,{label:cakeLabel(d,-1),detail:d}];
+    });
+  };
+
+  const isValid = !!(form.name.trim()&&validateDominicanPhone(form.phone)&&form.eventType&&form.eventDate&&form.guestCount.trim());
+
+  const submit = async () => {
+    if(!isValid||saving) return;
+    setSaving(true); setError("");
+    try {
+      const otherItems = form.otherItems.split(",").map(s=>s.trim()).filter(Boolean);
+      const selectedItems = [...cakes.map(c=>c.label), ...otherItems];
+      const cakeDetails: Record<string,MenuCakeDetail> = {};
+      cakes.forEach(c=>{ cakeDetails[c.label]=c.detail; });
+      const res = await fetch("/api/orders",{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          name:form.name, phone:form.phone, email:form.email||undefined,
+          eventType:form.eventType, eventDate:form.eventDate,
+          deliveryTime:form.deliveryTime||undefined, guestCount:form.guestCount,
+          selectedItems, cakeDetails, notes:form.notes||undefined,
+          deliveryMethod:form.deliveryMethod||undefined, source:"IN_PERSON",
+        }),
+      });
+      if(!res.ok){
+        const data = await res.json().catch(()=>({}));
+        throw new Error(data.error??"Error al agendar el pedido");
+      }
+      addToast("Pedido agendado en persona","success");
+      onCreated(); onClose();
+    } catch(e:unknown){ setError(e instanceof Error?e.message:"Error al agendar el pedido"); }
+    finally{ setSaving(false); }
+  };
+
+  return(
+    <>
+      {cakePopup.open&&(
+        <CakePopup item="Pastel — pedido en persona"
+          initial={cakePopup.editIdx!=null?cakes[cakePopup.editIdx].detail:null}
+          onSave={saveCake} onClose={()=>setCakePopup({open:false,editIdx:null})}/>
+      )}
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+          <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl z-10">
+            <div>
+              <h3 className="font-display text-xl flex items-center gap-2"><Store size={18} className="text-[#f07097]"/> Agendar pedido</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Pedido tomado en persona en la repostería</p>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"><X size={16}/></button>
+          </div>
+          <div className="p-6 space-y-5">
+
+            {/* Cliente */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Datos del cliente</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2"><label className="text-xs text-gray-500 mb-1 block">Nombre *</label>
+                  <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Nombre del cliente" className={inputCls}/></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Teléfono *</label>
+                  <input value={form.phone} onChange={e=>setForm({...form,phone:formatDominicanPhone(e.target.value)})} maxLength={12} placeholder="809-000-0000" className={inputCls}/>
+                  {form.phone.length>0&&!validateDominicanPhone(form.phone)&&<p className="text-xs text-red-500 mt-1">Número dominicano inválido</p>}
+                </div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Email</label>
+                  <input type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="(opcional)" className={inputCls}/></div>
+              </div>
+            </div>
+
+            {/* Evento */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Evento y entrega</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div><label className="text-xs text-gray-500 mb-1 block">Tipo *</label>
+                  <select value={form.eventType} onChange={e=>setForm({...form,eventType:e.target.value})} className={inputCls}>
+                    {EVENT_TYPES.map(t=><option key={t} value={t}>{t}</option>)}
+                  </select></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Personas *</label>
+                  <input type="number" min={1} value={form.guestCount} onChange={e=>setForm({...form,guestCount:e.target.value})} className={inputCls}/></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Fecha *</label>
+                  <DatePicker value={form.eventDate} onChange={d=>setForm({...form,eventDate:d})} placeholder="Selecciona fecha"/></div>
+                <div><label className="text-xs text-gray-500 mb-1 block">Hora de entrega</label>
+                  <TimePicker value={form.deliveryTime} onChange={t=>setForm({...form,deliveryTime:t})} placeholder="Selecciona hora"/></div>
+                <div className="col-span-2">
+                  <label className="text-xs text-gray-500 mb-1.5 block">Método de entrega</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[{id:"pickup",label:"🏠 Recogida"},{id:"delivery",label:"🚗 Delivery"}].map(opt=>(
+                      <button key={opt.id} type="button" onClick={()=>setForm({...form,deliveryMethod:opt.id})}
+                        className={`px-3 py-2.5 rounded-xl text-sm border-2 font-medium transition ${form.deliveryMethod===opt.id?"border-transparent text-white":"border-[#f0e8e0] text-gray-600 hover:border-gray-300"}`}
+                        style={form.deliveryMethod===opt.id?{background:PINK}:{}}>{opt.label}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pasteles */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">Pasteles</p>
+              {cakes.length>0&&(
+                <div className="space-y-1.5 mb-2">
+                  {cakes.map((c,i)=>(
+                    <div key={i} className="text-xs bg-[#fef7f9] border border-[#f07097]/20 rounded-xl px-3 py-2 flex items-center gap-2">
+                      <span className="flex-1 text-gray-600">
+                        <span className="font-semibold text-[#f07097]">{c.label}: </span>
+                        {c.detail.cakeType==="tradicional"?`${c.detail.masa} · ${c.detail.filling} · ${c.detail.decoration}`:c.detail.flavor} · {c.detail.size}
+                        {c.detail.estimatedPrice!=null?` · RD$${c.detail.estimatedPrice.toLocaleString("es-DO")}`:" · a cotizar"}
+                      </span>
+                      <button type="button" onClick={()=>setCakePopup({open:true,editIdx:i})} className="text-gray-400 hover:text-[#f07097] transition"><Pencil size={12}/></button>
+                      <button type="button" onClick={()=>setCakes(prev=>prev.filter((_,x)=>x!==i))} className="text-gray-400 hover:text-red-500 transition"><X size={13}/></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button type="button" onClick={()=>setCakePopup({open:true,editIdx:null})}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-[#ede8e0] text-xs text-gray-400 hover:text-[#f07097] hover:border-[#f07097]/40 transition w-full justify-center">
+                <Plus size={13}/> Agregar pastel del menú
+              </button>
+            </div>
+
+            {/* Otros productos + notas */}
+            <div className="space-y-3">
+              <div><label className="text-xs text-gray-500 mb-1 block">Otros productos <span className="text-gray-400">(separados por coma)</span></label>
+                <input value={form.otherItems} onChange={e=>setForm({...form,otherItems:e.target.value})} placeholder="ej. Macarons, Brownies" className={inputCls}/></div>
+              <div><label className="text-xs text-gray-500 mb-1 block">Notas</label>
+                <textarea rows={3} value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} placeholder="Detalles acordados con el cliente…" className={inputCls+" resize-none"}/></div>
+            </div>
+
+            {error&&<p className="text-sm text-red-500 text-center bg-red-50 rounded-xl py-2">{error}</p>}
+
+            <button type="button" onClick={submit} disabled={!isValid||saving}
+              className="w-full py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{background:PINK}}>
+              <CalendarPlus size={16}/> {saving?"Agendando…":"Agendar pedido"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Main Dashboard ─────────────────────────────────────────────
 type CurrentUser = { id: string; email: string; name: string; role: "OWNER"|"BAKER"|"ASSISTANT" };
 
@@ -1117,9 +1305,26 @@ function DashboardInner() {
   const [userMenuOpen,setUserMenuOpen] = useState(false);
   const [cartOrderBadge,setCartOrderBadge] = useState(0);
   const [availabilityFilter,setAvailabilityFilter] = useState<"all"|"AVAILABLE"|"OUT_OF_STOCK"|"HIDDEN">("all");
+  const [scheduleOpen,setScheduleOpen] = useState(false);
+  const [pushBanner,setPushBanner] = useState<"hidden"|"prompt"|"enabling">("hidden");
   const { confirm,modal:confirmModal } = useConfirm();
   const { toasts,addToast,removeToast } = useToast();
   const prevPendingRef = useRef(0);
+
+  // Push web (FCM): si ya hay permiso, refresca el token silenciosamente en
+  // cada carga; si aún no se ha pedido, muestra el banner para activarlas.
+  useEffect(()=>{
+    if (!pushSupported()) return;
+    if (Notification.permission === "granted") { enablePushNotifications(); }
+    else if (Notification.permission === "default") { setPushBanner("prompt"); }
+  },[]);
+  const handleEnablePush = async ()=>{
+    setPushBanner("enabling");
+    const result = await enablePushNotifications();
+    if (result === "granted") { addToast("Notificaciones activadas en este dispositivo","success"); setPushBanner("hidden"); }
+    else if (result === "denied") { addToast("Bloqueaste las notificaciones — actívalas desde la configuración del navegador","error"); setPushBanner("hidden"); }
+    else { addToast("No se pudieron activar las notificaciones","error"); setPushBanner("prompt"); }
+  };
 
   async function load(){ const r=await fetch("/api/products"); setProducts(await r.json()); }
   async function loadOrders(){
@@ -1239,6 +1444,7 @@ function DashboardInner() {
       {confirmModal}
       {selectedOrder&&<OrderModal order={selectedOrder} onClose={()=>setSelectedOrder(null)} onUpdate={updateOrder} onDelete={deleteOrder} currentUser={currentUser}/>}
       {productModal.open&&<ProductModal product={productModal.product} onClose={()=>setProductModal({open:false,product:null})} onSave={load} onDelete={delProduct}/>}
+      {scheduleOpen&&<ScheduleOrderModal onClose={()=>setScheduleOpen(false)} onCreated={loadOrders} addToast={addToast}/>}
 
       <header className="admin-header-glass sticky top-0 z-40 border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-4" style={{height:"3.75rem"}}>
@@ -1317,6 +1523,24 @@ function DashboardInner() {
             <p className="text-xs text-gray-400 tabular-nums">
               {new Date().toLocaleDateString("es-DO", { weekday:"long", day:"numeric", month:"long" })}
             </p>
+          </div>
+        )}
+
+        {/* Banner: activar notificaciones push */}
+        {pushBanner!=="hidden"&&(
+          <div className="mb-5 flex items-center gap-3 bg-white border border-[#f07097]/30 rounded-2xl px-4 py-3 shadow-sm">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{background:"#fef7f9"}}>
+              <Bell size={16} className="text-[#f07097]"/>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-800">Recibe los pedidos nuevos en tu celular</p>
+              <p className="text-xs text-gray-500">Las notificaciones llegan aunque Chrome esté cerrado.</p>
+            </div>
+            <button onClick={handleEnablePush} disabled={pushBanner==="enabling"}
+              className="px-4 py-2 rounded-xl text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50 shrink-0" style={{background:PINK}}>
+              {pushBanner==="enabling"?"Activando…":"Activar"}
+            </button>
+            <button onClick={()=>setPushBanner("hidden")} className="text-gray-300 hover:text-gray-500 transition shrink-0"><X size={15}/></button>
           </div>
         )}
 
@@ -1400,6 +1624,12 @@ function DashboardInner() {
                 <button onClick={loadOrders} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#f07097] transition px-3 py-2 rounded-xl border border-[#ede8e0] bg-white shrink-0">
                   <RefreshCw size={13} className={ordersLoading?"animate-spin":""}/> <span className="hidden sm:inline">Actualizar</span>
                 </button>
+                {currentUser?.role!=="ASSISTANT"&&(
+                  <button onClick={()=>setScheduleOpen(true)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-white transition px-3 py-2 rounded-xl hover:opacity-90 shrink-0" style={{background:PINK}}>
+                    <CalendarPlus size={13}/> <span className="hidden sm:inline">Agendar pedido</span><span className="sm:hidden">Agendar</span>
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-2 px-4 py-3 border-t border-[#f0e8e0]">
                 <span className="text-xs text-gray-400 shrink-0">Repostera:</span>

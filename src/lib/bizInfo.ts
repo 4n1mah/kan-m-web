@@ -65,12 +65,10 @@ export const CATALOG_CATEGORIES: { id: string; label: string }[] = [
   { id: "drinks", label: "Bebidas" },
 ];
 
-// Links externos copiados EXACTOS desde src/components/DeliveryButtons.tsx
-// (web fallback que sirve para Uber Eats y PedidosYa en cualquier plataforma).
+// Link externo copiado EXACTO desde src/components/DeliveryButtons.tsx
+// (web fallback que sirve para Uber Eats en cualquier plataforma).
 const UBER_EATS_WEB =
   "https://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA";
-const PEDIDOS_YA_WEB =
-  "https://www.pedidosya.com.do/restaurantes/santo-domingo-d.n./kan-m-reposteria-y-catering-bc836e83-e25b-4ce0-a580-015108a4b79f-menu?origin=shop_list";
 
 export const LINKS = {
   home: SITE_URL,
@@ -82,7 +80,6 @@ export const LINKS = {
   contacto: `${SITE_URL}/contacto`,
   maps: BUSINESS.mapsUrl,
   uberEats: UBER_EATS_WEB,
-  pedidosYa: PEDIDOS_YA_WEB,
 } as const;
 
 // Reglas de negocio. minLeadDays = 3 es el valor canónico; la validación
@@ -149,7 +146,7 @@ export const FAQS: Faq[] = [
       `Tienes tres opciones: ` +
       `1) Pickup gratis en ${BUSINESS.address}. ` +
       `2) Entrega propia desde un mínimo de RD$${RULES.deliveryMinAmountRD}; el costo varía según la distancia. ` +
-      `3) Pídelo por Uber Eats (${LINKS.uberEats}) o PedidosYa (${LINKS.pedidosYa}).`,
+      `3) Pídelo por Uber Eats (${LINKS.uberEats}).`,
     tags: [
       "delivery",
       "envio",
@@ -161,7 +158,6 @@ export const FAQS: Faq[] = [
       "entregas",
       "ubereats",
       "uber",
-      "pedidosya",
     ],
   },
   {
@@ -172,7 +168,7 @@ export const FAQS: Faq[] = [
       `del catálogo en ${LINKS.catalogo}, ` +
       `cotizar un pastel o evento personalizado en ${LINKS.cotizar}, ` +
       `escribirnos al WhatsApp ${BUSINESS.phoneDisplay}, ` +
-      `o pedir por Uber Eats / PedidosYa.`,
+      `o pedir por Uber Eats.`,
     tags: [
       "ordenar",
       "pedir",
@@ -275,17 +271,12 @@ export const FAQS: Faq[] = [
   },
   {
     id: "delivery-apps",
-    q: "¿Están en Uber Eats y PedidosYa?",
-    a:
-      `Sí, en ambas. ` +
-      `Uber Eats: ${LINKS.uberEats}. ` +
-      `PedidosYa: ${LINKS.pedidosYa}.`,
+    q: "¿Están en Uber Eats?",
+    a: `Sí. Puedes pedir por Uber Eats aquí: ${LINKS.uberEats}.`,
     tags: [
       "ubereats",
       "uber",
       "uber eats",
-      "pedidosya",
-      "pedidos ya",
       "app",
       "apps",
       "delivery",

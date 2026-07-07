@@ -6,6 +6,8 @@ import {
   CheckCircle2, ImagePlus, X, Clock, ChevronUp, ChevronDown, AlertCircle,
 } from "lucide-react";
 import { formatDominicanPhone, validateDominicanPhone } from "@/lib/phone";
+import CakePopup from "@/components/CakePopup";
+import { type CakeDetail } from "@/lib/cakeMenu";
 
 const EVENT_TYPES = ["Cumpleaños","Boda / Compromiso","Baby shower","Corporativo","Graduación","Quinceañera","Otro"];
 const PRODUCT_CATEGORIES = [
@@ -15,65 +17,10 @@ const PRODUCT_CATEGORIES = [
   { label: "Brunch / Catering", items: ["Brunch para grupo","Catering de evento"], isCake: false, note: "El menú se define en base a tus necesidades y tipo de evento." },
 ];
 const CAKE_ITEMS = new Set(PRODUCT_CATEGORIES.filter(c=>c.isCake).flatMap(c=>c.items));
-const FILLINGS = ["Dulce de leche","Crema pastelera","Ganache chocolate","Ganache chocolate blanco","Mermelada fresa","Mermelada frutos del bosque","Mermelada piña","Mermelada limón"];
-const MASAS = ["Vainilla","Chocolate","Marmol cake","Naranja"];
 const BTN = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
 
-type CakeDetail = { filling:string; masa:string; colors:string; message:string; size:string; };
 type FormState = { name:string; phone:string; email:string; eventType:string; eventDate:string; deliveryTime:string; guestCount:string; selectedItems:string[]; notes:string; deliveryMethod:string; };
 const EMPTY:FormState = { name:"",phone:"",email:"",eventType:"",eventDate:"",deliveryTime:"",guestCount:"",selectedItems:[],notes:"",deliveryMethod:"" };
-const EMPTY_CAKE:CakeDetail = { filling:"",masa:"",colors:"",message:"",size:"" };
-
-function CakePopup({ item,onSave,onClose }:{ item:string; onSave:(d:CakeDetail)=>void; onClose:()=>void }) {
-  const [d,setD] = useState<CakeDetail>(EMPTY_CAKE);
-  const s = (k:keyof CakeDetail,v:string) => setD(p=>({...p,[k]:v}));
-  useEffect(()=>{
-    const fn=(e:KeyboardEvent)=>{ if(e.key==="Escape") onClose(); };
-    document.addEventListener("keydown",fn); document.body.style.overflow="hidden";
-    return ()=>{ document.removeEventListener("keydown",fn); document.body.style.overflow=""; };
-  },[onClose]);
-  const Pill=({label,active,onClick}:{label:string;active:boolean;onClick:()=>void})=>(
-    <button type="button" onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-sm border transition ${active?"text-white border-transparent":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"}`}
-      style={active?{background:BTN}:{}}>
-      {label}
-    </button>
-  );
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.5)"}} onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
-        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-[var(--border)] rounded-t-3xl">
-          <div><h3 className="font-display text-xl">Detalles del pastel</h3><p className="text-xs text-[var(--muted-foreground)] mt-0.5">{item}</p></div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X size={16}/></button>
-        </div>
-        <div className="p-6 space-y-5">
-          <div><p className="text-sm font-semibold mb-2">🍮 Relleno <span className="text-[var(--rose)]">*</span></p><div className="flex flex-wrap gap-2">{FILLINGS.map(f=><Pill key={f} label={f} active={d.filling===f} onClick={()=>s("filling",d.filling===f?"":f)}/>)}</div></div>
-          <div><p className="text-sm font-semibold mb-2">🎂 Masa <span className="text-[var(--rose)]">*</span></p><div className="flex flex-wrap gap-2">{MASAS.map(m=><Pill key={m} label={m} active={d.masa===m} onClick={()=>s("masa",d.masa===m?"":m)}/>)}</div></div>
-          <div>
-            <p className="text-sm font-semibold mb-2">⚖️ Tamaño <span className="text-[var(--rose)]">*</span></p>
-            <div className="flex flex-wrap gap-2">
-              {["1/4","1/2","3/4","1","1.5","2"].map(n=>{const sz=`${n} libra${n==="1"?"":"s"}`;return <Pill key={sz} label={sz} active={d.size===sz} onClick={()=>s("size",d.size===sz?"":sz)}/>})}
-            </div>
-            <input
-              type="text"
-              placeholder="O escribe el tamaño personalizado..."
-              value={["1/4","1/2","3/4","1","1.5","2"].map(n=>`${n} libra${n==="1"?"":"s"}`).includes(d.size)?"":d.size}
-              onChange={e=>s("size",e.target.value)}
-              className="mt-2 w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"
-            />
-          </div>
-          <div><p className="text-sm font-semibold mb-2">🎨 Colores para decoración (2 Maximo)</p><input type="text" placeholder="ej. rosa, dorado, blanco..." value={d.colors} onChange={e=>s("colors",e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
-          <div><p className="text-sm font-semibold mb-2">✍️ Mensaje <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></p><input type="text" placeholder="ej. Feliz cumpleaños..." value={d.message} onChange={e=>s("message",e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/></div>
-          <button type="button" disabled={!d.filling||!d.masa||!d.size} onClick={()=>{onSave(d);onClose();}}
-            className="w-full py-3.5 rounded-2xl text-white font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            style={{background:BTN}}>
-            <CheckCircle2 size={18}/> Confirmar detalles
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function StepHeader({n,label}:{n:number;label:string}) {
   return (
@@ -565,7 +512,7 @@ function CotizarForm() {
 
   return(
     <div className="min-h-screen bg-[var(--background)]">
-      {pendingCakeItem&&<CakePopup item={pendingCakeItem} onSave={handleCakeSave} onClose={()=>setPendingCakeItem(null)}/>}
+      {pendingCakeItem&&<CakePopup item={pendingCakeItem} initial={cakeDetails[pendingCakeItem]??null} onSave={handleCakeSave} onClose={()=>setPendingCakeItem(null)}/>}
       <section className="relative overflow-hidden py-12 px-6 text-center">
         <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl"/>
         <span className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--rose)]/10 border border-[var(--rose)]/20 text-xs uppercase tracking-widest text-[var(--rose)]">
@@ -681,7 +628,7 @@ function CotizarForm() {
                         return(
                           <div key={item} className="text-xs bg-[var(--rose)]/5 border border-[var(--rose)]/15 rounded-xl px-3 py-2 flex items-start gap-2">
                             <Cake size={12} className="text-[var(--rose)] shrink-0 mt-0.5"/>
-                            <div><span className="font-semibold text-[var(--rose)]">{item}: </span><span className="text-[var(--muted-foreground)]">{d.masa} · {d.filling} · {d.size}{d.colors?` · Colores: ${d.colors}`:""}{d.message?` · "${d.message}"`:""}</span></div>
+                            <div><span className="font-semibold text-[var(--rose)]">{item}: </span><span className="text-[var(--muted-foreground)]">{d.cakeType==="tradicional"?`${d.masa} · ${d.filling} · ${d.decoration}`:d.flavor} · {d.size}{d.colors?` · Colores: ${d.colors}`:""}{d.message?` · "${d.message}"`:""}{d.estimatedPrice!=null?` · RD$${d.estimatedPrice.toLocaleString("es-DO")}`:" · Precio a cotizar"}</span></div>
                           </div>
                         );
                       })}

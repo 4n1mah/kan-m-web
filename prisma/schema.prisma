@@ -79,6 +79,13 @@ model Product {
   @@index([availabilityStatus])
 }
 
+// Cómo entró el pedido: desde la web pública o tomado en persona
+// en la repostería por una repostera/admin logueada.
+enum OrderSource {
+  ONLINE
+  IN_PERSON
+}
+
 enum OrderStatus {
   PENDING
   CONFIRMED
@@ -109,6 +116,8 @@ model Order {
   depositAmount Float?      @map("deposit_amount")
   paymentStatus String      @default("PENDING") @map("payment_status") // PENDING | PARTIAL | PAID
   deliveryMethod String?    @map("delivery_method") // "pickup" | "delivery"
+  source        OrderSource @default(ONLINE) // ONLINE = web pública, IN_PERSON = agendado en tienda
+  takenBy       String?     @map("taken_by") // nombre del usuario que lo agendó en persona
   statusLog     Json        @default("[]") @map("status_log")
   createdAt     DateTime    @default(now()) @map("created_at")
 
@@ -157,6 +166,39 @@ model CartOrder {
   @@map("cart_orders")
   @@index([status])
   @@index([createdAt])
+}
+
+// ── Tablas del BOT de WhatsApp (proyecto Python/FastAPI externo) ──────────
+// El bot vive en otro repo pero comparte esta misma base de datos Neon.
+// Estas tablas las crea y administra ÉL — están aquí solo para que
+// `prisma db push` no intente borrarlas. NO usarlas desde Next.js y NO
+// modificarlas aquí: cualquier cambio de estructura se hace en el bot.
+
+model wa_conversations {
+  phone            String    @id
+  name             String?
+  state            String    @default("nuevo")
+  context          Json?     @default("{}")
+  fallback_count   Int?      @default(0)
+  escalated_at     DateTime? @db.Timestamptz(6)
+  last_inbound_at  DateTime? @db.Timestamptz(6)
+  last_outbound_at DateTime? @db.Timestamptz(6)
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model wa_processed_messages {
+  message_id String    @id
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([created_at], map: "idx_wa_processed_messages_created_at")
+}
+
+/// Tabla de diagnóstico del bot — sin id único, Prisma la ignora.
+model wa_test_diag {
+  id Int?
+
+  @@ignore
 }
 
 model WhatsappEscalation {

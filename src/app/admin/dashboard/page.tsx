@@ -255,8 +255,8 @@ function ProductModal({ product,onClose,onSave,onDelete }:{ product:Product|null
   return(
     <>
       {modal}
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.5)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.5)"}} onClick={onClose}>
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
           <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl z-10">
             <div>
               <h3 className="font-display text-xl">{isEdit?"Editar producto":"Nuevo producto"}</h3>
@@ -346,8 +346,8 @@ function OrderEditModal({ order,onClose,onSave }:{ order:Order; onClose:()=>void
   return(
     <>
       {modal}
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
           <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl z-10">
             <div><h3 className="font-display text-xl">Editar pedido</h3><p className="text-xs text-gray-400">#{shortId(order.id)}</p></div>
             <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"><X size={16}/></button>
@@ -479,6 +479,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
   const items = Array.isArray(localOrder.selectedItems) ? localOrder.selectedItems : [];
   const cakeDet = (localOrder.cakeDetails&&typeof localOrder.cakeDetails==="object"?localOrder.cakeDetails:{}) as Record<string,CakeDetail>;
   const log = Array.isArray(localOrder.statusLog) ? localOrder.statusLog as StatusLogEntry[] : [];
+  const menuTotal = Object.values(cakeDet).reduce((s,c)=>s+(typeof c?.estimatedPrice==="number"?c.estimatedPrice:0),0);
   const st = STATUS[status]??STATUS.PENDING;
   const urgent = isUrgent(localOrder);
   const days = daysUntil(localOrder.eventDate);
@@ -602,8 +603,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
       {showBaker&&<BakerPopup onSelect={handleBakerSelect} onClose={()=>{setShowBaker(false);setPending(null);}}/>}
       {showEdit&&<OrderEditModal order={localOrder} onClose={()=>setShowEdit(false)} onSave={async data=>{await doUpdate(data);setLocalOrder(prev=>({...prev,...data}));}}/>}
 
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
 
           {/* Header */}
           <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl">
@@ -691,7 +692,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
                             {cd.decoration&&<p><span className="font-medium text-gray-700">Decoración:</span> {cd.decoration}</p>}
                             <p><span className="font-medium text-gray-700">Tamaño:</span> {cd.size}</p>
                             {cd.colors&&<p><span className="font-medium text-gray-700">Colores:</span> {cd.colors}</p>}
-                            {cd.estimatedPrice!=null&&<p><span className="font-medium text-gray-700">Precio menú:</span> RD${cd.estimatedPrice.toLocaleString("es-DO")}</p>}
+                            {cd.estimatedPrice!=null&&<p><span className="font-medium text-gray-700">Precio est.:</span> RD${cd.estimatedPrice.toLocaleString("es-DO")}</p>}
                             {cd.message&&<p className="col-span-2"><span className="font-medium text-gray-700">Mensaje:</span> &quot;{cd.message}&quot;</p>}
                           </div>
                         )}
@@ -717,6 +718,18 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
                 <span>💰</span> Precio y pago
               </p>
               <div className="space-y-3">
+                {/* Sugerencia según el menú de pasteles */}
+                {menuTotal>0&&!isAssistant&&(
+                  <div className="flex items-center gap-2 text-xs bg-[#fef7f9] border border-[#f07097]/20 rounded-xl px-3 py-2">
+                    <span className="text-gray-600">Estimado según menú: <strong className="text-[#f07097]">RD${menuTotal.toLocaleString("es-DO")}</strong></span>
+                    {agreedPrice!==String(menuTotal)&&(
+                      <button type="button" onClick={()=>{setPrice(String(menuTotal));setPriceEdit(true);}}
+                        className="ml-auto px-2.5 py-1 rounded-lg text-white font-semibold hover:opacity-90 transition shrink-0" style={{background:PINK}}>
+                        Usar
+                      </button>
+                    )}
+                  </div>
+                )}
                 {/* Agreed price */}
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
@@ -1001,8 +1014,12 @@ function OrderCard({ order,onClick,onQuickAction,currentUser }:{
   const days = daysUntil(order.eventDate);
   const urgent = isUrgent(order);
   const dateR = new Date(order.createdAt).toLocaleDateString("es-DO",{day:"2-digit",month:"short"});
+  const isPending = order.status==="PENDING";
   const isActive = ["CONFIRMED","NEEDS_INFO"].includes(order.status);
   const isCompleted = order.status==="COMPLETED";
+  // Suma de precios estimados del menú (si aún no hay precio acordado)
+  const cakeDet = (order.cakeDetails&&typeof order.cakeDetails==="object"?order.cakeDetails:{}) as Record<string,CakeDetail>;
+  const menuEst = Object.values(cakeDet).reduce((s,c)=>s+(typeof c?.estimatedPrice==="number"?c.estimatedPrice:0),0);
 
   return(
     <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-0.5 ${urgent?"border-red-300 ring-1 ring-red-100":"border-[#f0e8e0]"} hover:shadow-md`}>
@@ -1058,7 +1075,11 @@ function OrderCard({ order,onClick,onQuickAction,currentUser }:{
               {order.internalNote&&<p className="text-xs text-amber-500 flex items-center gap-0.5"><StickyNote size={10}/></p>}
             </div>
             <div className="flex items-center gap-1.5">
-              {order.agreedPrice&&<span className="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full">RD${order.agreedPrice.toLocaleString("es-DO")}</span>}
+              {order.agreedPrice?(
+                <span className="text-xs font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full">RD${order.agreedPrice.toLocaleString("es-DO")}</span>
+              ):menuEst>0?(
+                <span className="text-xs font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full" title="Precio estimado según el menú">Est. RD${menuEst.toLocaleString("es-DO")}</span>
+              ):null}
               <span className="text-xs text-[#f07097] font-medium">Ver →</span>
             </div>
           </div>
@@ -1067,8 +1088,20 @@ function OrderCard({ order,onClick,onQuickAction,currentUser }:{
       </button>
 
       {/* Quick action buttons — solo OWNER y BAKER */}
-      {(isActive||isCompleted)&&currentUser?.role!=="ASSISTANT"&&(
+      {(isPending||isActive||isCompleted)&&currentUser?.role!=="ASSISTANT"&&(
         <div className="px-4 pb-4">
+          {isPending&&(
+            <div className="flex gap-2">
+              <button onClick={e=>{e.stopPropagation();onQuickAction(order.id,"CONFIRMED");}}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border-2 border-green-200 text-green-700 hover:bg-green-50 transition">
+                <CheckCircle2 size={13}/> Aceptar
+              </button>
+              <button onClick={onClick}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border-2 border-[#f0e8e0] text-gray-500 hover:bg-gray-50 transition">
+                Revisar detalles
+              </button>
+            </div>
+          )}
           {isActive&&(
             <button onClick={e=>{e.stopPropagation();onQuickAction(order.id,"COMPLETED");}}
               className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition">
@@ -1154,8 +1187,8 @@ function ScheduleOrderModal({ onClose, onCreated, addToast }:{
           initial={cakePopup.editIdx!=null?cakes[cakePopup.editIdx].detail:null}
           onSave={saveCake} onClose={()=>setCakePopup({open:false,editIdx:null})}/>
       )}
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
           <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl z-10">
             <div>
               <h3 className="font-display text-xl flex items-center gap-2"><Store size={18} className="text-[#f07097]"/> Agendar pedido</h3>
@@ -1297,6 +1330,7 @@ function DashboardInner() {
   const [orderTab,setOrderTab] = useState<OrderTabId>("PENDING");
   const [orderSearch,setOrderSearch] = useState("");
   const [bakerFilter,setBakerFilter] = useState<string>("ALL");
+  const [sourceFilter,setSourceFilter] = useState<"ALL"|"ONLINE"|"IN_PERSON">("ALL");
   const [products,setProducts] = useState<Product[]>([]);
   const [catFilter,setCatFilter] = useState("all");
   const [catSearch,setCatSearch] = useState("");
@@ -1401,10 +1435,17 @@ function DashboardInner() {
   },[]);
 
   const handleQuickAction = async (id:string,newStatus:string)=>{
-    const label = newStatus==="COMPLETED"?"¿Marcar este pedido como listo para entrega?":"¿Marcar este pedido como entregado?";
-    const ok = await confirm({ title:newStatus==="COMPLETED"?"Marcar listo":"Marcar entregado", message:label, confirmText:"Confirmar", icon:"confirm" });
+    const cfg = newStatus==="CONFIRMED"
+      ? { title:"Aceptar pedido", message: currentUser?.role==="BAKER" ? `¿Aceptar este pedido? Quedará asignado a ti (${currentUser.name.split(" ")[0]}).` : "¿Aceptar este pedido y pasarlo a activos?" }
+      : newStatus==="COMPLETED"
+      ? { title:"Marcar listo", message:"¿Marcar este pedido como listo para entrega?" }
+      : { title:"Marcar entregado", message:"¿Marcar este pedido como entregado?" };
+    const ok = await confirm({ ...cfg, confirmText:"Confirmar", icon:"confirm" });
     if (!ok) return;
-    await updateOrder(id,{status:newStatus});
+    const data:Partial<Order> = { status:newStatus };
+    // Al aceptar desde la tarjeta, una BAKER se auto-asigna (mismo flujo que el modal)
+    if (newStatus==="CONFIRMED"&&currentUser?.role==="BAKER") data.assignedTo=currentUser.name;
+    await updateOrder(id,{ ...data, changedBy: currentUser?.name??"Admin" } as any);
   };
 
   async function delProduct(id:string){
@@ -1418,6 +1459,7 @@ function DashboardInner() {
   const tabOrders = sorted
     .filter(o=>(tabCfg.statuses as readonly string[]).includes(o.status))
     .filter(o=>bakerFilter==="ALL"||o.assignedTo===bakerFilter||(!o.assignedTo&&bakerFilter==="UNASSIGNED"))
+    .filter(o=>sourceFilter==="ALL"||(o.source??"ONLINE")===sourceFilter)
     .filter(o=>matchesSearch(o,orderSearch));
   const filteredProducts = products
     .filter(p=>catFilter==="all"||p.category===catFilter)
@@ -1552,48 +1594,48 @@ function DashboardInner() {
             {label:"Nuevos",value:pendingCount,icon:"⏳",sub:"sin atender",hot:pendingCount>0},
             {label:"Entregados",value:orders.filter(o=>o.status==="DELIVERED").length,icon:"🎉",sub:"este período"},
           ].map(s=>(
-            <div key={s.label} className={`bg-white rounded-2xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${s.hot?"border-amber-200 ring-1 ring-amber-100":"border-[#ede8e0]"}`}>
+            <div key={s.label} className={`bg-white rounded-2xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${s.hot?"border-[#f07097]/40 ring-1 ring-[#f07097]/15":"border-[#ede8e0]"}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className={`text-2xl font-bold font-display ${s.hot?"text-[#f07097]":"text-gray-800"}`}>{s.value}</p>
                   <p className="text-xs font-semibold text-gray-600 mt-0.5">{s.label}</p>
                   <p className="text-xs text-gray-400">{s.sub}</p>
                 </div>
-                <span className="text-2xl">{s.icon}</span>
+                <span className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0" style={{background:s.hot?"#fde8ef":"#faf6f1"}}>{s.icon}</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Main tabs */}
-        <div className="flex flex-wrap gap-1 mb-6 bg-white border border-[#ede8e0] rounded-xl p-1 w-fit shadow-sm">
+        {/* Main tabs — deslizables en móvil */}
+        <div className="flex flex-nowrap sm:flex-wrap gap-1 mb-6 bg-white border border-[#ede8e0] rounded-xl p-1 w-full sm:w-fit shadow-sm overflow-x-auto">
           <button onClick={()=>setMainTab("orders")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="orders"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="orders"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
             style={mainTab==="orders"?{background:PINK}:{}}>
             <ClipboardList size={15}/> Pedidos
             {pendingCount>0&&<span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${mainTab==="orders"?"bg-white text-[#f07097]":"bg-[#f07097] text-white"}`}>{pendingCount}</span>}
           </button>
           {currentUser?.role!=="ASSISTANT"&&(
             <button onClick={()=>setMainTab("catalog")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="catalog"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
+              className={`shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="catalog"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
               style={mainTab==="catalog"?{background:PINK}:{}}>
               <Package size={15}/> Catálogo
             </button>
           )}
-          <Link href="/admin/calendario" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+          <Link href="/admin/calendario" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
             <Calendar size={15}/> Calendario
           </Link>
-          <Link href="/admin/ordenes" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+          <Link href="/admin/ordenes" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
             <ShoppingBag size={15}/> Órdenes
             {cartOrderBadge>0&&<span className="w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold bg-[#f07097] text-white">{cartOrderBadge}</span>}
           </Link>
           <Link href="/admin/whatsapp"
-            className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+            className="relative shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
             <MessageCircle size={15} /> WhatsApp
             <WhatsappBadge />
           </Link>
           {currentUser?.role!=="ASSISTANT"&&(
-            <Link href="/admin/reportes" className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
+            <Link href="/admin/reportes" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
               <BarChart3 size={15}/> Reportes
             </Link>
           )}
@@ -1631,14 +1673,26 @@ function DashboardInner() {
                   </button>
                 )}
               </div>
-              <div className="flex items-center gap-2 px-4 py-3 border-t border-[#f0e8e0]">
-                <span className="text-xs text-gray-400 shrink-0">Repostera:</span>
-                <div className="flex gap-1.5 flex-wrap">
-                  {[{id:"ALL",label:"Todas"},{id:"UNASSIGNED",label:"Sin asignar"},...bakers.map(b=>({id:b,label:b.split(" ")[0]}))].map(f=>(
-                    <button key={f.id} onClick={()=>setBakerFilter(f.id)}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border transition ${bakerFilter===f.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
-                      style={bakerFilter===f.id?{background:PINK}:{}}>{f.label}</button>
-                  ))}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 border-t border-[#f0e8e0]">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-gray-400 shrink-0">Repostera:</span>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {[{id:"ALL",label:"Todas"},{id:"UNASSIGNED",label:"Sin asignar"},...bakers.map(b=>({id:b,label:b.split(" ")[0]}))].map(f=>(
+                      <button key={f.id} onClick={()=>setBakerFilter(f.id)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium border transition ${bakerFilter===f.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
+                        style={bakerFilter===f.id?{background:PINK}:{}}>{f.label}</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-gray-400 shrink-0">Origen:</span>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {([["ALL","Todos"],["ONLINE","🌐 En línea"],["IN_PERSON","🏪 En persona"]] as const).map(([id,label])=>(
+                      <button key={id} onClick={()=>setSourceFilter(id)}
+                        className={`px-3 py-1 rounded-full text-xs font-medium border transition ${sourceFilter===id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
+                        style={sourceFilter===id?{background:PINK}:{}}>{label}</button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1653,8 +1707,13 @@ function DashboardInner() {
               <div className="text-center py-20 text-gray-400">Cargando…</div>
             ):tabOrders.length===0?(
               <div className="text-center py-20 bg-white rounded-2xl border border-[#ede8e0]">
-                <div className="text-4xl mb-2">📋</div>
-                <p className="text-gray-500 text-sm">{orderSearch?"Sin resultados.":"No hay pedidos en este estado."}</p>
+                <div className="text-4xl mb-2">{orderTab==="PENDING"?"✨":"📋"}</div>
+                <p className="text-gray-500 text-sm">{orderSearch?"Sin resultados para tu búsqueda.":orderTab==="PENDING"?"No hay pedidos nuevos. ¡Todo al día!":"No hay pedidos en este estado."}</p>
+                {orderTab==="PENDING"&&!orderSearch&&currentUser?.role!=="ASSISTANT"&&(
+                  <button onClick={()=>setScheduleOpen(true)} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-xs font-semibold hover:opacity-90 transition" style={{background:PINK}}>
+                    <CalendarPlus size={13}/> Agendar pedido en persona
+                  </button>
+                )}
               </div>
             ):(
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -86,7 +86,7 @@ export const SPECIALTY_PRICES: Partial<Record<CakeSizeId, number>> = {
 };
 
 export const CAKE_MENU_NOTE =
-  "Precios de decoración sencilla: máximo dos colores y mensaje corto opcional. Diseños elaborados se cotizan aparte.";
+  "Precio estimado de decoración sencilla (máximo dos colores y mensaje corto opcional). El precio final puede variar según el diseño y los detalles del pastel.";
 
 // ── Detalle de pastel (se guarda como JSON en Order.cakeDetails) ──
 export type CakeDetail = {

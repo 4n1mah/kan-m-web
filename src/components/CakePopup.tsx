@@ -67,8 +67,8 @@ export default function CakePopup({ item, initial, onSave, onClose }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }} onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-4" style={{ background: "rgba(0,0,0,0.5)" }} onClick={onClose}>
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[92vh] sm:max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-[var(--border)] rounded-t-3xl">
           <div><h3 className="font-display text-xl">Detalles del pastel</h3><p className="text-xs text-[var(--muted-foreground)] mt-0.5">{item}</p></div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X size={16}/></button>
@@ -143,17 +143,18 @@ export default function CakePopup({ item, initial, onSave, onClose }: {
             <input type="text" placeholder="ej. Feliz cumpleaños…" value={d.message} onChange={e => s("message", e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
           </div>
 
-          {/* Precio según menú */}
-          {valid && (
-            <div className={`rounded-2xl px-4 py-3 text-sm border ${price != null ? "bg-[var(--rose)]/5 border-[var(--rose)]/20" : "bg-amber-50 border-amber-200"}`}>
-              {price != null ? (
-                <p className="font-semibold text-[var(--rose)]">Precio según menú: {formatRD(price)}</p>
-              ) : (
-                <p className="font-semibold text-amber-700">Esta combinación se cotiza — te confirmamos el precio por WhatsApp.</p>
-              )}
+          {/* Precio estimado — aparece apenas hay decoración/sabor + tamaño */}
+          {price != null ? (
+            <div className="rounded-2xl px-4 py-3 text-sm border bg-[var(--rose)]/5 border-[var(--rose)]/20">
+              <p className="font-semibold text-[var(--rose)] text-base">💰 Precio estimado: {formatRD(price)}</p>
               <p className="text-xs text-[var(--muted-foreground)] mt-1">{CAKE_MENU_NOTE}</p>
             </div>
-          )}
+          ) : valid ? (
+            <div className="rounded-2xl px-4 py-3 text-sm border bg-amber-50 border-amber-200">
+              <p className="font-semibold text-amber-700">Esta combinación se cotiza — te confirmamos el precio por WhatsApp.</p>
+              <p className="text-xs text-[var(--muted-foreground)] mt-1">{CAKE_MENU_NOTE}</p>
+            </div>
+          ) : null}
 
           <button type="button" disabled={!valid} onClick={confirm}
             className="w-full py-3.5 rounded-2xl text-white font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"

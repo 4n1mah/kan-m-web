@@ -628,7 +628,7 @@ function CotizarForm() {
                         return(
                           <div key={item} className="text-xs bg-[var(--rose)]/5 border border-[var(--rose)]/15 rounded-xl px-3 py-2 flex items-start gap-2">
                             <Cake size={12} className="text-[var(--rose)] shrink-0 mt-0.5"/>
-                            <div><span className="font-semibold text-[var(--rose)]">{item}: </span><span className="text-[var(--muted-foreground)]">{d.cakeType==="tradicional"?`${d.masa} · ${d.filling} · ${d.decoration}`:d.flavor} · {d.size}{d.colors?` · Colores: ${d.colors}`:""}{d.message?` · "${d.message}"`:""}{d.estimatedPrice!=null?` · RD$${d.estimatedPrice.toLocaleString("es-DO")}`:" · Precio a cotizar"}</span></div>
+                            <div><span className="font-semibold text-[var(--rose)]">{item}: </span><span className="text-[var(--muted-foreground)]">{d.cakeType==="tradicional"?`${d.masa} · ${d.filling} · ${d.decoration}`:d.flavor} · {d.size}{d.colors?` · Colores: ${d.colors}`:""}{d.message?` · "${d.message}"`:""}{d.estimatedPrice!=null?` · Est. RD$${d.estimatedPrice.toLocaleString("es-DO")}`:" · Precio a cotizar"}</span></div>
                           </div>
                         );
                       })}

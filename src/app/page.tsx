@@ -12,11 +12,18 @@ import RotatingFeatured from "@/components/RotatingFeatured";
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const featured = await prisma.product.findMany({
-    where: { availabilityStatus: "AVAILABLE" },
-    take: 6,
-    orderBy: { createdAt: "desc" },
-  });
+  // Si la DB no responde durante el build/revalidate, servimos el home sin
+  // destacados en vez de tumbar el deploy; ISR reintenta en 60s.
+  const featured = await prisma.product
+    .findMany({
+      where: { availabilityStatus: "AVAILABLE" },
+      take: 6,
+      orderBy: { createdAt: "desc" },
+    })
+    .catch((e) => {
+      console.error("[home] featured products query failed:", e);
+      return [];
+    });
 
   return (
     <>
@@ -101,7 +108,7 @@ export default async function HomePage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/cotizar"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white font-semibold shadow-soft hover:opacity-90 transition"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all"
                 style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
               >
                 Cotizar <ArrowRight size={18} />

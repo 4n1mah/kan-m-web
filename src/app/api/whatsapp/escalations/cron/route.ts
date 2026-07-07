@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-function verifyCron(req: NextRequest): boolean {
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) return true;
-  const auth = req.headers.get("authorization");
-  return auth === `Bearer ${cronSecret}`;
-}
-
 export async function GET(req: NextRequest) {
-  if (!verifyCron(req)) {
+  // Fail-closed: sin CRON_SECRET configurado el endpoint queda deshabilitado.
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: "Cron deshabilitado (CRON_SECRET no configurado)" }, { status: 503 });
+  }
+  if (req.headers.get("authorization") !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000);

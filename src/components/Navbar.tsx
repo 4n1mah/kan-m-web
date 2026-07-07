@@ -33,7 +33,9 @@ export default function Navbar() {
     <header
       className="sticky top-0 z-50 transition-all duration-300"
       style={{
-        backgroundColor: "#f07097",
+        backgroundColor: scrolled ? "rgba(240,112,151,0.9)" : "#f07097",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
         boxShadow: scrolled ? "0 2px 24px rgba(240,112,151,0.4)" : "none",
         borderBottom: scrolled ? "none" : "1px solid rgba(255,255,255,0.15)",
       }}
@@ -55,15 +57,23 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="px-3 py-2 rounded-lg text-sm text-white/85 hover:text-white hover:bg-white/15 font-medium transition-all duration-150"
-            >
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) => {
+            const active = pathname === l.href;
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={active ? "page" : undefined}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  active
+                    ? "text-white bg-white/20 shadow-sm"
+                    : "text-white/85 hover:text-white hover:bg-white/15"
+                }`}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Desktop CTAs */}
@@ -103,16 +113,24 @@ export default function Navbar() {
         style={{ borderTop: "1px solid rgba(255,255,255,0.15)", backgroundColor: "#f07097" }}
       >
         <div className="max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1">
-          {links.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="px-3 py-2.5 rounded-lg text-base text-white/90 hover:text-white hover:bg-white/15 font-medium transition-all"
-            >
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) => {
+            const active = pathname === l.href;
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                aria-current={active ? "page" : undefined}
+                className={`px-3 py-2.5 rounded-lg text-base font-medium transition-all ${
+                  active
+                    ? "text-white bg-white/20"
+                    : "text-white/90 hover:text-white hover:bg-white/15"
+                }`}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
           <div className="flex flex-col gap-2 pt-3 border-t border-white/15 mt-2">
             <a
               href={waLink(WA_MESSAGES.general)}

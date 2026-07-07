@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       console.error("[receipt-upload] Cloudinary error:", data);
       return NextResponse.json(
-        { error: data?.error?.message ?? "Error al subir el comprobante." },
+        { error: "Error al subir el comprobante. Intenta de nuevo." },
         { status: 500 }
       );
     }

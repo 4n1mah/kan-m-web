@@ -31,6 +31,27 @@ html {
   scroll-padding-top: 88px;
 }
 
+/* ── Detalles de marca en el chrome del navegador ───────────── */
+::selection {
+  background: var(--blush);
+  color: var(--foreground);
+}
+/* Scrollbar fina en tonos de marca (WebKit + Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--rose) 55%, transparent) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--rose) 45%, var(--cream));
+  border-radius: 999px;
+  border: 2px solid var(--background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rose);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

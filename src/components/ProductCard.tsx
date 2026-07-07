@@ -18,6 +18,15 @@ export type Product = {
 const PINK_GRADIENT =
   "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
 
+const CATEGORY_LABELS: Record<string, string> = {
+  cakes: "Pasteles",
+  desserts: "Postres",
+  events: "Mesa de dulces",
+  picaderas: "Picaderas",
+  brunch: "Brunch",
+  drinks: "Bebidas",
+};
+
 export default function ProductCard({ product }: { product: Product }) {
   const cart = useCartOptional();
   const [added, setAdded] = useState(false);
@@ -54,6 +63,11 @@ export default function ProductCard({ product }: { product: Product }) {
             No disponible
           </div>
         )}
+        {CATEGORY_LABELS[product.category] && (
+          <div className="absolute top-3 right-3 bg-white/75 backdrop-blur-sm text-[11px] font-medium text-[#3a2a22]/80 px-2.5 py-1 rounded-full border border-white/60 shadow-sm">
+            {CATEGORY_LABELS[product.category]}
+          </div>
+        )}
       </div>
       <div className="p-6 flex flex-col flex-1">
         <h3 className="font-display text-xl">{product.name}</h3>
@@ -61,8 +75,11 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.description}
         </p>
         {hasPrice && (
-          <p className="text-sm font-medium text-rose mt-3">
-            Desde RD${product.price!.toLocaleString("es-DO")}
+          <p className="mt-3 text-rose">
+            <span className="text-xs font-medium align-baseline mr-1">Desde</span>
+            <span className="font-display text-lg font-semibold">
+              RD${product.price!.toLocaleString("es-DO")}
+            </span>
           </p>
         )}
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { notifyOnEscalation } from "@/lib/push";
 import { timingSafeEqual } from "crypto";
@@ -37,15 +38,29 @@ function verifyBotKey(req: NextRequest): boolean {
   }
 }
 
+// Caps de longitud conservadores: no imponen formato de teléfono (el bot
+// puede mandar formato internacional de WhatsApp) pero evitan payloads
+// gigantes en columnas Text.
+const escalationSchema = z.object({
+  phone: z.string().trim().min(5).max(32),
+  clientName: z.string().trim().max(120).optional().nullable(),
+  motivo: z.string().trim().max(200).optional().nullable(),
+  summary: z.string().max(10000).optional().nullable(),
+});
+
 export async function POST(req: NextRequest) {
   if (!verifyBotKey(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = await req.json().catch(() => null);
-  if (!body?.phone) {
-    return NextResponse.json({ error: "phone requerido" }, { status: 400 });
+  const parsed = escalationSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Datos inválidos", details: parsed.error.flatten() },
+      { status: 400 }
+    );
   }
-  const { phone, clientName, motivo, summary } = body;
+  const { phone, clientName, motivo, summary } = parsed.data;
 
   const escalation = await prisma.whatsappEscalation.upsert({
     where: { phone },
@@ -88,7 +103,9 @@ export async function GET(req: NextRequest) {
     where: { resolvedAt: null },
     orderBy: { createdAt: "desc" },
   });
-  return NextResponse.json(escalations);
+  return NextResponse.json(escalations, {
+    headers: { "Cache-Control": "private, no-store" },
+  });
 }
 
 export async function DELETE(req: NextRequest) {

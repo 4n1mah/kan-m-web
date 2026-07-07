@@ -93,8 +93,9 @@ export async function POST(req: NextRequest) {
 
     const data = await res.json();
     if (!res.ok) {
+      console.error("[admin-orders-upload] Cloudinary error:", { status: res.status, error: data });
       return NextResponse.json(
-        { error: data?.error?.message ?? "Error al subir la imagen." },
+        { error: "Error al subir la imagen. Intenta de nuevo." },
         { status: 500 }
       );
     }

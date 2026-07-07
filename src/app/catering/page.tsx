@@ -73,7 +73,7 @@ function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
   return (
     <>
       <div
-        className="relative w-full rounded-3xl overflow-hidden shadow-card cursor-zoom-in"
+        className="group relative w-full rounded-3xl overflow-hidden shadow-card cursor-zoom-in transition-shadow duration-300 hover:shadow-soft"
         style={{ aspectRatio: "4/3" }}
         onClick={() => setLightbox(true)}
         title="Clic para ver en grande"
@@ -86,7 +86,7 @@ function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
         ))}
 
         {/* Expand hint */}
-        <div className="absolute top-3 right-3 bg-black/40 text-white rounded-full px-2.5 py-1 text-xs flex items-center gap-1 opacity-70">
+        <div className="absolute top-3 right-3 bg-black/40 text-white rounded-full px-2.5 py-1 text-xs flex items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100">
           <svg viewBox="0 0 20 20" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" d="M3 3h5M3 3v5M17 3h-5M17 3v5M3 17h5M3 17v-5M17 17h-5M17 17v-5"/>
           </svg>
@@ -214,7 +214,7 @@ export default function CateringPage() {
               </ul>
               <Link
                 href={buildCotizarUrl(s)}
-                className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold hover:opacity-90 transition shadow-sm"
+                className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm"
                 style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
               >
                 Cotizar <ArrowRight size={16} />

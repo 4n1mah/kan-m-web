@@ -108,7 +108,7 @@ export default async function HomePage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/cotizar"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft"
                 style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
               >
                 Cotizar <ArrowRight size={18} />
@@ -150,7 +150,7 @@ export default async function HomePage() {
           </div>
           <Link
             href="/catalogo"
-            className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-all duration-200"
+            className="btn-shine group inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold"
             style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
           >
             Ver todos <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
@@ -163,8 +163,8 @@ export default async function HomePage() {
 
       {/* CATERING */}
       <section className="relative overflow-hidden py-10 px-6">
-        <div className="pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[var(--blush)]/35 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -right-16 w-72 h-72 rounded-full bg-[var(--accent)]/40 blur-3xl" />
+        <div className="blob-float pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[var(--blush)]/35 blur-3xl" />
+        <div className="blob-float-2 pointer-events-none absolute -bottom-16 -right-16 w-72 h-72 rounded-full bg-[var(--accent)]/40 blur-3xl" />
         <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center reveal">
           <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-card">
             <Image src={IMAGES.homeCatering} alt="Catering Kan M" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
@@ -184,7 +184,7 @@ export default async function HomePage() {
             </ul>
             <Link
               href="/cotizar"
-              className="mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white shadow-soft hover:opacity-90 transition"
+              className="btn-shine mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white shadow-soft"
               style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
             >
               Cotizar <ArrowRight size={18} />
@@ -217,7 +217,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/catalogo?cat=brunch"
-            className="group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold hover:opacity-90 transition-all duration-200"
+            className="btn-shine group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold"
             style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
           >
             Ver catálogo de Brunch
@@ -294,7 +294,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/cotizar"
-                className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-base shadow-soft hover:opacity-90 transition"
+                className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-base shadow-soft"
                 style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
               >
                 Cotizar <ArrowRight size={20} />

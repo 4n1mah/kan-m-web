@@ -117,7 +117,7 @@ export default function ReportesPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "#f7f4f0" }}>
-      <header className="sticky top-0 z-40 border-b border-white/20 shadow-sm" style={{ background: PINK }}>
+      <header className="admin-header-glass sticky top-0 z-40 border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 flex items-center gap-4" style={{ height: "3.75rem" }}>
           <Link href="/admin/dashboard" className="flex items-center gap-1.5 text-sm text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/15">
             <ArrowLeft size={15} /> Volver
@@ -166,7 +166,7 @@ export default function ReportesPage() {
               { label: "Confirmados",   value: confirmed,          icon: <Users size={20}/>,     color: "#3b82f6" },
               { label: "Ingresos",      value: revenue > 0 ? `RD$${revenue.toLocaleString("es-DO")}` : "—", icon: <DollarSign size={20}/>, color: "#f59e0b" },
             ].map(k => (
-              <div key={k.label} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5">
+              <div key={k.label} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white mb-3" style={{ background: k.color }}>{k.icon}</div>
                 <p className="text-2xl font-bold font-display text-gray-800">{k.value}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{k.label}</p>
@@ -187,7 +187,7 @@ export default function ReportesPage() {
               { label: "Confirmadas",    value: cartConfirmed,          color: "#059669" },
               { label: "Negadas",        value: cartDenied,             color: "#ef4444" },
             ].map(k => (
-              <div key={k.label} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5">
+              <div key={k.label} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                 <div className="w-2 h-8 rounded-full mb-3" style={{ background: k.color }}/>
                 <p className="text-2xl font-bold font-display text-gray-800">{k.value}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{k.label}</p>
@@ -209,7 +209,7 @@ export default function ReportesPage() {
 
         {/* ── Productos más vendidos (en línea) ───────────────── */}
         {topProducts.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
             <h3 className="font-display text-lg mb-4">Productos más vendidos en línea</h3>
             <div className="space-y-3">
               {topProducts.map(([name, count]) => (
@@ -229,7 +229,7 @@ export default function ReportesPage() {
 
         {/* ── Pedidos por repostera (cotizaciones) ─────────────── */}
         {Object.keys(byBaker).length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
             <h3 className="font-display text-lg mb-4">Cotizaciones por repostera</h3>
             <div className="space-y-3">
               {Object.entries(byBaker).sort((a,b) => b[1]-a[1]).map(([baker, count]) => (

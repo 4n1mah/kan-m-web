@@ -984,7 +984,7 @@ function OrderCard({ order,onClick,onQuickAction,currentUser }:{
   const isCompleted = order.status==="COMPLETED";
 
   return(
-    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col transition-all ${urgent?"border-red-300 ring-1 ring-red-100":"border-[#f0e8e0]"} hover:shadow-md`}>
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-0.5 ${urgent?"border-red-300 ring-1 ring-red-100":"border-[#f0e8e0]"} hover:shadow-md`}>
       {/* Clickable image + info area */}
       <button onClick={onClick} className="text-left flex-1 flex flex-col">
         {imgs.length>0?(
@@ -1240,7 +1240,7 @@ function DashboardInner() {
       {selectedOrder&&<OrderModal order={selectedOrder} onClose={()=>setSelectedOrder(null)} onUpdate={updateOrder} onDelete={deleteOrder} currentUser={currentUser}/>}
       {productModal.open&&<ProductModal product={productModal.product} onClose={()=>setProductModal({open:false,product:null})} onSave={load} onDelete={delProduct}/>}
 
-      <header className="sticky top-0 z-40 border-b border-white/20 shadow-sm" style={{background:PINK}}>
+      <header className="admin-header-glass sticky top-0 z-40 border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-4" style={{height:"3.75rem"}}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white text-sm font-bold" style={{color:"#e85d82"}}>K</div>
@@ -1328,7 +1328,7 @@ function DashboardInner() {
             {label:"Nuevos",value:pendingCount,icon:"⏳",sub:"sin atender",hot:pendingCount>0},
             {label:"Entregados",value:orders.filter(o=>o.status==="DELIVERED").length,icon:"🎉",sub:"este período"},
           ].map(s=>(
-            <div key={s.label} className={`bg-white rounded-2xl border p-4 shadow-sm ${s.hot?"border-amber-200 ring-1 ring-amber-100":"border-[#ede8e0]"}`}>
+            <div key={s.label} className={`bg-white rounded-2xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${s.hot?"border-amber-200 ring-1 ring-amber-100":"border-[#ede8e0]"}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className={`text-2xl font-bold font-display ${s.hot?"text-[#f07097]":"text-gray-800"}`}>{s.value}</p>
@@ -1486,7 +1486,7 @@ function DashboardInner() {
             ):(
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredProducts.map(p=>(
-                  <div key={p.id} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={()=>setProductModal({open:true,product:p})}>
+                  <div key={p.id} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer" onClick={()=>setProductModal({open:true,product:p})}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.imageUrl} alt={p.name} className="w-full aspect-[4/3] object-cover"/>
                     <div className="p-4">

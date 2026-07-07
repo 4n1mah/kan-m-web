@@ -1,6 +1,6 @@
 import { IMAGES } from "@/lib/images";
 import Image from "next/image";
-import { MapPin, Phone, Mail, Instagram, Clock } from "lucide-react";
+import { MapPin, Phone, Mail, Instagram, Clock, Cake, Palette, Gem } from "lucide-react";
 
 export default function NosotrosPage() {
   return (
@@ -73,13 +73,19 @@ export default function NosotrosPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 mt-20">
+      <div className="stagger-fade grid md:grid-cols-3 gap-6 mt-20">
         {[
-          { t: "Artesanal", d: "Recetas propias, ingredientes frescos." },
-          { t: "Personalizado", d: "Diseñamos según tu visión y tema." },
-          { t: "Detallista", d: "Cuidamos cada elemento del montaje." },
+          { t: "Artesanal", d: "Recetas propias, ingredientes frescos.", Icon: Cake },
+          { t: "Personalizado", d: "Diseñamos según tu visión y tema.", Icon: Palette },
+          { t: "Detallista", d: "Cuidamos cada elemento del montaje.", Icon: Gem },
         ].map((v) => (
-          <div key={v.t} className="bg-card rounded-3xl border border-[var(--border)]/60 shadow-card p-7 text-center">
+          <div key={v.t} className="card-lift bg-card rounded-3xl border border-[var(--border)]/60 shadow-card p-7 text-center">
+            <div
+              className="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white mb-4"
+              style={{ background: "linear-gradient(135deg,#f9c4d4 0%,#f07097 100%)" }}
+            >
+              <v.Icon size={22} />
+            </div>
             <h3 className="font-display text-xl">{v.t}</h3>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{v.d}</p>
           </div>

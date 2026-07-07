@@ -555,7 +555,7 @@ function CotizarForm() {
             <p><span className="font-medium">Fecha:</span> {form.eventDate}{form.deliveryTime?` · ${form.deliveryTime}`:""}</p>
           </div>
           <button onClick={()=>{setForm(EMPTY);setImageFiles([]);setImagePreviews([]);setCakeDetails({});setSubmitted(false);}}
-            className="mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold hover:opacity-90 transition" style={{background:BTN}}>
+            className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold" style={{background:BTN}}>
             Hacer otra cotización
           </button>
         </div>
@@ -567,7 +567,7 @@ function CotizarForm() {
     <div className="min-h-screen bg-[var(--background)]">
       {pendingCakeItem&&<CakePopup item={pendingCakeItem} onSave={handleCakeSave} onClose={()=>setPendingCakeItem(null)}/>}
       <section className="relative overflow-hidden py-12 px-6 text-center">
-        <div className="pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl"/>
+        <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl"/>
         <span className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--rose)]/10 border border-[var(--rose)]/20 text-xs uppercase tracking-widest text-[var(--rose)]">
           <Sparkles size={13}/> Cotización sin compromiso
         </span>
@@ -731,7 +731,7 @@ function CotizarForm() {
           {error&&<p className="text-sm text-red-500 text-center bg-red-50 rounded-xl py-2">{error}</p>}
 
           <button type="button" onClick={handleSubmit} disabled={!isValid||submitting}
-            className={`w-full py-4 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition shadow-md ${isValid&&!submitting?"hover:opacity-90 cursor-pointer":"opacity-50 cursor-not-allowed"}`}
+            className={`w-full py-4 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition shadow-md ${isValid&&!submitting?"btn-shine cursor-pointer":"opacity-50 cursor-not-allowed"}`}
             style={{background:BTN}}>
             {submitting?(
               <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Enviando...</>

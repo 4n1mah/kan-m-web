@@ -42,41 +42,43 @@ function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
 
   return (
     <>
-      <div className="flex flex-wrap justify-center gap-3 mb-10">
-        {CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => handleCategory(c.id)}
-            className={`px-5 py-2.5 rounded-full text-sm font-medium border transition-all duration-200 ${
-              active === c.id
-                ? "text-white border-transparent shadow-soft"
-                : "bg-card border-[var(--border)] hover:border-[var(--rose)]/50 hover:text-[var(--rose)]"
-            }`}
-            style={active === c.id ? { background: PINK } : {}}
-          >
-            {c.label}
-          </button>
-        ))}
+      <div className="sticky top-[5.5rem] z-30 mb-10">
+        <div className="glass rounded-3xl max-w-fit mx-auto px-3 py-2 flex flex-wrap justify-center gap-2">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => handleCategory(c.id)}
+              aria-pressed={active === c.id}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                active === c.id
+                  ? "text-white shadow-soft scale-[1.04]"
+                  : "text-foreground/70 hover:text-[var(--rose)] hover:bg-[var(--rose)]/10"
+              }`}
+              style={active === c.id ? { background: PINK } : {}}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {visible.length === 0 ? (
-        <p className="text-center text-muted-foreground py-20">No hay productos en esta categoría aún.</p>
+        <div className="text-center py-20">
+          <div className="w-16 h-16 mx-auto rounded-full bg-[var(--rose)]/10 flex items-center justify-center mb-4">
+            <Sparkles size={26} className="text-rose" />
+          </div>
+          <p className="text-muted-foreground">No hay productos en esta categoría aún.</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">Vuelve pronto — siempre estamos horneando algo nuevo.</p>
+        </div>
       ) : (
         <div
           key={gridKey}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          style={{ animation: "catalogFadeIn 0.35s ease both" }}
+          className="stagger-fade grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {visible.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
       )}
 
-      <style>{`
-        @keyframes catalogFadeIn {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </>
   );
 }
@@ -85,7 +87,7 @@ function OrderHelpBanner() {
   return (
     <div className="grid sm:grid-cols-2 gap-4 mb-10">
       <div
-        className="rounded-3xl p-5 border-2 flex items-start gap-4 transition hover:-translate-y-0.5 hover:shadow-soft"
+        className="card-lift rounded-3xl p-5 border-2 flex items-start gap-4"
         style={{ borderColor: "rgba(240,112,151,0.25)", background: "rgba(255,255,255,0.7)" }}
       >
         <div
@@ -107,7 +109,7 @@ function OrderHelpBanner() {
 
       <Link
         href="/cotizar"
-        className="rounded-3xl p-5 border-2 flex items-start gap-4 transition hover:-translate-y-0.5 hover:shadow-soft"
+        className="card-lift rounded-3xl p-5 border-2 flex items-start gap-4"
         style={{ borderColor: "rgba(240,112,151,0.25)", background: "rgba(255,255,255,0.7)" }}
       >
         <div

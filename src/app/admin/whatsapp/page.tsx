@@ -92,7 +92,7 @@ function EscalationCard({
   const isUrgent = mins > 30;
 
   return (
-    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all hover:shadow-md ${
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
       isUrgent ? "border-amber-300 ring-1 ring-amber-100" : "border-[#ede8e0]"
     }`}>
       <div className="px-5 py-4 border-b border-[#f0e8e0]">
@@ -205,8 +205,7 @@ export default function WhatsappBandejaPage() {
     <div className="min-h-screen" style={{ background: "#f7f4f0" }}>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
-      <header className="sticky top-0 z-40 border-b border-white/20 shadow-sm"
-        style={{ background: PINK }}>
+      <header className="admin-header-glass sticky top-0 z-40 border-b border-white/20 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 flex items-center gap-4"
           style={{ height: "3.75rem" }}>
           <Link href="/admin/dashboard"

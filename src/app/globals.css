@@ -80,6 +80,116 @@ body {
 .reveal-delay-2 { transition-delay: 0.14s; }
 .reveal-delay-3 { transition-delay: 0.21s; }
 
+/* ══════════════════════════════════════════════════════════════
+   CAPA DE DISEÑO — animaciones y utilidades reutilizables
+   ══════════════════════════════════════════════════════════════ */
+
+/* Blobs decorativos que flotan lentamente */
+@keyframes blob-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(24px, -18px) scale(1.06); }
+  66%      { transform: translate(-16px, 14px) scale(0.96); }
+}
+.blob-float   { animation: blob-drift 14s ease-in-out infinite; }
+.blob-float-2 { animation: blob-drift 18s ease-in-out infinite reverse; }
+
+/* Entrada escalonada para grids y listas (hijos directos) */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.stagger-fade > * { animation: fade-up 0.5s cubic-bezier(.22,1,.36,1) both; }
+.stagger-fade > *:nth-child(1)  { animation-delay: 0.03s; }
+.stagger-fade > *:nth-child(2)  { animation-delay: 0.08s; }
+.stagger-fade > *:nth-child(3)  { animation-delay: 0.13s; }
+.stagger-fade > *:nth-child(4)  { animation-delay: 0.18s; }
+.stagger-fade > *:nth-child(5)  { animation-delay: 0.23s; }
+.stagger-fade > *:nth-child(6)  { animation-delay: 0.28s; }
+.stagger-fade > *:nth-child(7)  { animation-delay: 0.33s; }
+.stagger-fade > *:nth-child(8)  { animation-delay: 0.38s; }
+.stagger-fade > *:nth-child(9)  { animation-delay: 0.43s; }
+.stagger-fade > *:nth-child(n+10) { animation-delay: 0.48s; }
+
+/* Botón CTA con brillo que barre al hacer hover */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+}
+.btn-shine:hover::after { transform: translateX(120%); }
+.btn-shine:hover  { transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgba(240,112,151,0.55); }
+.btn-shine:active { transform: translateY(0) scale(0.98); }
+
+/* Card con elevación al hover — consistente en todo el sitio */
+.card-lift {
+  transition: transform 0.3s cubic-bezier(.22,1,.36,1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 44px -18px rgba(216, 132, 148, 0.4);
+  border-color: color-mix(in oklab, var(--rose) 30%, var(--border));
+}
+
+/* Textura de puntos suave para fondos de sección */
+.bg-dots {
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--rose) 14%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+
+/* Header del panel admin — gradiente rosa con glass */
+.admin-header-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(240, 112, 151, 0.94) 0%,
+    rgba(244, 137, 158, 0.94) 50%,
+    rgba(232, 93, 130, 0.94) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Focus ring suave y consistente en todos los formularios */
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--rose) 16%, transparent);
+}
+
+/* Skeleton shimmer para estados de carga */
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--secondary) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 0.75rem;
+}
+
 /* ── Section divider — very subtle ─────────────────────────── */
 .section-divider {
   width: 40%;
@@ -124,8 +234,10 @@ body {
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-  .wave-char, .ribbon-section { animation: none !important; }
-  .reveal, .will-reveal { transition: none !important; }
+  .wave-char, .ribbon-section, .blob-float, .blob-float-2,
+  .stagger-fade > *, .skeleton { animation: none !important; }
+  .reveal, .will-reveal, .btn-shine, .card-lift { transition: none !important; }
+  .btn-shine::after { display: none; }
 }
 *:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 

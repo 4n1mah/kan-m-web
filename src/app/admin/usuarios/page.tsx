@@ -127,7 +127,7 @@ export default function UsersPage() {
       <ToastContainer toasts={toasts} removeToast={removeToast}/>
       {confirmModal}
 
-      <header className="sticky top-0 z-40 border-b border-white/20 shadow-sm" style={{ background: PINK }}>
+      <header className="admin-header-glass sticky top-0 z-40 border-b border-white/20 shadow-sm">
         <div className="max-w-5xl mx-auto px-6 flex items-center gap-4" style={{ height:"3.75rem" }}>
           <Link href="/admin/dashboard"
             className="flex items-center gap-1.5 text-sm text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/15">
@@ -159,7 +159,7 @@ export default function UsersPage() {
           {(["OWNER","BAKER","ASSISTANT"] as Role[]).map(r => {
             const m = ROLE_META[r];
             return (
-              <div key={r} className="bg-white border border-[#ede8e0] rounded-2xl p-3.5 shadow-sm">
+              <div key={r} className="bg-white border border-[#ede8e0] rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                 <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest"
                   style={{ background: m.bg, color: m.color }}>
                   {m.icon} {m.label}

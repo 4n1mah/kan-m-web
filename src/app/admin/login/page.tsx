@@ -35,9 +35,9 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden" style={{ background: "#faf6f1" }}>
       {/* Decoración de fondo: blobs rosados suaves */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-40 blur-3xl pointer-events-none"
+      <div className="blob-float absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-40 blur-3xl pointer-events-none"
         style={{ background: "radial-gradient(circle, #f9c4d4 0%, transparent 70%)" }} />
-      <div className="absolute -bottom-32 -right-32 w-[28rem] h-[28rem] rounded-full opacity-30 blur-3xl pointer-events-none"
+      <div className="blob-float-2 absolute -bottom-32 -right-32 w-[28rem] h-[28rem] rounded-full opacity-30 blur-3xl pointer-events-none"
         style={{ background: "radial-gradient(circle, #f07097 0%, transparent 70%)" }} />
 
       <div className="relative w-full max-w-md">
@@ -95,7 +95,7 @@ export default function AdminLogin() {
           )}
 
           <button type="submit" disabled={loading}
-            className="w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg hover:opacity-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-shine w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: PINK }}>
             {loading ? "Entrando…" : "Iniciar sesión"}
           </button>

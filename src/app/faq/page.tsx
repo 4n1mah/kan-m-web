@@ -18,8 +18,8 @@ export default function FAQPage() {
       {/* Header */}
       <section className="relative overflow-hidden py-12 px-6 text-center">
         {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[var(--accent)]/40 blur-3xl" />
+        <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl" />
+        <div className="blob-float-2 pointer-events-none absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[var(--accent)]/40 blur-3xl" />
 
         <p className="font-script text-xl text-[var(--rose)] relative">
           Resolvemos tus dudas
@@ -35,11 +35,15 @@ export default function FAQPage() {
 
       {/* FAQ accordion */}
       <section className="max-w-3xl mx-auto px-6 pb-12">
-        <div className="space-y-3">
+        <div className="stagger-fade space-y-3">
           {FAQS.map((item, i) => (
             <div
               key={i}
-              className="bg-[var(--card)] border border-[var(--border)]/60 rounded-2xl shadow-sm overflow-hidden transition-shadow hover:shadow-md"
+              className={`bg-[var(--card)] border rounded-2xl overflow-hidden transition-all duration-300 ${
+                open === i
+                  ? "border-[var(--rose)]/40 shadow-soft"
+                  : "border-[var(--border)]/60 shadow-sm hover:shadow-md hover:border-[var(--rose)]/25"
+              }`}
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
@@ -49,12 +53,13 @@ export default function FAQPage() {
                 <span className="font-display text-[length:1.05rem] leading-snug text-[var(--foreground)]">
                   {item.q}
                 </span>
-                <ChevronDown
-                  size={20}
-                  className={`shrink-0 text-[var(--rose)] transition-transform duration-300 ${
-                    open === i ? "rotate-180" : ""
+                <span
+                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    open === i ? "bg-[var(--rose)] text-white rotate-180" : "bg-[var(--rose)]/10 text-[var(--rose)]"
                   }`}
-                />
+                >
+                  <ChevronDown size={17} />
+                </span>
               </button>
 
               {/* Animated answer panel */}
@@ -85,7 +90,7 @@ export default function FAQPage() {
               href={waLink(WA_MESSAGES.general)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shadow-md hover:opacity-90 transition"
+              className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shadow-md"
               style={{ background: "linear-gradient(135deg, #f07097 0%, #d8b375 100%)" }}
             >
               Escribir por WhatsApp

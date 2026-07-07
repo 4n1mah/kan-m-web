@@ -51,7 +51,6 @@ type CurrentUser = {
 };
 
 // ── Constants ─────────────────────────────────────────────────
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
 
 const STATUS_CFG: Record<
   CartOrder["status"],
@@ -361,7 +360,7 @@ function OrderCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-2xl border border-[#f0e8e0] shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+      className="bg-white rounded-2xl border border-[#f0e8e0] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer overflow-hidden"
     >
       {/* Receipt thumbnail */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -486,10 +485,7 @@ export default function OrdenesPage() {
       )}
 
       {/* Header */}
-      <header
-        className="sticky top-0 z-40 border-b border-white/20 shadow-sm"
-        style={{ background: PINK }}
-      >
+      <header className="admin-header-glass sticky top-0 z-40 border-b border-white/20 shadow-sm">
         <div
           className="max-w-7xl mx-auto px-6 flex items-center gap-4"
           style={{ height: "3.75rem" }}

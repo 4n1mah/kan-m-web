@@ -35,7 +35,7 @@ export default function HeroCarousel({
             <img
               src={src}
               alt=""
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${i === current ? "kenburns" : ""}`}
               loading={isFirst ? "eager" : "lazy"}
               {...(priorityFirst && isFirst
                 ? { fetchPriority: "high" as const }
@@ -48,10 +48,10 @@ export default function HeroCarousel({
       })}
       <div className="relative z-10 w-full">{children}</div>
       {images.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2 px-3 py-2 rounded-full bg-black/20 backdrop-blur-md border border-white/25">
           {images.map((_, i) => (
             <button key={i} onClick={() => setCurrent(i)} aria-label={`Foto ${i + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 ${i === current ? "bg-white w-6" : "bg-white/50 w-2"}`} />
+              className={`h-2 rounded-full transition-all duration-300 ${i === current ? "bg-white w-6" : "bg-white/50 w-2 hover:bg-white/80"}`} />
           ))}
         </div>
       )}

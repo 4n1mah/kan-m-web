@@ -15,8 +15,6 @@ interface ConfirmationModalProps {
   icon?: "delete" | "save" | "warning" | "confirm";
 }
 
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
-
 export function ConfirmationModal({
   isOpen,
   title,
@@ -49,8 +47,8 @@ export function ConfirmationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)" }}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 backdrop-blur-sm" style={{ background: "rgba(0,0,0,0.45)" }}>
+      <div className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0]">
           <h3 className="font-display text-lg text-gray-900">{title}</h3>
@@ -83,10 +81,9 @@ export function ConfirmationModal({
           <button
             onClick={handleConfirm}
             disabled={isLoading}
-            className={`flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
-              isDestructive ? "bg-red-500 hover:bg-red-600" : ""
+            className={`btn-shine flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+              isDestructive ? "bg-red-500 hover:bg-red-600" : "bg-gradient-rose"
             }`}
-            style={!isDestructive ? { background: PINK } : {}}
           >
             {isLoading ? (
               <>

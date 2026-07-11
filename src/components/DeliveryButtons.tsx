@@ -35,7 +35,7 @@ export default function DeliveryButtons({ variant = "hero" }: Props) {
         <span className="text-xs text-white/80 font-medium">Pide a domicilio:</span>
         <button
           onClick={openUber}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black text-white text-xs font-semibold hover:opacity-80 transition cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/85 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold hover:bg-black hover:-translate-y-0.5 transition-all cursor-pointer"
         >
           {/* Uber Eats: green circle U icon */}
           <svg viewBox="0 0 20 20" className="w-4 h-4 shrink-0" fill="none">
@@ -52,7 +52,7 @@ export default function DeliveryButtons({ variant = "hero" }: Props) {
     <div className="flex flex-col gap-3">
       <button
         onClick={openUber}
-        className="glass rounded-2xl p-4 flex items-center gap-3 hover:shadow-soft transition-shadow w-full text-left cursor-pointer"
+        className="glass rounded-2xl p-4 flex items-center gap-3 hover:shadow-glow hover:-translate-y-0.5 transition-all w-full text-left cursor-pointer"
       >
         <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shrink-0">
           <svg viewBox="0 0 20 20" className="w-6 h-6" fill="none">

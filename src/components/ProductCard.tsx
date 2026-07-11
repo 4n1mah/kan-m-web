@@ -15,9 +15,6 @@ export type Product = {
   availabilityStatus?: "AVAILABLE" | "OUT_OF_STOCK" | "HIDDEN";
 };
 
-const PINK_GRADIENT =
-  "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
-
 const CATEGORY_LABELS: Record<string, string> = {
   cakes: "Pasteles",
   desserts: "Postres",
@@ -49,8 +46,8 @@ export default function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <article className="group bg-card rounded-3xl border border-[var(--border)]/60 shadow-card overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-soft flex flex-col">
-      <div className="relative aspect-square overflow-hidden">
+    <article className="group bg-card rounded-3xl border border-[var(--border)]/60 shadow-card overflow-hidden transition-all duration-500 hover:-translate-y-1.5 hover:shadow-glow hover:border-[var(--rose)]/25 flex flex-col">
+      <div className="img-shine relative aspect-square overflow-hidden">
         <Image
           src={product.imageUrl}
           alt={product.name}
@@ -65,7 +62,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
         {CATEGORY_LABELS[product.category] && (
-          <div className="absolute top-3 right-3 bg-white/75 backdrop-blur-sm text-[11px] font-medium text-[#3a2a22]/80 px-2.5 py-1 rounded-full border border-white/60 shadow-sm">
+          <div className="chip-glass absolute top-3 right-3 z-[2] text-[11px] font-medium text-[#3a2a22]/80 px-2.5 py-1 rounded-full">
             {CATEGORY_LABELS[product.category]}
           </div>
         )}
@@ -78,7 +75,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {hasPrice && (
           <p className="mt-3 text-rose">
             <span className="text-xs font-medium align-baseline mr-1">Desde</span>
-            <span className="font-display text-lg font-semibold">
+            <span className="font-display text-lg font-semibold text-gradient-rose">
               RD${product.price!.toLocaleString("es-DO")}
             </span>
           </p>
@@ -90,14 +87,13 @@ export default function ProductCard({ product }: { product: Product }) {
               // Dentro del catálogo: agrega al carrito
               <button
                 onClick={handleAdd}
-                className={`inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                className={`inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 active:scale-[.97] ${
                   added
                     ? "bg-green-500 text-white"
                     : inCart
                     ? "bg-[#fef7f9] text-[#e85d82] border-2 border-[#f07097]/30 hover:border-[#f07097]"
-                    : "text-white shadow-soft hover:opacity-90"
+                    : "bg-gradient-rose text-white shadow-soft hover:opacity-90 hover:shadow-glow"
                 }`}
-                style={!added && !inCart ? { background: PINK_GRADIENT } : {}}
               >
                 {added ? (
                   <><Check size={15} /> ¡Agregado!</>
@@ -111,8 +107,7 @@ export default function ProductCard({ product }: { product: Product }) {
               // Fuera del catálogo (ej. home destacados): lleva al catálogo
               <Link
                 href={`/catalogo?cat=${encodeURIComponent(product.category)}`}
-                className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white shadow-soft hover:opacity-90 transition"
-                style={{ background: PINK_GRADIENT }}
+                className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-rose shadow-soft hover:opacity-90 hover:shadow-glow transition active:scale-[.97]"
               >
                 <Plus size={15} /> Ordenar en el catálogo
               </Link>
@@ -123,8 +118,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {!hasPrice && (
             <Link
               href={`/cotizar?item=${encodeURIComponent(product.name)}`}
-              className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white shadow-soft hover:opacity-90 transition"
-              style={{ background: PINK_GRADIENT }}
+              className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-rose shadow-soft hover:opacity-90 hover:shadow-glow transition active:scale-[.97]"
             >
               <Sparkles size={15} /> Solicitar cotización
             </Link>

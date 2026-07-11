@@ -31,13 +31,12 @@ export default function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 transition-all duration-300"
+      className="sticky top-0 z-50 transition-all duration-300 hairline-b"
       style={{
         backgroundColor: scrolled ? "rgba(240,112,151,0.9)" : "#f07097",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
+        backdropFilter: scrolled ? "blur(12px) saturate(160%)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(12px) saturate(160%)" : "none",
         boxShadow: scrolled ? "0 2px 24px rgba(240,112,151,0.4)" : "none",
-        borderBottom: scrolled ? "none" : "1px solid rgba(255,255,255,0.15)",
       }}
     >
       <div className="max-w-7xl mx-auto px-5 h-22 flex items-center justify-between gap-4" style={{ height: "5rem" }}>
@@ -64,10 +63,11 @@ export default function Navbar() {
                 key={l.href}
                 href={l.href}
                 aria-current={active ? "page" : undefined}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                data-active={active || undefined}
+                className={`nav-link px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                   active
-                    ? "text-white bg-white/20 shadow-sm"
-                    : "text-white/85 hover:text-white hover:bg-white/15"
+                    ? "text-white bg-white/15"
+                    : "text-white/85 hover:text-white hover:bg-white/10"
                 }`}
               >
                 {l.label}
@@ -91,7 +91,7 @@ export default function Navbar() {
           </a>
           <Link
             href="/cotizar"
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold hover:bg-white/90 transition-all shadow-sm"
+            className="btn-shine flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold hover:bg-white/90 transition-all shadow-sm"
           >
             Cotizar
           </Link>
@@ -109,10 +109,10 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       <div
-        className={`lg:hidden overflow-hidden transition-all duration-300 ${open ? "max-h-[520px] opacity-100" : "max-h-0 opacity-0"}`}
-        style={{ borderTop: "1px solid rgba(255,255,255,0.15)", backgroundColor: "#f07097" }}
+        className={`lg:hidden overflow-hidden transition-all duration-300 backdrop-blur-md ${open ? "max-h-[520px] opacity-100" : "max-h-0 opacity-0"}`}
+        style={{ borderTop: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(240,112,151,0.94)" }}
       >
-        <div className="max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1">
+        <div className={`max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1 ${open ? "stagger-fade" : ""}`}>
           {links.map((l) => {
             const active = pathname === l.href;
             return (

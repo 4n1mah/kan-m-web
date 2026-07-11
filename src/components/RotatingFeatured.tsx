@@ -36,7 +36,8 @@ export default function RotatingFeatured({ products }: { products: Product[] }) 
 
       {/* Dot indicators */}
       {pages > 1 && (
-        <div className="flex justify-center gap-2 mt-8">
+        <div className="flex justify-center mt-8">
+          <div className="chip-glass flex items-center gap-2 px-3 py-2 rounded-full">
           {Array.from({ length: pages }).map((_, i) => (
             <button
               key={i}
@@ -45,6 +46,7 @@ export default function RotatingFeatured({ products }: { products: Product[] }) 
               aria-label={`Página ${i + 1}`}
             />
           ))}
+          </div>
         </div>
       )}
     </div>

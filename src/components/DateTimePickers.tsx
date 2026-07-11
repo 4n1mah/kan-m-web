@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
 const MONTH_NAMES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const DAY_NAMES = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 
@@ -83,7 +82,7 @@ export function DatePicker({
       </button>
 
       {isOpen&&(
-        <div className="absolute z-[60] top-full mt-2 bg-white border border-[#ede8e0] rounded-2xl shadow-2xl p-4 w-72">
+        <div className="modal-pop absolute z-[60] top-full mt-2 bg-white/95 backdrop-blur-md border border-[#ede8e0] rounded-2xl shadow-2xl p-4 w-72">
           {/* Month nav */}
           <div className="flex items-center justify-between mb-3">
             <button type="button" onClick={prevMonth} disabled={!canGoPrev()}
@@ -118,12 +117,11 @@ export function DatePicker({
               return(
                 <button key={day} type="button" onClick={()=>!disabled&&select(day)} disabled={disabled}
                   className={`h-8 rounded-lg text-xs font-medium transition ${
-                    selected?"text-white":
+                    selected?"text-white bg-gradient-rose shadow-glow":
                     disabled?"text-gray-300 cursor-not-allowed":
                     todayDay?"text-[#f07097] font-bold hover:bg-[#fef7f9]":
                     "text-gray-700 hover:bg-[#fef7f9] hover:text-[#f07097]"
-                  }`}
-                  style={selected?{background:PINK}:{}}>
+                  }`}>
                   {day}
                 </button>
               );
@@ -196,7 +194,7 @@ export function TimePicker({
       </button>
 
       {isOpen&&(
-        <div className="absolute z-[60] top-full mt-2 bg-white border border-[#ede8e0] rounded-2xl shadow-2xl p-5 w-64">
+        <div className="modal-pop absolute z-[60] top-full mt-2 bg-white/95 backdrop-blur-md border border-[#ede8e0] rounded-2xl shadow-2xl p-5 w-64">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Hora de entrega</p>
           <div className="flex items-center gap-2 mb-5">
             <select value={h} onChange={e=>setH(e.target.value)} className={selClass}>
@@ -217,8 +215,7 @@ export function TimePicker({
             <button type="button" onClick={()=>setIsOpen(false)}
               className="flex-1 py-2 rounded-lg text-sm text-gray-500 border border-[#ede8e0] hover:bg-gray-50 transition">Cancelar</button>
             <button type="button" onClick={confirm}
-              className="flex-1 py-2 rounded-lg text-white text-sm font-semibold hover:opacity-90 transition"
-              style={{background:PINK}}>Confirmar</button>
+              className="flex-1 py-2 rounded-lg text-white text-sm font-semibold bg-gradient-rose hover:opacity-90 transition">Confirmar</button>
           </div>
         </div>
       )}

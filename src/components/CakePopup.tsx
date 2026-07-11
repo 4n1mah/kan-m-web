@@ -8,8 +8,6 @@ import {
   type CakeDetail, type CakeSizeId,
 } from "@/lib/cakeMenu";
 
-const BTN = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
-
 const CAKE_TYPES: { id: CakeDetail["cakeType"]; label: string }[] = [
   { id: "tradicional", label: "Tradicional" },
   { id: "clasico", label: "Clásicos" },
@@ -33,8 +31,7 @@ export default function CakePopup({ item, initial, onSave, onClose }: {
 
   const Pill = ({ label, active, onClick, sub }: { label: string; active: boolean; onClick: () => void; sub?: string }) => (
     <button type="button" onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-sm border transition ${active ? "text-white border-transparent" : "border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"}`}
-      style={active ? { background: BTN } : {}}>
+      className={`px-3 py-1.5 rounded-full text-sm border transition ${active ? "text-white border-transparent bg-gradient-rose shadow-glow" : "border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"}`}>
       {label}{sub && <span className={`ml-1.5 text-[11px] font-semibold ${active ? "text-white/85" : "text-[var(--rose)]"}`}>{sub}</span>}
     </button>
   );
@@ -67,8 +64,8 @@ export default function CakePopup({ item, initial, onSave, onClose }: {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-4" style={{ background: "rgba(0,0,0,0.5)" }} onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[92vh] sm:max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm" style={{ background: "rgba(0,0,0,0.45)" }} onClick={onClose}>
+      <div className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[92vh] sm:max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-[var(--border)] rounded-t-3xl">
           <div><h3 className="font-display text-xl">Detalles del pastel</h3><p className="text-xs text-[var(--muted-foreground)] mt-0.5">{item}</p></div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X size={16}/></button>
@@ -157,8 +154,7 @@ export default function CakePopup({ item, initial, onSave, onClose }: {
           ) : null}
 
           <button type="button" disabled={!valid} onClick={confirm}
-            className="w-full py-3.5 rounded-2xl text-white font-semibold hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            style={{ background: BTN }}>
+            className="btn-shine w-full py-3.5 rounded-2xl text-white font-semibold bg-gradient-rose hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <CheckCircle2 size={18}/> Confirmar detalles
           </button>
         </div>

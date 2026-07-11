@@ -30,14 +30,14 @@ export default function Lightbox({ images, startIndex = 0, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.92)" }}
+      className="fixed inset-0 z-[200] flex items-center justify-center backdrop-blur-md"
+      style={{ background: "rgba(0,0,0,0.82)" }}
       onClick={onClose}
     >
       {/* Close */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition z-10"
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/25 hover:scale-105 transition-all z-10"
         aria-label="Cerrar"
       >
         <X size={20} />
@@ -52,7 +52,7 @@ export default function Lightbox({ images, startIndex = 0, onClose }: Props) {
         <img
           src={images[idx]}
           alt=""
-          className="max-h-[85vh] max-w-full w-auto rounded-2xl object-contain shadow-2xl"
+          className="modal-pop max-h-[85vh] max-w-full w-auto rounded-2xl object-contain shadow-2xl"
           style={{ userSelect: "none" }}
         />
 
@@ -60,14 +60,14 @@ export default function Lightbox({ images, startIndex = 0, onClose }: Props) {
           <>
             <button
               onClick={prev}
-              className="absolute left-2 w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/30 transition"
+              className="absolute left-2 w-11 h-11 rounded-full bg-white/15 border border-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/30 hover:scale-105 transition-all"
               aria-label="Anterior"
             >
               <ChevronLeft size={22} />
             </button>
             <button
               onClick={next}
-              className="absolute right-2 w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/30 transition"
+              className="absolute right-2 w-11 h-11 rounded-full bg-white/15 border border-white/20 backdrop-blur-sm text-white flex items-center justify-center hover:bg-white/30 hover:scale-105 transition-all"
               aria-label="Siguiente"
             >
               <ChevronRight size={22} />

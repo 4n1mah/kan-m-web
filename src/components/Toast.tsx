@@ -50,9 +50,11 @@ function Toast({ toast, onClose }: { toast: ToastMessage; onClose: () => void })
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(12px)",
       }}>
-      <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-lg max-w-xs"
-        style={{ background: cfg.bg, borderColor: cfg.border }}>
-        <span style={{ color: cfg.text }}>{cfg.icon}</span>
+      <div className="flex items-center gap-3 pl-3 pr-4 py-3 rounded-2xl border border-white/60 shadow-lg max-w-xs backdrop-blur-md overflow-hidden relative"
+        style={{ background: "rgba(255,255,255,0.9)" }}>
+        <span className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: cfg.border }} />
+        <span className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: cfg.bg, color: cfg.text }}>{cfg.icon}</span>
         <p className="text-sm font-semibold flex-1" style={{ color: cfg.text }}>{toast.message}</p>
         <button onClick={() => { setVisible(false); setTimeout(onClose, 300); }}
           className="opacity-60 hover:opacity-100 transition" style={{ color: cfg.text }}>

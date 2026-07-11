@@ -103,8 +103,7 @@ function RecentOrderCard({
       </div>
       <button
         onClick={() => onReorder(order.items)}
-        className="w-full py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition"
-        style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+        className="btn-shine w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-rose hover:opacity-90 transition"
       >
         Pedir de nuevo
       </button>
@@ -227,10 +226,7 @@ function CartStep({
         </div>
         <button
           onClick={onNext}
-          className="w-full py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-90 transition active:scale-95"
-          style={{
-            background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)",
-          }}
+          className="btn-shine w-full py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition active:scale-95"
         >
           Ordenar →
         </button>
@@ -316,10 +312,7 @@ function InfoStep({
         <button
           type="submit"
           disabled={!canSubmit}
-          className="w-full py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-90 transition active:scale-95 disabled:opacity-40"
-          style={{
-            background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)",
-          }}
+          className="btn-shine w-full py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition active:scale-95 disabled:opacity-40"
         >
           Continuar al pago →
         </button>
@@ -479,10 +472,7 @@ function PaymentStep({
         <button
           onClick={onSubmit}
           disabled={!receiptUrl || uploading || submitting}
-          className="w-full py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-90 transition active:scale-95 disabled:opacity-40"
-          style={{
-            background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)",
-          }}
+          className="btn-shine w-full py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition active:scale-95 disabled:opacity-40"
         >
           {submitting ? "Enviando orden…" : "Confirmar orden"}
         </button>
@@ -521,10 +511,7 @@ function SuccessStep({ code, total, onClose }: { code: string; total: number | n
       </p>
       <button
         onClick={onClose}
-        className="px-8 py-3 rounded-2xl text-white font-semibold text-sm hover:opacity-90 transition"
-        style={{
-          background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)",
-        }}
+        className="btn-shine px-8 py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition"
       >
         Cerrar
       </button>
@@ -643,7 +630,7 @@ export default function CartDrawer() {
 
       {/* Drawer */}
       <div
-        className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[420px] bg-white flex flex-col shadow-2xl"
+        className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[420px] bg-white/95 backdrop-blur-xl border-l border-white/60 flex flex-col shadow-2xl"
         style={{ animation: "cartSlideIn 0.3s cubic-bezier(0.16,1,0.3,1)" }}
         onClick={(e) => e.stopPropagation()}
       >

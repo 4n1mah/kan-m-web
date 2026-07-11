@@ -9,7 +9,7 @@ import {
 import { ToastContainer, useToast } from "@/components/Toast";
 import { useConfirm } from "@/components/ConfirmationModal";
 
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 
 type Role = "OWNER" | "BAKER" | "ASSISTANT";
 type User = {
@@ -287,7 +287,7 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-[fadeIn_.15s_ease-out]">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}/>
-      <form onSubmit={submit} className="relative bg-white w-full max-w-md rounded-3xl shadow-xl border border-[#ede8e0] p-6 sm:p-7 space-y-4">
+      <form onSubmit={submit} className="modal-pop relative bg-white/95 backdrop-blur-md w-full max-w-md rounded-3xl shadow-xl border border-[#ede8e0] p-6 sm:p-7 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-xl">Nuevo usuario</h2>
           <button type="button" onClick={onClose}
@@ -364,7 +364,7 @@ function ResetPasswordModal({ user, onClose, onDone }: { user: User; onClose: ()
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-[fadeIn_.15s_ease-out]">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}/>
-      <form onSubmit={submit} className="relative bg-white w-full max-w-md rounded-3xl shadow-xl border border-[#ede8e0] p-6 sm:p-7 space-y-4">
+      <form onSubmit={submit} className="modal-pop relative bg-white/95 backdrop-blur-md w-full max-w-md rounded-3xl shadow-xl border border-[#ede8e0] p-6 sm:p-7 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-display text-xl">Restablecer contraseña</h2>
           <button type="button" onClick={onClose}

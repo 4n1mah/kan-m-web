@@ -72,7 +72,7 @@ const CATEGORIES = [
 ];
 const catLabel = (id: string) => CATEGORIES.find(c=>c.id===id)?.label ?? id;
 const empty = { name:"", description:"", category:"cakes", imageUrl:"", price:"" };
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 
 // ── Helpers ───────────────────────────────────────────────────
 function shortId(id: string) { return id.slice(-6).toUpperCase(); }
@@ -146,8 +146,8 @@ function BakerPopup({ onSelect,onClose }:{ onSelect:(b:string)=>void; onClose:()
     return ()=>document.removeEventListener("keydown",fn);
   },[onClose]);
   return(
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.4)"}} onClick={onClose}>
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6" onClick={e=>e.stopPropagation()}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 backdrop-blur-sm" style={{background:"rgba(0,0,0,0.4)"}} onClick={onClose}>
+      <div className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6" onClick={e=>e.stopPropagation()}>
         <h3 className="font-display text-xl mb-1">Asignar repostera</h3>
         <p className="text-sm text-gray-500 mb-5">¿Quién se encarga de este pedido?</p>
         <div className="space-y-2.5">
@@ -255,8 +255,8 @@ function ProductModal({ product,onClose,onSave,onDelete }:{ product:Product|null
   return(
     <>
       {modal}
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.5)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm" style={{background:"rgba(0,0,0,0.5)"}} onClick={onClose}>
+        <div className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
           <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl z-10">
             <div>
               <h3 className="font-display text-xl">{isEdit?"Editar producto":"Nuevo producto"}</h3>
@@ -346,8 +346,8 @@ function OrderEditModal({ order,onClose,onSave }:{ order:Order; onClose:()=>void
   return(
     <>
       {modal}
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+        <div className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
           <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl z-10">
             <div><h3 className="font-display text-xl">Editar pedido</h3><p className="text-xs text-gray-400">#{shortId(order.id)}</p></div>
             <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"><X size={16}/></button>
@@ -603,8 +603,8 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
       {showBaker&&<BakerPopup onSelect={handleBakerSelect} onClose={()=>{setShowBaker(false);setPending(null);}}/>}
       {showEdit&&<OrderEditModal order={localOrder} onClose={()=>setShowEdit(false)} onSave={async data=>{await doUpdate(data);setLocalOrder(prev=>({...prev,...data}));}}/>}
 
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+        <div className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
 
           {/* Header */}
           <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl">
@@ -1022,7 +1022,7 @@ function OrderCard({ order,onClick,onQuickAction,currentUser }:{
   const menuEst = Object.values(cakeDet).reduce((s,c)=>s+(typeof c?.estimatedPrice==="number"?c.estimatedPrice:0),0);
 
   return(
-    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-0.5 ${urgent?"border-red-300 ring-1 ring-red-100":"border-[#f0e8e0]"} hover:shadow-md`}>
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-0.5 ${urgent?"border-red-300 ring-1 ring-red-100":"border-[#f0e8e0] hover:border-[#f07097]/30"} hover:shadow-md`}>
       {/* Clickable image + info area */}
       <button onClick={onClick} className="text-left flex-1 flex flex-col">
         {imgs.length>0?(
@@ -1187,8 +1187,8 @@ function ScheduleOrderModal({ onClose, onCreated, addToast }:{
           initial={cakePopup.editIdx!=null?cakes[cakePopup.editIdx].detail:null}
           onSave={saveCake} onClose={()=>setCakePopup({open:false,editIdx:null})}/>
       )}
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
-        <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 backdrop-blur-sm" style={{background:"rgba(0,0,0,0.55)"}} onClick={onClose}>
+        <div className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[94vh] sm:max-h-[90vh] overflow-y-auto" onClick={e=>e.stopPropagation()}>
           <div className="sticky top-0 bg-white flex items-center justify-between px-6 py-4 border-b border-[#f0e8e0] rounded-t-3xl z-10">
             <div>
               <h3 className="font-display text-xl flex items-center gap-2"><Store size={18} className="text-[#f07097]"/> Agendar pedido</h3>
@@ -1518,7 +1518,7 @@ function DashboardInner() {
             </button>
 
             {userMenuOpen && currentUser && (
-              <div className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl border border-[#ede8e0] shadow-xl overflow-hidden z-50 animate-[fadeIn_.12s_ease-out]"
+              <div className="absolute right-0 top-full mt-2 w-60 admin-card rounded-2xl shadow-xl overflow-hidden z-50 animate-[fadeIn_.12s_ease-out]"
                 onMouseDown={e=>e.preventDefault()}>
                 <div className="px-4 py-3 border-b border-[#ede8e0] bg-[#faf8f5]">
                   <p className="font-semibold text-sm text-gray-800">{currentUser.name}</p>
@@ -1570,7 +1570,7 @@ function DashboardInner() {
 
         {/* Banner: activar notificaciones push */}
         {pushBanner!=="hidden"&&(
-          <div className="mb-5 flex items-center gap-3 bg-white border border-[#f07097]/30 rounded-2xl px-4 py-3 shadow-sm">
+          <div className="mb-5 flex items-center gap-3 glass-pink rounded-2xl px-4 py-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{background:"#fef7f9"}}>
               <Bell size={16} className="text-[#f07097]"/>
             </div>
@@ -1594,7 +1594,7 @@ function DashboardInner() {
             {label:"Nuevos",value:pendingCount,icon:"⏳",sub:"sin atender",hot:pendingCount>0},
             {label:"Entregados",value:orders.filter(o=>o.status==="DELIVERED").length,icon:"🎉",sub:"este período"},
           ].map(s=>(
-            <div key={s.label} className={`bg-white rounded-2xl border p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${s.hot?"border-[#f07097]/40 ring-1 ring-[#f07097]/15":"border-[#ede8e0]"}`}>
+            <div key={s.label} className={`admin-card rounded-2xl p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${s.hot?"!border-[#f07097]/40 ring-1 ring-[#f07097]/15 shadow-glow":""}`}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className={`text-2xl font-bold font-display ${s.hot?"text-[#f07097]":"text-gray-800"}`}>{s.value}</p>
@@ -1608,7 +1608,7 @@ function DashboardInner() {
         </div>
 
         {/* Main tabs — deslizables en móvil */}
-        <div className="flex flex-nowrap sm:flex-wrap gap-1 mb-6 bg-white border border-[#ede8e0] rounded-xl p-1 w-full sm:w-fit shadow-sm overflow-x-auto">
+        <div className="flex flex-nowrap sm:flex-wrap gap-1 mb-6 bg-white/80 backdrop-blur-md border border-[#ede8e0] rounded-xl p-1 w-full sm:w-fit shadow-sm overflow-x-auto">
           <button onClick={()=>setMainTab("orders")}
             className={`shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="orders"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
             style={mainTab==="orders"?{background:PINK}:{}}>
@@ -1644,7 +1644,7 @@ function DashboardInner() {
         {/* ORDERS */}
         {mainTab==="orders"&&(
           <div>
-            <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm mb-5">
+            <div className="admin-card rounded-2xl shadow-sm mb-5">
               <div className="flex flex-wrap border-b border-[#ede8e0]">
                 {ORDER_TABS.map(t=>{
                   const active=orderTab===t.id; const count=tabCounts[t.id];
@@ -1706,7 +1706,7 @@ function DashboardInner() {
             {ordersLoading?(
               <div className="text-center py-20 text-gray-400">Cargando…</div>
             ):tabOrders.length===0?(
-              <div className="text-center py-20 bg-white rounded-2xl border border-[#ede8e0]">
+              <div className="text-center py-20 admin-card rounded-2xl">
                 <div className="text-4xl mb-2">{orderTab==="PENDING"?"✨":"📋"}</div>
                 <p className="text-gray-500 text-sm">{orderSearch?"Sin resultados para tu búsqueda.":orderTab==="PENDING"?"No hay pedidos nuevos. ¡Todo al día!":"No hay pedidos en este estado."}</p>
                 {orderTab==="PENDING"&&!orderSearch&&currentUser?.role!=="ASSISTANT"&&(
@@ -1771,11 +1771,11 @@ function DashboardInner() {
             </div>
             <h3 className="font-display text-lg mb-4">Productos <span className="text-gray-400 font-normal text-base">({filteredProducts.length})</span></h3>
             {filteredProducts.length===0?(
-              <div className="text-center py-16 bg-white rounded-2xl border border-[#ede8e0]"><div className="text-4xl mb-2">🛍️</div><p className="text-gray-500 text-sm">Sin productos aquí.</p></div>
+              <div className="text-center py-16 admin-card rounded-2xl"><div className="text-4xl mb-2">🛍️</div><p className="text-gray-500 text-sm">Sin productos aquí.</p></div>
             ):(
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredProducts.map(p=>(
-                  <div key={p.id} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer" onClick={()=>setProductModal({open:true,product:p})}>
+                  <div key={p.id} className="admin-card rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer" onClick={()=>setProductModal({open:true,product:p})}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.imageUrl} alt={p.name} className="w-full aspect-[4/3] object-cover"/>
                     <div className="p-4">

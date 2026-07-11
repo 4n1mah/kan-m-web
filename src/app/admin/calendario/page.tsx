@@ -42,7 +42,7 @@ type Order = {
 type CurrentUser = { userId: string; name: string; email?: string; role: string };
 
 // ── Constants ─────────────────────────────────────────────────
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 const PINK_SOLID = "#f07097";
 
 const STATUS: Record<string, { label: string; color: string; bg: string; dot: string; border: string; emoji: string }> = {
@@ -1255,7 +1255,7 @@ function MonthYearPicker({ cursor, setCursor, label }: {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 z-30 bg-white rounded-2xl border border-[#ede8e0] shadow-lg p-3 w-72 animate-[fadeIn_.12s_ease-out]">
+        <div className="absolute top-full left-0 mt-2 z-30 admin-card rounded-2xl shadow-lg p-3 w-72 animate-[fadeIn_.12s_ease-out]">
           {/* Year header */}
           <div className="flex items-center justify-between mb-3">
             <button onClick={() => setPickerYear(y => y - 1)} aria-label="Año anterior"

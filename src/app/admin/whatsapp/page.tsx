@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { ToastContainer, useToast } from "@/components/Toast";
 
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 
 type Escalation = {
   id: string;
@@ -235,7 +235,7 @@ export default function WhatsappBandejaPage() {
         {loading ? (
           <div className="text-center py-20 text-gray-400">Cargando...</div>
         ) : escalations.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-[#ede8e0]">
+          <div className="text-center py-20 admin-card rounded-2xl">
             <CheckCircle2 size={48} className="mx-auto text-green-300 mb-3" />
             <p className="font-display text-xl text-gray-700">Todo al día 🎉</p>
             <p className="text-sm text-gray-400 mt-2">

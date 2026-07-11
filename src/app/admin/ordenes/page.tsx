@@ -185,7 +185,7 @@ function OrderDetailModal({
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+          className="modal-pop bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -544,7 +544,7 @@ export default function OrdenesPage() {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm mb-5">
+        <div className="admin-card rounded-2xl shadow-sm mb-5">
           <div className="flex flex-wrap border-b border-[#ede8e0]">
             {TABS.map((t) => {
               const active = tab === t.id;
@@ -577,7 +577,7 @@ export default function OrdenesPage() {
         {loading ? (
           <div className="text-center py-20 text-gray-400">Cargando…</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-[#ede8e0]">
+          <div className="text-center py-20 admin-card rounded-2xl">
             <div className="text-4xl mb-2">📦</div>
             <p className="text-gray-500 text-sm">No hay órdenes en este estado.</p>
           </div>

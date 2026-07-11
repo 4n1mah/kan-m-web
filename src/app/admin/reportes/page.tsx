@@ -113,7 +113,7 @@ export default function ReportesPage() {
     SENT:      { color: "#1e40af", bg: "#dbeafe" },
   };
 
-  const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+  const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 
   return (
     <div className="min-h-screen" style={{ background: "#f7f4f0" }}>
@@ -131,7 +131,7 @@ export default function ReportesPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Filters + Export */}
-        <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 flex flex-wrap items-center gap-4">
+        <div className="admin-card rounded-2xl shadow-sm p-5 flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <select value={filterMonth} onChange={e => setFilterMonth(Number(e.target.value))}
               className="rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-2 text-sm focus:outline-none focus:border-[#f07097] transition">
@@ -166,7 +166,7 @@ export default function ReportesPage() {
               { label: "Confirmados",   value: confirmed,          icon: <Users size={20}/>,     color: "#3b82f6" },
               { label: "Ingresos",      value: revenue > 0 ? `RD$${revenue.toLocaleString("es-DO")}` : "—", icon: <DollarSign size={20}/>, color: "#f59e0b" },
             ].map(k => (
-              <div key={k.label} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+              <div key={k.label} className="admin-card rounded-2xl shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white mb-3" style={{ background: k.color }}>{k.icon}</div>
                 <p className="text-2xl font-bold font-display text-gray-800">{k.value}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{k.label}</p>
@@ -187,7 +187,7 @@ export default function ReportesPage() {
               { label: "Confirmadas",    value: cartConfirmed,          color: "#059669" },
               { label: "Negadas",        value: cartDenied,             color: "#ef4444" },
             ].map(k => (
-              <div key={k.label} className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+              <div key={k.label} className="admin-card rounded-2xl shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                 <div className="w-2 h-8 rounded-full mb-3" style={{ background: k.color }}/>
                 <p className="text-2xl font-bold font-display text-gray-800">{k.value}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{k.label}</p>
@@ -195,7 +195,7 @@ export default function ReportesPage() {
             ))}
           </div>
           {cartRevenue > 0 && (
-            <div className="mt-3 bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 flex items-center gap-4">
+            <div className="mt-3 admin-card rounded-2xl shadow-sm p-5 flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: "#059669" }}>
                 <DollarSign size={20}/>
               </div>
@@ -209,7 +209,7 @@ export default function ReportesPage() {
 
         {/* ── Productos más vendidos (en línea) ───────────────── */}
         {topProducts.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="admin-card rounded-2xl shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
             <h3 className="font-display text-lg mb-4">Productos más vendidos en línea</h3>
             <div className="space-y-3">
               {topProducts.map(([name, count]) => (
@@ -229,7 +229,7 @@ export default function ReportesPage() {
 
         {/* ── Pedidos por repostera (cotizaciones) ─────────────── */}
         {Object.keys(byBaker).length > 0 && (
-          <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+          <div className="admin-card rounded-2xl shadow-sm p-5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
             <h3 className="font-display text-lg mb-4">Cotizaciones por repostera</h3>
             <div className="space-y-3">
               {Object.entries(byBaker).sort((a,b) => b[1]-a[1]).map(([baker, count]) => (
@@ -248,7 +248,7 @@ export default function ReportesPage() {
         )}
 
         {/* ── Tabla: Órdenes en línea ───────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm overflow-hidden">
+        <div className="admin-card rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-[#ede8e0]">
             <h3 className="font-display text-lg flex items-center gap-2"><ShoppingBag size={16} className="text-[#f07097]"/> Órdenes en línea del mes</h3>
             <p className="text-xs text-gray-400 mt-0.5">{monthCartOrders.length} órdenes en {MONTHS[filterMonth]} {filterYear}</p>
@@ -260,7 +260,7 @@ export default function ReportesPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-[#faf8f5] border-b border-[#ede8e0]">
+                <thead className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-[#ede8e0]">
                   <tr>
                     {["Código","Cliente","Estado","Total","Fecha"].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
@@ -271,7 +271,7 @@ export default function ReportesPage() {
                   {monthCartOrders.map(o => {
                     const sc = statusColor[o.status] ?? { color: "#374151", bg: "#f3f4f6" };
                     return (
-                      <tr key={o.id} className="hover:bg-[#faf8f5] transition">
+                      <tr key={o.id} className="hover:bg-[#fef7f9] transition-colors">
                         <td className="px-4 py-3 text-xs font-mono font-semibold text-[#e85d82]">{o.code}</td>
                         <td className="px-4 py-3 font-medium whitespace-nowrap">{o.customerName}</td>
                         <td className="px-4 py-3">
@@ -291,7 +291,7 @@ export default function ReportesPage() {
         </div>
 
         {/* ── Tabla: Cotizaciones del mes ───────────────────────── */}
-        <div className="bg-white rounded-2xl border border-[#ede8e0] shadow-sm overflow-hidden">
+        <div className="admin-card rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-[#ede8e0]">
             <h3 className="font-display text-lg">Cotizaciones del mes</h3>
             <p className="text-xs text-gray-400 mt-0.5">{monthOrders.length} pedidos en {MONTHS[filterMonth]} {filterYear}</p>
@@ -303,7 +303,7 @@ export default function ReportesPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-[#faf8f5] border-b border-[#ede8e0]">
+                <thead className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-[#ede8e0]">
                   <tr>
                     {["ID","Cliente","Tipo","Fecha evento","Estado","Repostera","Precio"].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
@@ -312,7 +312,7 @@ export default function ReportesPage() {
                 </thead>
                 <tbody className="divide-y divide-[#f0e8e0]">
                   {monthOrders.map(o => (
-                    <tr key={o.id} className="hover:bg-[#faf8f5] transition">
+                    <tr key={o.id} className="hover:bg-[#fef7f9] transition-colors">
                       <td className="px-4 py-3 text-xs text-gray-400 font-mono">#{o.id.slice(-6).toUpperCase()}</td>
                       <td className="px-4 py-3 font-medium whitespace-nowrap">{o.name}</td>
                       <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{o.eventType}</td>

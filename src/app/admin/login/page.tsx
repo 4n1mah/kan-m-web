@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
+const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function AdminLogin() {
       <div className="relative w-full max-w-md">
         {/* Header con logo */}
         <div className="text-center mb-7">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl text-white text-2xl font-display font-bold mb-4 shadow-md"
+          <div className="float-y inline-flex items-center justify-center w-16 h-16 rounded-2xl text-white text-2xl font-display font-bold mb-4 shadow-glow"
             style={{ background: PINK }}>
             K
           </div>
@@ -53,7 +53,7 @@ export default function AdminLogin() {
 
         {/* Card */}
         <form onSubmit={onSubmit}
-          className="bg-white border border-[#ede8e0] rounded-3xl shadow-xl p-7 sm:p-8 space-y-5">
+          className="modal-pop glass-strong rounded-3xl shadow-xl p-7 sm:p-8 space-y-5">
 
           {/* Email */}
           <div>

@@ -39,6 +39,11 @@ const config: Config = {
       boxShadow: {
         soft: "0 10px 40px -15px rgb(216 132 148 / 0.35)",
         card: "0 8px 30px -12px rgb(216 132 148 / 0.25)",
+        glow: "0 10px 40px -10px rgb(240 112 151 / 0.4)",
+        glass: "0 8px 32px rgb(240 112 151 / 0.10)",
+      },
+      transitionTimingFunction: {
+        spring: "cubic-bezier(.22,1,.36,1)",
       },
     },
   },

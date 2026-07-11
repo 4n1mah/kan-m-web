@@ -18,8 +18,6 @@ const CATEGORIES = [
   { id: "drinks",    label: "Bebidas" },
 ];
 
-const PINK = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
-
 function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
   const [active, setActive]   = useState("all");
   const [gridKey, setGridKey] = useState(0);
@@ -51,10 +49,9 @@ function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
               aria-pressed={active === c.id}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 active === c.id
-                  ? "text-white shadow-soft scale-[1.04]"
+                  ? "text-white shadow-soft scale-[1.04] bg-gradient-rose"
                   : "text-foreground/70 hover:text-[var(--rose)] hover:bg-[var(--rose)]/10"
               }`}
-              style={active === c.id ? { background: PINK } : {}}
             >
               {c.label}
             </button>
@@ -64,7 +61,7 @@ function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
 
       {visible.length === 0 ? (
         <div className="text-center py-20">
-          <div className="w-16 h-16 mx-auto rounded-full bg-[var(--rose)]/10 flex items-center justify-center mb-4">
+          <div className="float-y w-16 h-16 mx-auto rounded-full bg-[var(--rose)]/10 flex items-center justify-center mb-4">
             <Sparkles size={26} className="text-rose" />
           </div>
           <p className="text-muted-foreground">No hay productos en esta categoría aún.</p>
@@ -87,13 +84,10 @@ function OrderHelpBanner() {
   return (
     <div className="grid sm:grid-cols-2 gap-4 mb-10">
       <div
-        className="card-lift rounded-3xl p-5 border-2 flex items-start gap-4"
-        style={{ borderColor: "rgba(240,112,151,0.25)", background: "rgba(255,255,255,0.7)" }}
+        className="glass-pink card-lift rounded-3xl p-5 flex items-start gap-4"
+        style={{ borderColor: "rgba(240,112,151,0.25)" }}
       >
-        <div
-          className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center text-white"
-          style={{ background: PINK }}
-        >
+        <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center text-white bg-gradient-rose shadow-glow">
           <ShoppingCart size={20} />
         </div>
         <div className="min-w-0 flex-1">
@@ -109,13 +103,10 @@ function OrderHelpBanner() {
 
       <Link
         href="/cotizar"
-        className="card-lift rounded-3xl p-5 border-2 flex items-start gap-4"
-        style={{ borderColor: "rgba(240,112,151,0.25)", background: "rgba(255,255,255,0.7)" }}
+        className="glass-pink card-lift rounded-3xl p-5 flex items-start gap-4"
+        style={{ borderColor: "rgba(240,112,151,0.25)" }}
       >
-        <div
-          className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center text-white"
-          style={{ background: PINK }}
-        >
+        <div className="shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center text-white bg-gradient-rose shadow-glow">
           <Sparkles size={20} />
         </div>
         <div className="min-w-0 flex-1">
@@ -136,7 +127,7 @@ export default function CatalogClient({ initialProducts }: { initialProducts: Pr
   return (
     <CartProvider>
       <section className="max-w-7xl mx-auto px-6 py-16">
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 hero-enter">
           <p className="font-script text-2xl text-rose">nuestro catálogo</p>
           <h1 className="font-display text-4xl md:text-5xl mt-1">Creaciones Kan M</h1>
           <p className="text-muted-foreground mt-3 max-w-xl mx-auto">

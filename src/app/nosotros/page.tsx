@@ -6,16 +6,20 @@ export default function NosotrosPage() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
       <div className="grid md:grid-cols-2 gap-12 items-center">
-        <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-card">
-          <Image
-            src={IMAGES.nosotrosTeam}
-            alt="Equipo Kan M"
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover"
-          />
+        <div className="relative reveal" data-reveal="left">
+          {/* Blob decorativo detrás de la foto */}
+          <div className="blob-float pointer-events-none absolute -top-8 -left-8 w-64 h-64 rounded-full bg-[var(--blush)]/40 blur-3xl -z-10" />
+          <div className="img-shine group relative aspect-[4/5] rounded-3xl overflow-hidden shadow-card ring-1 ring-[var(--rose)]/15">
+            <Image
+              src={IMAGES.nosotrosTeam}
+              alt="Equipo Kan M"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+            />
+          </div>
         </div>
-        <div>
+        <div className="reveal" data-reveal="right">
           <p className="font-script text-2xl text-rose">nuestra historia</p>
           <h1 className="font-display text-4xl md:text-5xl mt-1">
             Pasión por lo <span className="font-script text-gradient-rose">artesanal</span>
@@ -79,9 +83,9 @@ export default function NosotrosPage() {
           { t: "Personalizado", d: "Diseñamos según tu visión y tema.", Icon: Palette },
           { t: "Detallista", d: "Cuidamos cada elemento del montaje.", Icon: Gem },
         ].map((v) => (
-          <div key={v.t} className="card-lift bg-card rounded-3xl border border-[var(--border)]/60 shadow-card p-7 text-center">
+          <div key={v.t} className="card-tilt glass rounded-3xl p-7 text-center">
             <div
-              className="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white mb-4"
+              className="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white mb-4 shadow-glow"
               style={{ background: "linear-gradient(135deg,#f9c4d4 0%,#f07097 100%)" }}
             >
               <v.Icon size={22} />
@@ -93,9 +97,9 @@ export default function NosotrosPage() {
       </div>
 
       {/* Horario de atención */}
-      <div className="bg-card rounded-3xl border border-[var(--border)]/60 shadow-card p-7 mt-6 flex flex-col sm:flex-row items-center gap-5 sm:gap-8">
+      <div className="glass-pink rounded-3xl p-7 mt-6 flex flex-col sm:flex-row items-center gap-5 sm:gap-8 reveal" data-reveal="scale">
         <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-white shrink-0"
+          className="float-y w-14 h-14 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-glow"
           style={{ background: "linear-gradient(135deg,#f9c4d4 0%,#f07097 100%)" }}
         >
           <Clock size={24} />

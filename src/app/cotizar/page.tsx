@@ -17,7 +17,6 @@ const PRODUCT_CATEGORIES = [
   { label: "Brunch / Catering", items: ["Brunch para grupo","Catering de evento"], isCake: false, note: "El menú se define en base a tus necesidades y tipo de evento." },
 ];
 const CAKE_ITEMS = new Set(PRODUCT_CATEGORIES.filter(c=>c.isCake).flatMap(c=>c.items));
-const BTN = "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)";
 
 type FormState = { name:string; phone:string; email:string; eventType:string; eventDate:string; deliveryTime:string; guestCount:string; selectedItems:string[]; notes:string; deliveryMethod:string; };
 const EMPTY:FormState = { name:"",phone:"",email:"",eventType:"",eventDate:"",deliveryTime:"",guestCount:"",selectedItems:[],notes:"",deliveryMethod:"" };
@@ -25,7 +24,7 @@ const EMPTY:FormState = { name:"",phone:"",email:"",eventType:"",eventDate:"",de
 function StepHeader({n,label}:{n:number;label:string}) {
   return (
     <h2 className="font-display text-xl mb-4 flex items-center gap-2">
-      <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{background:BTN}}>{n}</span>
+      <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 bg-gradient-rose shadow-glow">{n}</span>
       {label}
     </h2>
   );
@@ -217,12 +216,11 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
                 disabled={isDateDisabled(day)}
                 className={`h-8 rounded-lg text-sm font-medium transition ${
                   isDateSelected(day)
-                    ? "text-white"
+                    ? "text-white bg-gradient-rose shadow-glow"
                     : isDateDisabled(day)
                     ? "text-[var(--muted-foreground)]/30 cursor-not-allowed"
                     : "text-[var(--muted-foreground)] hover:bg-[var(--rose)]/10 hover:text-[var(--rose)]"
                 }`}
-                style={isDateSelected(day) ? { background: BTN } : {}}
               >
                 {day}
               </button>
@@ -399,8 +397,7 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
             <button
               type="button"
               onClick={handleConfirm}
-              className="flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
-              style={{ background: BTN }}
+              className="flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90 bg-gradient-rose"
             >
               Guardar
             </button>
@@ -493,16 +490,16 @@ function CotizarForm() {
   if(submitted){
     return(
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-6">
-        <div className="max-w-md w-full text-center bg-[var(--card)] border border-[var(--border)]/60 rounded-3xl shadow-md p-10">
+        <div className="modal-pop max-w-md w-full text-center glass rounded-3xl shadow-md p-10">
           <CheckCircle2 size={52} className="mx-auto mb-4" style={{color:"#f07097"}}/>
-          <h2 className="font-display text-3xl">¡Solicitud enviada!</h2>
+          <h2 className="font-display text-3xl text-gradient-rose">¡Solicitud enviada!</h2>
           <p className="text-[var(--muted-foreground)] mt-3 leading-relaxed">Recibimos tu encargo, <strong>{form.name}</strong>. Te contactaremos por Whatsapp en unos momentos.</p>
           <div className="mt-5 p-4 rounded-2xl bg-[var(--muted)]/50 text-sm text-left space-y-1">
             <p><span className="font-medium">Evento:</span> {form.eventType}</p>
             <p><span className="font-medium">Fecha:</span> {form.eventDate}{form.deliveryTime?` · ${form.deliveryTime}`:""}</p>
           </div>
           <button onClick={()=>{setForm(EMPTY);setImageFiles([]);setImagePreviews([]);setCakeDetails({});setSubmitted(false);}}
-            className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold" style={{background:BTN}}>
+            className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold bg-gradient-rose">
             Hacer otra cotización
           </button>
         </div>
@@ -515,16 +512,17 @@ function CotizarForm() {
       {pendingCakeItem&&<CakePopup item={pendingCakeItem} initial={cakeDetails[pendingCakeItem]??null} onSave={handleCakeSave} onClose={()=>setPendingCakeItem(null)}/>}
       <section className="relative overflow-hidden py-12 px-6 text-center">
         <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl"/>
-        <span className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--rose)]/10 border border-[var(--rose)]/20 text-xs uppercase tracking-widest text-[var(--rose)]">
-          <Sparkles size={13}/> Cotización sin compromiso
-        </span>
-        <h1 className="font-display text-3xl md:text-4xl mt-3 relative">Cotiza tu evento</h1>
-        <p className="text-[var(--muted-foreground)] mt-3 max-w-xl mx-auto leading-relaxed relative">Cuéntanos qué imaginas. Te contactamos en menos de 24 horas.</p>
+        <div className="hero-enter relative">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--rose)]/10 border border-[var(--rose)]/20 text-xs uppercase tracking-widest text-[var(--rose)]">
+            <Sparkles size={13}/> Cotización sin compromiso
+          </span>
+          <h1 className="font-display text-3xl md:text-4xl mt-3">Cotiza tu evento</h1>
+          <p className="text-[var(--muted-foreground)] mt-3 max-w-xl mx-auto leading-relaxed">Cuéntanos qué imaginas. Te contactamos en menos de 24 horas.</p>
+        </div>
       </section>
 
       <section className="relative max-w-2xl mx-auto px-6 pb-20">
-        <div className="rounded-3xl p-8 md:p-10 space-y-8 border"
-          style={{background:"rgba(255,255,255,0.65)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",borderColor:"rgba(255,255,255,0.75)",boxShadow:"0 8px 40px rgba(240,112,151,0.10)"}}>
+        <div className="glass rounded-3xl p-8 md:p-10 space-y-8">
 
           {/* Step 1 */}
           <div>
@@ -554,8 +552,7 @@ function CotizarForm() {
                 <div className="flex flex-wrap gap-2">
                   {EVENT_TYPES.map(type=>(
                     <button key={type} type="button" onClick={()=>set("eventType",type)}
-                      className={`px-4 py-2 rounded-full text-sm border transition ${form.eventType===type?"text-white border-transparent":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"}`}
-                      style={form.eventType===type?{background:BTN}:{}}>{type}</button>
+                      className={`px-4 py-2 rounded-full text-sm border transition ${form.eventType===type?"text-white border-transparent bg-gradient-rose shadow-glow":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"}`}>{type}</button>
                   ))}
                 </div>
               </div>
@@ -615,7 +612,7 @@ function CotizarForm() {
                           </button>
                           {selected&&cat.isCake&&hasCakeDetail&&(
                             <button type="button" onClick={()=>setPendingCakeItem(item)}
-                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center" style={{background:BTN}} title="Editar">✏</button>
+                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center bg-gradient-rose" title="Editar">✏</button>
                           )}
                         </div>
                       );
@@ -678,8 +675,7 @@ function CotizarForm() {
           {error&&<p className="text-sm text-red-500 text-center bg-red-50 rounded-xl py-2">{error}</p>}
 
           <button type="button" onClick={handleSubmit} disabled={!isValid||submitting}
-            className={`w-full py-4 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition shadow-md ${isValid&&!submitting?"btn-shine cursor-pointer":"opacity-50 cursor-not-allowed"}`}
-            style={{background:BTN}}>
+            className={`w-full py-4 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition shadow-md bg-gradient-rose ${isValid&&!submitting?"btn-shine cursor-pointer":"opacity-50 cursor-not-allowed"}`}>
             {submitting?(
               <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Enviando...</>
             ):<>Enviar cotización <ArrowRight size={18}/></>}

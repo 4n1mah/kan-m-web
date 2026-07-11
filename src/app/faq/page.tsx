@@ -16,21 +16,23 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <section className="relative overflow-hidden py-12 px-6 text-center">
+      <section className="relative overflow-hidden py-12 px-6 text-center bg-grain">
         {/* Decorative blobs */}
         <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl" />
         <div className="blob-float-2 pointer-events-none absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[var(--accent)]/40 blur-3xl" />
 
-        <p className="font-script text-xl text-[var(--rose)] relative">
-          Resolvemos tus dudas
-        </p>
-        <h1 className="font-display text-3xl md:text-4xl mt-2 relative">
-          Preguntas frecuentes
-        </h1>
-        <p className="text-[var(--muted-foreground)] mt-4 max-w-xl mx-auto leading-relaxed relative">
-          Todo lo que necesitas saber antes de hacer tu pedido. ¿No encuentras tu respuesta?
-          Escríbenos directamente.
-        </p>
+        <div className="hero-enter relative">
+          <p className="font-script text-xl text-[var(--rose)]">
+            Resolvemos tus dudas
+          </p>
+          <h1 className="font-display text-3xl md:text-4xl mt-2">
+            Preguntas frecuentes
+          </h1>
+          <p className="text-[var(--muted-foreground)] mt-4 max-w-xl mx-auto leading-relaxed">
+            Todo lo que necesitas saber antes de hacer tu pedido. ¿No encuentras tu respuesta?
+            Escríbenos directamente.
+          </p>
+        </div>
       </section>
 
       {/* FAQ accordion */}
@@ -39,10 +41,10 @@ export default function FAQPage() {
           {FAQS.map((item, i) => (
             <div
               key={i}
-              className={`bg-[var(--card)] border rounded-2xl overflow-hidden transition-all duration-300 ${
+              className={`glass rounded-2xl overflow-hidden transition-all duration-300 ${
                 open === i
-                  ? "border-[var(--rose)]/40 shadow-soft"
-                  : "border-[var(--border)]/60 shadow-sm hover:shadow-md hover:border-[var(--rose)]/25"
+                  ? "!border-[var(--rose)]/40 shadow-glow"
+                  : "hover:shadow-glow hover:!border-[var(--rose)]/25"
               }`}
             >
               <button
@@ -79,8 +81,8 @@ export default function FAQPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-14 rounded-3xl bg-gradient-to-br from-[#f07097]/10 to-[var(--accent)]/30 border border-[var(--border)]/60 p-8 text-center">
-          <MessageCircle size={32} className="text-[var(--rose)] mx-auto mb-3" />
+        <div className="mt-14 rounded-3xl glass-pink bg-mesh p-8 text-center reveal" data-reveal="scale">
+          <MessageCircle size={32} className="float-y text-[var(--rose)] mx-auto mb-3" />
           <h2 className="font-display text-2xl">¿Tienes otra pregunta?</h2>
           <p className="text-[var(--muted-foreground)] mt-2 mb-6">
             Nuestro equipo responde rápido por WhatsApp.

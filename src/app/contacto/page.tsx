@@ -9,14 +9,16 @@ export default function ContactoPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <section className="relative overflow-hidden py-10 px-6 text-center">
+      <section className="relative overflow-hidden py-10 px-6 text-center bg-mesh">
         <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl" />
         <div className="blob-float-2 pointer-events-none absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[var(--accent)]/40 blur-3xl" />
-        <p className="font-script text-xl text-rose relative">conversemos</p>
-        <h1 className="font-display text-3xl md:text-4xl mt-2 relative">Contáctanos</h1>
-        <p className="text-[var(--muted-foreground)] mt-4 max-w-xl mx-auto relative">
-          Estamos aquí para hacer tu evento especial. Encuéntranos en tus plataformas favoritas.
-        </p>
+        <div className="hero-enter relative">
+          <p className="font-script text-xl text-rose">conversemos</p>
+          <h1 className="font-display text-3xl md:text-4xl mt-2">Contáctanos</h1>
+          <p className="text-[var(--muted-foreground)] mt-4 max-w-xl mx-auto">
+            Estamos aquí para hacer tu evento especial. Encuéntranos en tus plataformas favoritas.
+          </p>
+        </div>
       </section>
 
       {/* 3-column layout: redes | divider "o" | cotizar */}
@@ -24,7 +26,7 @@ export default function ContactoPage() {
         <div className="flex flex-col md:flex-row items-stretch gap-0">
 
           {/* LEFT — redes sociales y delivery */}
-          <div className="flex-1 space-y-2 md:pr-10">
+          <div className="flex-1 space-y-2 md:pr-10 reveal" data-reveal="left">
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
               Encuéntranos aquí
             </p>
@@ -146,10 +148,10 @@ export default function ContactoPage() {
           </div>
 
           {/* RIGHT — cotizar CTA */}
-          <div className="flex-1 flex flex-col justify-center md:pl-10">
-            <div className="glass rounded-3xl p-6 text-center flex flex-col items-center gap-4">
+          <div className="flex-1 flex flex-col justify-center md:pl-10 reveal" data-reveal="right">
+            <div className="glass-pink rounded-3xl p-6 text-center flex flex-col items-center gap-4">
               {/* Decorative icon */}
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-3xl" style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}>
+              <div className="float-y w-12 h-12 rounded-xl flex items-center justify-center text-white text-3xl bg-gradient-rose shadow-glow">
                 🎂
               </div>
               <div>
@@ -163,8 +165,7 @@ export default function ContactoPage() {
               </div>
               <Link
                 href="/cotizar"
-                className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold shadow-md text-sm"
-                style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+                className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold shadow-md text-sm bg-gradient-rose"
               >
                 Cotizar ahora <ArrowRight size={17} />
               </Link>

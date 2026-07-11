@@ -69,8 +69,8 @@ export default async function HomePage() {
       {/* HERO — priorityFirst para que la primera imagen sea LCP candidate */}
       <HeroCarousel images={IMAGES.heroCarousel} priorityFirst>
         <div className="max-w-7xl mx-auto px-6 py-14 md:py-20">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white">
+          <div className="max-w-2xl hero-enter">
+            <span className="float-y inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white">
               <Sparkles size={14} /> Repostería Artesanal y Café
             </span>
 
@@ -108,8 +108,7 @@ export default async function HomePage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/cotizar"
-                className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft"
-                style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+                className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft bg-gradient-rose"
               >
                 Cotizar <ArrowRight size={18} />
               </Link>
@@ -129,8 +128,8 @@ export default async function HomePage() {
             <DeliveryButtons variant="hero" />
           </div>
 
-          <div className="hidden sm:inline-flex mt-7 items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/30">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}>
+          <div className="float-y hidden sm:inline-flex mt-7 items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl px-5 py-4 border border-white/30">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-gradient-rose">
               <Heart size={18} />
             </div>
             <div>
@@ -150,8 +149,7 @@ export default async function HomePage() {
           </div>
           <Link
             href="/catalogo"
-            className="btn-shine group inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold"
-            style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+            className="btn-shine group inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold bg-gradient-rose"
           >
             Ver todos <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
@@ -165,15 +163,15 @@ export default async function HomePage() {
       <section className="relative overflow-hidden py-10 px-6">
         <div className="blob-float pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[var(--blush)]/35 blur-3xl" />
         <div className="blob-float-2 pointer-events-none absolute -bottom-16 -right-16 w-72 h-72 rounded-full bg-[var(--accent)]/40 blur-3xl" />
-        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center reveal">
-          <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-card">
-            <Image src={IMAGES.homeCatering} alt="Catering Kan M" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+        <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+          <div className="img-shine group relative aspect-[4/3] rounded-3xl overflow-hidden shadow-card reveal" data-reveal="left">
+            <Image src={IMAGES.homeCatering} alt="Catering Kan M" fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
           </div>
-          <div className="glass rounded-3xl p-6 reveal reveal-delay-1">
+          <div className="glass rounded-3xl p-6 reveal reveal-delay-1" data-reveal="right">
             <p className="font-script text-2xl text-rose">para tu evento</p>
             <h2 className="font-display text-2xl md:text-3xl mt-1">
               Catering que{" "}
-              <span className="font-script italic text-gradient-rose">
+              <span className="font-script italic text-gradient-animated">
                 enamora
               </span>
             </h2>
@@ -184,8 +182,7 @@ export default async function HomePage() {
             </ul>
             <Link
               href="/cotizar"
-              className="btn-shine mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white shadow-soft"
-              style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+              className="btn-shine mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white shadow-soft bg-gradient-rose"
             >
               Cotizar <ArrowRight size={18} />
             </Link>
@@ -194,7 +191,7 @@ export default async function HomePage() {
       </section>
 
       {/* BRUNCH — ribbon/bow style */}
-      <section className="relative py-10 px-6 text-center">
+      <section className="bg-grain relative py-10 px-6 text-center">
         {/* Ribbon background SVG — no overflow-hidden so loops show fully */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.08]">
           <svg viewBox="0 0 800 220" className="w-full max-w-4xl" preserveAspectRatio="xMidYMid meet" style={{ overflow: "visible" }}>
@@ -217,8 +214,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/catalogo?cat=brunch"
-            className="btn-shine group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold"
-            style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+            className="btn-shine group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold bg-gradient-rose"
           >
             Ver catálogo de Brunch
             <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
@@ -254,7 +250,7 @@ export default async function HomePage() {
               { q: "Sus dulces son la gloria, especialmente ese bizcocho de Fresa y alfajores 🍓💗 hicieron que nuestra noche fuera mejor, gracias por el excelente servicio y los postres 💗 volveremos sin lugar a dudas 100/5", n: "Franchesca Nicole Romero", r: "⭐⭐⭐⭐⭐ · Local Guide" },
             ].map((t, i) => (
               <a key={i} href="https://www.google.com/maps/search/Kan+M+Reposteria+y+Catering+Santo+Domingo" target="_blank" rel="noopener noreferrer"
-                className={`bg-card rounded-2xl border border-[var(--border)]/60 shadow-card p-6 block hover:shadow-soft transition-all duration-300 hover:-translate-y-0.5 reveal reveal-delay-${i + 1}`}>
+                className={`glass card-tilt rounded-2xl p-6 block reveal reveal-delay-${i + 1}`} data-reveal="scale">
                 <div className="flex items-center gap-2 mb-3">
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" fill="none">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -278,24 +274,34 @@ export default async function HomePage() {
 
       <div className="section-divider" />
 
+      {/* MARQUEE — franja decorativa de servicios */}
+      <div className="overflow-hidden py-6" aria-hidden="true">
+        <div className="marquee font-script text-2xl md:text-3xl text-rose/35 whitespace-nowrap">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <span key={i} className="shrink-0 pr-4">
+              Bodas · Cumpleaños · Brunch · Mesas dulces · Picaderas · Catering corporativo ·{" "}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* FINAL CTA — full carousel */}
       <section className="relative overflow-hidden reveal">
         {/* Full-width carousel as background */}
         <HeroCarousel images={IMAGES.heroCarousel} autoplayMs={5000}>
           <div className="max-w-4xl mx-auto px-6 py-14 text-center">
             {/* Glass card over the carousel */}
-            <div className="glass rounded-3xl px-8 py-12 inline-block w-full">
+            <div className="glass-strong rounded-3xl px-8 py-12 inline-block w-full">
               <p className="font-script text-2xl text-rose">hagamos algo especial</p>
               <h2 className="font-display text-2xl md:text-4xl mt-2">
-                Hagamos juntos <span className="font-script text-gradient-rose">tu evento</span>
+                Hagamos juntos <span className="font-script text-gradient-animated">tu evento</span>
               </h2>
               <p className="text-foreground/70 mt-4 max-w-xl mx-auto leading-relaxed">
                 Cuéntanos qué imaginas y lo creamos. Cada detalle, cada sabor, hecho a tu medida. Completa la cotización y nuestro equipo te contactará para confirmar disponibilidad.
               </p>
               <Link
                 href="/cotizar"
-                className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-base shadow-soft"
-                style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+                className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-base shadow-soft bg-gradient-rose"
               >
                 Cotizar <ArrowRight size={20} />
               </Link>

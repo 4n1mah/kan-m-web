@@ -73,7 +73,7 @@ function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
   return (
     <>
       <div
-        className="group relative w-full rounded-3xl overflow-hidden shadow-card cursor-zoom-in transition-shadow duration-300 hover:shadow-soft"
+        className="img-shine group relative w-full rounded-3xl overflow-hidden shadow-card cursor-zoom-in transition-shadow duration-300 hover:shadow-glow"
         style={{ aspectRatio: "4/3" }}
         onClick={() => setLightbox(true)}
         title="Clic para ver en grande"
@@ -97,13 +97,13 @@ function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
           <>
             <button
               onClick={(e) => { e.stopPropagation(); setIdx((i) => (i - 1 + imgs.length) % imgs.length); }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition z-10"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm border border-white/25 text-white flex items-center justify-center hover:bg-black/50 hover:scale-105 transition-all z-10"
             >
               <ChevronLeft size={18} />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % imgs.length); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition z-10"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm border border-white/25 text-white flex items-center justify-center hover:bg-black/50 hover:scale-105 transition-all z-10"
             >
               <ChevronRight size={18} />
             </button>
@@ -140,7 +140,7 @@ export default function CateringPage() {
     <div>
       {/* Hero carousel */}
       <HeroCarousel images={HERO_IMAGES} autoplayMs={4000} minHeight="46vh">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
+        <div className="max-w-7xl mx-auto px-6 py-12 text-center hero-enter">
           {/* Decorative pill */}
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white/90 mb-6">
             ✦ Repostería artesanal · Eventos · Catering
@@ -191,16 +191,14 @@ export default function CateringPage() {
           <div
             key={s.title}
             className={`grid md:grid-cols-2 gap-2 md:gap-8 items-center reveal ${i % 2 === 1 ? "md:[&>div:first-child]:order-2" : ""}`}
+            data-reveal={i % 2 === 1 ? "right" : "left"}
           >
             {/* Carousel */}
             <ServiceCarousel imgs={s.imgs} title={s.title} />
 
             {/* Glass info box — same style as "catering que enamora" on homepage */}
             <div className="glass rounded-3xl p-6">
-              <span
-                className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold mb-4"
-                style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
-              >
+              <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold mb-4 bg-gradient-rose shadow-glow">
                 {i + 1}
               </span>
               <h2 className="font-display text-xl md:text-2xl">{s.title}</h2>
@@ -214,8 +212,7 @@ export default function CateringPage() {
               </ul>
               <Link
                 href={buildCotizarUrl(s)}
-                className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm"
-                style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+                className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm bg-gradient-rose"
               >
                 Cotizar <ArrowRight size={16} />
               </Link>

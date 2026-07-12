@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
+// Nota de permisos: cualquier usuario logueado (incluida la ASISTENTE) puede
+// LEER las ordenes del catalogo — ve la pestaña Ordenes en modo solo lectura.
+// Las acciones (confirmar/negar pago) exigen canManageCartOrders en [id]/route.ts.
 export async function GET(req: NextRequest) {
   const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

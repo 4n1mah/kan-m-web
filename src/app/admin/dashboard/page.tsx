@@ -988,7 +988,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
                   style={{background:"#bbf7d0",color:"#065f46"}}>
                   <MessageCircle size={14}/> WhatsApp
                 </a>
-                {!isAssistant&&(
+                {currentUser?.role==="OWNER"&&(
                   <button onClick={handleDelete} className="px-3 py-2.5 rounded-xl border-2 border-red-100 text-red-400 hover:bg-red-50 hover:border-red-200 transition">
                     <Trash2 size={14}/>
                   </button>
@@ -1429,10 +1429,15 @@ function DashboardInner() {
     addToast("Cambios guardados","success");
   },[addToast]);
   const deleteOrder = useCallback(async (id:string)=>{
-    await fetch(`/api/orders/${id}`,{method:"DELETE"});
+    const res = await fetch(`/api/orders/${id}`,{method:"DELETE"});
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      addToast(err.error || "Error al eliminar el pedido","error");
+      return;
+    }
     setSelectedOrder(null); loadOrders();
     addToast("Pedido eliminado","info");
-  },[]);
+  },[addToast]);
 
   const handleQuickAction = async (id:string,newStatus:string)=>{
     const cfg = newStatus==="CONFIRMED"

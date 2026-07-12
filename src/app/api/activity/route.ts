@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getSession, canViewActivity } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (session.role === "ASSISTANT") {
+  if (!canViewActivity(session.role)) {
     return NextResponse.json({ error: "Sin permisos para ver el registro de actividad" }, { status: 403 });
   }
 

@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { getSession } from "@/lib/auth";
+import { getSession, canUploadOrderPhotos } from "@/lib/auth";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -30,7 +30,7 @@ async function detectMime(file: File): Promise<string> {
 export async function POST(req: NextRequest) {
   const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (session.role === "ASSISTANT") {
+  if (!canUploadOrderPhotos(session.role)) {
     return NextResponse.json({ error: "Sin permisos para subir fotos" }, { status: 403 });
   }
 

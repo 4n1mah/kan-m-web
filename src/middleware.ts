@@ -39,6 +39,8 @@ export async function middleware(req: NextRequest) {
   // token FCM de su dispositivo móvil. La autorización fina vive en la ruta.
   const isOwnerOnly =
     pathname.startsWith("/admin/usuarios") ||
+    pathname.startsWith("/admin/configuracion") ||
+    pathname.startsWith("/api/admin/settings") ||
     (pathname.startsWith("/api/users") && pathname !== "/api/users/fcm-token");
 
   // Páginas y APIs protegidas (cualquier usuario logueado)

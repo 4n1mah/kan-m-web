@@ -318,6 +318,28 @@ select:focus {
   box-shadow: 0 2px 12px rgba(240,112,151,0.10);
 }
 
+/* ── Fondo del sitio público — mesh fijo de marca ───────────── */
+/* Capa fija pintada una sola vez; sin filtros ni animación.
+   El body conserva --background como base opaca (contraste intacto). */
+.site-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background:
+    radial-gradient(42% 36% at 12% 6%,  rgba(248, 179, 197, 0.16), transparent 70%),
+    radial-gradient(36% 30% at 88% 10%, rgba(216, 179, 117, 0.11), transparent 70%),
+    radial-gradient(50% 44% at 80% 94%, rgba(241, 112, 151, 0.08), transparent 70%),
+    radial-gradient(40% 36% at 6% 88%,  rgba(244, 236, 221, 0.55), transparent 70%);
+}
+.site-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(241, 112, 151, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
 /* ── Utilidades modernas de marca ───────────────────────────── */
 /* Borde en gradiente rosa→gold (doble background, sin pseudo) */
 .border-gradient {

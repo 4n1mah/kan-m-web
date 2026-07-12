@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Dancing_Script, Outfit } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import SiteBackdrop from "@/components/SiteBackdrop";
 import Footer from "@/components/Footer";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -108,6 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <SiteBackdrop />
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />

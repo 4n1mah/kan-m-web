@@ -18,7 +18,7 @@ import { BakersProvider, useBakers } from "@/components/BakersContext";
 import {
   type Order, type CurrentUser, STATUS, ALL_STATUSES, PINK, PINK_SOLID,
   toIso, todayStr, fmtDateShort, fmtDateLong, startOfWeek, addDays, stepCursor,
-  HEAT_LEVELS, Kbd,
+  startOfMonth, daysInMonth, HEAT_LEVELS, Kbd,
 } from "./calendarShared";
 import { MonthView, WeekView, DayView } from "./CalendarViews";
 import DayPanel from "./DayPanel";
@@ -272,7 +272,7 @@ function CalendarioInner() {
             </button>
           </div>
 
-          <MonthYearPicker cursor={cursor} setCursor={setCursor} label={headerTitle}/>
+          <MonthYearPicker cursor={cursor} setCursor={setCursor} label={headerTitle} mode={view === "month" ? "month" : "day"}/>
 
           {/* Search */}
           <div className="relative w-full sm:w-auto sm:ml-auto">
@@ -452,13 +452,16 @@ function StatCard({ icon, label, value, accent, gradient = false }: {
 }
 
 // ──────────────────────────────────────────────────────────────
-// MonthYearPicker — botón que abre un panel para saltar a cualquier mes/año
+// MonthYearPicker — popup para saltar a cualquier mes (vista mes) o a un
+// día concreto (vistas semana/día). En móvil se centra bajo la toolbar
+// (el wrapper deja de ser positioned y el ancestro pasa a ser la toolbar).
 // ──────────────────────────────────────────────────────────────
-function MonthYearPicker({ cursor, setCursor, label }: {
-  cursor: Date; setCursor: (d: Date) => void; label: string;
+function MonthYearPicker({ cursor, setCursor, label, mode }: {
+  cursor: Date; setCursor: (d: Date) => void; label: string; mode: "month" | "day";
 }) {
   const [open, setOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState(cursor.getFullYear());
+  const [pickerMonth, setPickerMonth] = useState(cursor.getMonth());
 
   // Cerrar con click afuera
   useEffect(() => {
@@ -472,15 +475,28 @@ function MonthYearPicker({ cursor, setCursor, label }: {
   }, [open]);
 
   useEffect(() => {
-    if (open) setPickerYear(cursor.getFullYear());
+    if (open) {
+      setPickerYear(cursor.getFullYear());
+      setPickerMonth(cursor.getMonth());
+    }
   }, [open, cursor]);
 
   const months = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const MONTHS_LONG = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   const todayY = new Date().getFullYear();
   const todayM = new Date().getMonth();
 
+  const stepPickerMonth = (dir: -1 | 1) => {
+    setPickerMonth(m => {
+      const next = m + dir;
+      if (next < 0) { setPickerYear(y => y - 1); return 11; }
+      if (next > 11) { setPickerYear(y => y + 1); return 0; }
+      return next;
+    });
+  };
+
   return (
-    <div className="relative ml-1" data-myp>
+    <div className="static sm:relative ml-1" data-myp>
       <button onClick={() => setOpen(o => !o)}
         className="font-display text-base sm:text-lg capitalize px-2 py-1 rounded-lg hover:bg-white/70 transition flex items-center gap-1.5 text-gray-800">
         {label}
@@ -488,42 +504,83 @@ function MonthYearPicker({ cursor, setCursor, label }: {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 z-30 admin-card rounded-2xl shadow-lg p-3 w-72 modal-pop">
-          {/* Year header */}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-2 z-30 admin-card rounded-2xl shadow-lg p-3 w-72 max-w-[calc(100vw-2.5rem)] modal-pop">
+          {/* Header de navegación: año (modo mes) o mes/año (modo día) */}
           <div className="flex items-center justify-between mb-3">
-            <button onClick={() => setPickerYear(y => y - 1)} aria-label="Año anterior"
+            <button
+              onClick={() => (mode === "month" ? setPickerYear(y => y - 1) : stepPickerMonth(-1))}
+              aria-label={mode === "month" ? "Año anterior" : "Mes anterior"}
               className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500">
               <ChevronLeft size={15}/>
             </button>
-            <span className="font-display text-lg font-semibold tabular-nums">{pickerYear}</span>
-            <button onClick={() => setPickerYear(y => y + 1)} aria-label="Año siguiente"
+            <span className="font-display text-lg font-semibold tabular-nums">
+              {mode === "month" ? pickerYear : `${MONTHS_LONG[pickerMonth]} ${pickerYear}`}
+            </span>
+            <button
+              onClick={() => (mode === "month" ? setPickerYear(y => y + 1) : stepPickerMonth(1))}
+              aria-label={mode === "month" ? "Año siguiente" : "Mes siguiente"}
               className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-500">
               <ChevronRight size={15}/>
             </button>
           </div>
 
-          {/* Month grid */}
-          <div className="grid grid-cols-3 gap-1.5">
-            {months.map((m, idx) => {
-              const isCurrent = pickerYear === cursor.getFullYear() && idx === cursor.getMonth();
-              const isToday = pickerYear === todayY && idx === todayM;
-              return (
-                <button key={m} onClick={() => {
-                    const d = new Date(pickerYear, idx, 1);
-                    setCursor(d);
-                    setOpen(false);
-                  }}
-                  className={`py-2 px-2 rounded-lg text-xs font-semibold transition ${
-                    isCurrent ? "text-white shadow-sm"
-                    : isToday ? "text-[#f07097] bg-[#fef7f9] border border-[#f07097]/40"
-                    : "text-gray-600 hover:bg-[#fef7f9]"
-                  }`}
-                  style={isCurrent ? { background: PINK_SOLID } : {}}>
-                  {m}
-                </button>
-              );
-            })}
-          </div>
+          {mode === "month" ? (
+            /* Grid de meses */
+            <div className="grid grid-cols-3 gap-1.5">
+              {months.map((m, idx) => {
+                const isCurrent = pickerYear === cursor.getFullYear() && idx === cursor.getMonth();
+                const isToday = pickerYear === todayY && idx === todayM;
+                return (
+                  <button key={m} onClick={() => {
+                      const d = new Date(pickerYear, idx, 1);
+                      setCursor(d);
+                      setOpen(false);
+                    }}
+                    className={`py-2 px-2 rounded-lg text-xs font-semibold transition ${
+                      isCurrent ? "text-white shadow-sm"
+                      : isToday ? "text-[#f07097] bg-[#fef7f9] border border-[#f07097]/40"
+                      : "text-gray-600 hover:bg-[#fef7f9]"
+                    }`}
+                    style={isCurrent ? { background: PINK_SOLID } : {}}>
+                    {m}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Grid de días del mes visible (vistas semana/día) */
+            <>
+              <div className="grid grid-cols-7 mb-1">
+                {["D","L","M","M","J","V","S"].map((d, i) => (
+                  <div key={i} className="text-center text-[10px] font-semibold text-gray-400 py-1">{d}</div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-0.5">
+                {Array.from({ length: startOfMonth(pickerYear, pickerMonth).getDay() }).map((_, i) => (
+                  <div key={`e${i}`}/>
+                ))}
+                {Array.from({ length: daysInMonth(pickerYear, pickerMonth) }).map((_, i) => {
+                  const day = i + 1;
+                  const d = new Date(pickerYear, pickerMonth, day);
+                  const iso = toIso(d);
+                  const isSelected = iso === toIso(cursor);
+                  const isToday = iso === todayStr;
+                  return (
+                    <button key={day}
+                      onClick={() => { setCursor(d); setOpen(false); }}
+                      className={`h-8 w-8 mx-auto rounded-lg text-xs font-semibold tabular-nums transition ${
+                        isSelected ? "text-white shadow-sm"
+                        : isToday ? "text-[#f07097] bg-[#fef7f9] border border-[#f07097]/40"
+                        : "text-gray-600 hover:bg-[#fef7f9]"
+                      }`}
+                      style={isSelected ? { background: PINK_SOLID } : {}}>
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
           {/* Quick links */}
           <div className="mt-3 pt-3 border-t border-[#ede8e0] flex justify-between items-center text-[11px]">

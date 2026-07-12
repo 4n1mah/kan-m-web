@@ -1289,29 +1289,6 @@ function ScheduleOrderModal({ onClose, onCreated, addToast }:{
 // ── Main Dashboard ─────────────────────────────────────────────
 type CurrentUser = { id: string; email: string; name: string; role: "OWNER"|"BAKER"|"ASSISTANT" };
 
-function WhatsappBadge() {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    const load = () => {
-      fetch("/api/whatsapp/escalations")
-        .then(r => r.ok ? r.json() : [])
-        .then((data: unknown) => {
-          setCount(Array.isArray(data) ? data.length : 0);
-        })
-        .catch(() => {});
-    };
-    load();
-    const t = setInterval(load, 30_000);
-    return () => clearInterval(t);
-  }, []);
-  if (!count) return null;
-  return (
-    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold bg-[#f07097] text-white">
-      {count > 9 ? "9+" : count}
-    </span>
-  );
-}
-
 export default function Dashboard() {
   return (
     <BakersProvider>
@@ -1628,11 +1605,6 @@ function DashboardInner() {
           <Link href="/admin/ordenes" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
             <ShoppingBag size={15}/> Órdenes
             {cartOrderBadge>0&&<span className="w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold bg-[#f07097] text-white">{cartOrderBadge}</span>}
-          </Link>
-          <Link href="/admin/whatsapp"
-            className="relative shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
-            <MessageCircle size={15} /> WhatsApp
-            <WhatsappBadge />
           </Link>
           {currentUser?.role!=="ASSISTANT"&&(
             <Link href="/admin/reportes" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">

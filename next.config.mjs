@@ -2,6 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  async redirects() {
+    return [
+      // La bandeja de WhatsApp se retiró del admin; SWs cacheados viejos y
+      // bookmarks siguen resolviendo. El API /api/whatsapp/* sigue activo.
+      { source: "/admin/whatsapp", destination: "/admin/dashboard", permanent: false },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },

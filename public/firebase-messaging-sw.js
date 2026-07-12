@@ -38,7 +38,7 @@ messaging.onBackgroundMessage((payload) => {
   } else if (data.type === "whatsapp_escalation") {
     title = "💬 Cliente pide atención humana — Kan M";
     body = `${data.clientName || data.phone || "Cliente"}: ${data.motivo || ""}`;
-    url = "/admin/whatsapp";
+    url = "/admin/dashboard";
   }
 
   self.registration.showNotification(title, {

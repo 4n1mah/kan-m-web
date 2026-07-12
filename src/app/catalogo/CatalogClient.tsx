@@ -40,16 +40,17 @@ function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
 
   return (
     <>
-      <div className="sticky top-[5.5rem] z-30 mb-10">
-        <div className="glass rounded-3xl max-w-fit mx-auto px-3 py-2 flex flex-wrap justify-center gap-2">
+      <div className="sticky top-[5.5rem] z-30 mb-10 -mx-6 px-6 sm:mx-0 sm:px-0">
+        {/* Móvil: una sola fila con scroll horizontal; desktop: pills centradas */}
+        <div className="glass rounded-full sm:rounded-3xl sm:max-w-fit mx-auto px-2 py-1.5 sm:px-3 sm:py-2 flex flex-nowrap sm:flex-wrap justify-start sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto sm:overflow-visible [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {CATEGORIES.map((c) => (
             <button
               key={c.id}
               onClick={() => handleCategory(c.id)}
               aria-pressed={active === c.id}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+              className={`shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                 active === c.id
-                  ? "text-white shadow-soft scale-[1.04] bg-gradient-rose"
+                  ? "text-white shadow-soft sm:scale-[1.04] bg-gradient-rose"
                   : "text-foreground/70 hover:text-[var(--rose)] hover:bg-[var(--rose)]/10"
               }`}
             >

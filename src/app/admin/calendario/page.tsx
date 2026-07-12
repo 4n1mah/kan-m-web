@@ -50,6 +50,7 @@ function CalendarioInner() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [deliveryFilter, setDeliveryFilter] = useState<"ALL"|"pickup"|"delivery">("ALL");
   const [hideCancelled, setHideCancelled] = useState(true);
+  const [showFilters, setShowFilters] = useState(false); // disclosure móvil
 
   useEffect(() => {
     // /api/auth/me devuelve { user: { id, name, email, role } }
@@ -231,8 +232,10 @@ function CalendarioInner() {
           <StatCard icon={<AlertCircle size={16}/>}   label="Sin confirmar" value={stats.pending} accent="#f59e0b" />
         </div>
 
-        {/* ── Toolbar: vista + navegación + búsqueda ── */}
-        <div className="glass rounded-2xl p-3 flex flex-wrap items-center gap-3">
+        {/* ── Toolbar: vista + navegación + búsqueda ──
+            z-30: el popup del picker debe pintarse sobre las cards siguientes
+            (cada .glass crea su propio stacking context por el backdrop-filter) */}
+        <div className="glass rounded-2xl p-3 flex flex-wrap items-center gap-3 relative z-30">
           {/* Switcher segmentado con indicador deslizante */}
           <div className="relative flex bg-[#faf8f5] rounded-xl p-1 border border-[#ede8e0]">
             <span
@@ -272,16 +275,25 @@ function CalendarioInner() {
           <MonthYearPicker cursor={cursor} setCursor={setCursor} label={headerTitle}/>
 
           {/* Search */}
-          <div className="relative ml-auto">
+          <div className="relative w-full sm:w-auto sm:ml-auto">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
             <input value={search} onChange={e=>setSearch(e.target.value)}
               placeholder="Buscar cliente o evento…"
-              className="pl-8 pr-3 py-1.5 rounded-full border border-[#ede8e0] bg-white/70 text-xs w-44 focus:outline-none focus:border-[#f07097] focus:bg-white transition"/>
+              className="pl-8 pr-3 py-1.5 rounded-full border border-[#ede8e0] bg-white/70 text-xs w-full sm:w-44 focus:outline-none focus:border-[#f07097] focus:bg-white transition"/>
           </div>
         </div>
 
-        {/* ── Chips de filtro ── */}
+        {/* ── Chips de filtro (colapsables en móvil) ── */}
         <div className="glass rounded-2xl p-3 space-y-2.5">
+          <button
+            onClick={() => setShowFilters(v => !v)}
+            className="sm:hidden w-full flex items-center justify-between text-xs font-semibold text-gray-600">
+            <span className="uppercase tracking-widest">
+              Filtros{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+            </span>
+            <ChevronRight size={14} className={`transition-transform ${showFilters ? "rotate-90" : ""}`}/>
+          </button>
+          <div className={`space-y-2.5 ${showFilters ? "block" : "hidden"} sm:block !mt-0 sm:!mt-0`}>
           {/* Estado */}
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 w-16 shrink-0">Estado</span>
@@ -339,6 +351,7 @@ function CalendarioInner() {
                 Limpiar ({activeFilterCount})
               </button>
             )}
+          </div>
           </div>
         </div>
 

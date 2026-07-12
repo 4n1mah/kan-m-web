@@ -49,7 +49,9 @@ export function MonthView({ cursor, byDate, onPickOrder, selectedOrderId, onPick
           <div key={d} className="py-2.5 text-center text-[11px] font-semibold uppercase tracking-widest text-gray-500">{d}</div>
         ))}
       </div>
-      <div className="grid grid-cols-7 auto-rows-fr">
+      {/* auto-rows-fr solo en desktop: en móvil estiraba todas las filas
+          a la altura de la más cargada */}
+      <div className="grid grid-cols-7 sm:auto-rows-fr">
         {cells.map((cell, idx) => {
           const dayOrders = byDate[cell.iso] ?? [];
           const isToday = cell.iso === todayStr;
@@ -75,24 +77,37 @@ export function MonthView({ cursor, byDate, onPickOrder, selectedOrderId, onPick
                 if ((e.target as HTMLElement).closest("button")) return;
                 if (cell.inMonth) onPickDay(cell.iso);
               }}
-              className={`group min-h-[112px] sm:min-h-[120px] border-r border-b border-[#f0e8e0] p-1.5 sm:p-2 flex flex-col gap-1 transition cursor-pointer relative ${
+              className={`group min-h-[56px] sm:min-h-[120px] border-r border-b border-[#f0e8e0] p-1 sm:p-2 flex flex-col gap-0.5 sm:gap-1 transition cursor-pointer relative ${
                 cell.inMonth ? (isWeekend ? "bg-[#fdfcfa]" : "bg-white") : "bg-[#faf8f5]"
               } ${isToday ? "ring-2 ring-inset ring-[#f07097] glow-rose" : ""} ${isPast && cell.inMonth ? "opacity-95" : ""} hover:bg-[#fef7f9]/60`}
               style={heatBg ? { backgroundColor: heatBg } : {}}>
               <div className="flex items-center justify-between">
-                <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${
+                <span className={`text-[11px] sm:text-xs font-semibold w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full ${
                   isToday ? "text-white shadow-sm" : cell.inMonth ? "text-gray-700" : "text-gray-300"
                 }`} style={isToday ? { background: PINK_SOLID } : {}}>
                   {cell.date.getDate()}
                 </span>
                 {dayOrders.length > 0 && (
-                  <span className={`text-[10px] font-medium ${hasUrgent ? "text-[#f07097]" : "text-gray-400"}`}>
+                  <span className={`hidden sm:inline text-[10px] font-medium ${hasUrgent ? "text-[#f07097]" : "text-gray-400"}`}>
                     {hasUrgent && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#f07097] mr-1 align-middle animate-[pulseUrgent_1.4s_ease-in-out_infinite]"/>}
                     {dayOrders.length}
                   </span>
                 )}
               </div>
-              <div className="flex flex-col gap-1 overflow-hidden">
+              {/* Móvil: puntos de color por pedido (el panel del día da el detalle) */}
+              {dayOrders.length > 0 && (
+                <div className="sm:hidden flex flex-wrap items-center gap-0.5 px-0.5">
+                  {dayOrders.slice(0, 4).map(o => (
+                    <span key={o.id} className="w-1.5 h-1.5 rounded-full"
+                      style={{ background: (STATUS[o.status] ?? STATUS.PENDING).dot }}/>
+                  ))}
+                  {dayOrders.length > 4 && (
+                    <span className="text-[9px] font-bold text-gray-400 leading-none">+{dayOrders.length - 4}</span>
+                  )}
+                </div>
+              )}
+              {/* Desktop: chips con hora + cliente */}
+              <div className="hidden sm:flex flex-col gap-1 overflow-hidden">
                 {visible.map(o => (
                   <OrderChip key={o.id} order={o} compact onClick={() => onPickOrder(o.id)} active={o.id === selectedOrderId}/>
                 ))}

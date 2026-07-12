@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import {
+  Search,
   RefreshCw,
   CheckCircle2,
   XCircle,
@@ -415,12 +416,21 @@ export default function CartOrdersTab({
 }) {
   const [tab, setTab] = useState<TabId>("PENDING");
   const [selected, setSelected] = useState<CartOrder | null>(null);
+  const [search, setSearch] = useState("");
 
   const canManage =
     currentUser?.role === "OWNER" || currentUser?.role === "BAKER";
 
-  const filtered =
+  const byTab =
     tab === "ALL" ? orders : orders.filter((o) => o.status === tab);
+  const filtered = !search.trim()
+    ? byTab
+    : byTab.filter((o) => {
+        const q = search.toLowerCase();
+        return o.customerName.toLowerCase().includes(q)
+          || o.customerPhone.toLowerCase().includes(q)
+          || o.code.toLowerCase().includes(q);
+      });
 
   const tabCounts = {
     ALL:       orders.length,
@@ -444,49 +454,51 @@ export default function CartOrdersTab({
         />
       )}
 
-      {/* Stats summary */}
+      {/* Stats summary — mismo patrón visual que Calendario/Reportes */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { label: "Total",       value: orders.length,       emoji: "📦" },
-          { label: "Pendientes",  value: tabCounts.PENDING,   emoji: "⏳", hot: tabCounts.PENDING > 0 },
-          { label: "Confirmadas", value: tabCounts.CONFIRMED, emoji: "✅" },
-          { label: "Negadas",     value: tabCounts.DENIED,    emoji: "❌" },
+          { label: "Total",       value: orders.length,       emoji: "📦", tile: "#fde8ef" },
+          { label: "Pendientes",  value: tabCounts.PENDING,   emoji: "⏳", tile: "#fef3c7", hot: tabCounts.PENDING > 0 },
+          { label: "Confirmadas", value: tabCounts.CONFIRMED, emoji: "✅", tile: "#d1fae5" },
+          { label: "Negadas",     value: tabCounts.DENIED,    emoji: "❌", tile: "#fee2e2" },
         ].map((s) => (
           <div
             key={s.label}
-            className={`admin-card rounded-2xl p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+            className={`admin-card rounded-2xl p-4 flex items-center gap-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
               s.hot ? "!border-amber-200 ring-1 ring-amber-100" : ""
             }`}
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className={`text-2xl font-bold font-display ${s.hot ? "text-[#f07097]" : "text-gray-800"}`}>
-                  {s.value}
-                </p>
-                <p className="text-xs font-semibold text-gray-600 mt-0.5">{s.label}</p>
-              </div>
-              <span className="text-2xl">{s.emoji}</span>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ background: s.tile }}>
+              {s.emoji}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-widest text-gray-400 truncate">{s.label}</p>
+              <p className={`font-display text-xl leading-tight font-bold ${s.hot ? "text-[#f07097]" : "text-gray-800"}`}>
+                {s.value}
+              </p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Sub-tabs + refresh */}
+      {/* Sub-tabs + búsqueda — mismo layout que la pestaña Pedidos */}
       <div className="admin-card rounded-2xl shadow-sm mb-5">
-        <div className="flex flex-wrap items-center border-b border-[#ede8e0]">
+        <div className="flex flex-wrap border-b border-[#ede8e0]">
           {CART_TABS.map((t) => {
             const active = tab === t.id;
             const count = tabCounts[t.id];
+            const dot = t.id === "ALL" ? "#9ca3af" : STATUS_CFG[t.id as CartOrder["status"]].dot;
             return (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`flex items-center gap-1.5 px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all flex-1 justify-center sm:flex-none ${
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all flex-1 justify-center sm:flex-none ${
                   active
                     ? "border-[#f07097] text-[#f07097]"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
               >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: active ? "#f07097" : dot }}/>
                 {t.label}
                 <span
                   className={`min-w-[1.2rem] h-5 px-1 rounded-full text-xs flex items-center justify-center font-bold ${
@@ -498,12 +510,16 @@ export default function CartOrdersTab({
               </button>
             );
           })}
-          <button
-            onClick={onRefresh}
-            className="ml-auto hidden sm:flex items-center gap-1.5 px-3 py-1.5 mr-2 rounded-xl text-xs font-medium text-gray-500 hover:text-[#f07097] hover:bg-[#fef7f9] transition"
-          >
-            <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
-            Actualizar
+        </div>
+        <div className="flex items-center gap-2 px-4 py-3">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
+            <input type="text" placeholder="Buscar por nombre, teléfono o código…" value={search} onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-[#ede8e0] bg-[#faf8f5] focus:outline-none focus:border-[#f07097] transition"/>
+          </div>
+          <button onClick={onRefresh}
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-[#f07097] transition px-3 py-2 rounded-xl border border-[#ede8e0] bg-white shrink-0">
+            <RefreshCw size={13} className={loading ? "animate-spin" : ""}/> <span className="hidden sm:inline">Actualizar</span>
           </button>
         </div>
       </div>
@@ -514,7 +530,7 @@ export default function CartOrdersTab({
       ) : filtered.length === 0 ? (
         <div className="text-center py-20 admin-card rounded-2xl">
           <div className="text-4xl mb-2">📦</div>
-          <p className="text-gray-500 text-sm">No hay órdenes en este estado.</p>
+          <p className="text-gray-500 text-sm">{search ? "Sin resultados para tu búsqueda." : "No hay órdenes en este estado."}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

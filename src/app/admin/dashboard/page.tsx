@@ -1595,14 +1595,12 @@ function DashboardInner() {
             {label:"Nuevos",value:pendingCount,icon:"⏳",sub:"sin atender",hot:pendingCount>0},
             {label:"Entregados",value:orders.filter(o=>o.status==="DELIVERED").length,icon:"🎉",sub:"este período"},
           ].map(s=>(
-            <div key={s.label} className={`admin-card rounded-2xl p-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${s.hot?"!border-[#f07097]/40 ring-1 ring-[#f07097]/15 shadow-glow":""}`}>
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className={`text-2xl font-bold font-display ${s.hot?"text-[#f07097]":"text-gray-800"}`}>{s.value}</p>
-                  <p className="text-xs font-semibold text-gray-600 mt-0.5">{s.label}</p>
-                  <p className="text-xs text-gray-400">{s.sub}</p>
-                </div>
-                <span className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0" style={{background:s.hot?"#fde8ef":"#faf6f1"}}>{s.icon}</span>
+            <div key={s.label} className={`admin-card rounded-2xl p-4 flex items-center gap-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${s.hot?"!border-[#f07097]/40 ring-1 ring-[#f07097]/15 shadow-glow":""}`}>
+              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0" style={{background:s.hot?"#fde8ef":"#faf6f1"}}>{s.icon}</span>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-widest text-gray-400 truncate">{s.label}</p>
+                <p className={`font-display text-xl leading-tight font-bold ${s.hot?"text-[#f07097]":"text-gray-800"}`}>{s.value}</p>
+                <p className="text-[11px] text-gray-400 truncate">{s.sub}</p>
               </div>
             </div>
           ))}
@@ -1737,47 +1735,53 @@ function DashboardInner() {
         {/* CATALOG */}
         {mainTab==="catalog"&&(
           <div key="tab-catalog" className="tab-panel">
-            <div className="flex flex-wrap items-center gap-3 mb-5">
-              <h2 className="font-display text-xl text-gray-900">Catálogo</h2>
-              <button onClick={()=>setProductModal({open:true,product:null})} className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition" style={{background:PINK}}>
-                <Plus size={15}/> Agregar producto</button>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3 mb-5">
-              <div className="relative flex-1">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
-                <input type="text" placeholder="Buscar productos…" value={catSearch} onChange={e=>setCatSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-[#ede8e0] bg-white focus:outline-none focus:border-[#f07097] transition"/>
+            <div className="admin-card rounded-2xl shadow-sm mb-5">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#f0e8e0]">
+                <div className="relative flex-1">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
+                  <input type="text" placeholder="Buscar productos…" value={catSearch} onChange={e=>setCatSearch(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-[#ede8e0] bg-[#faf8f5] focus:outline-none focus:border-[#f07097] transition"/>
+                </div>
+                <button onClick={()=>setProductModal({open:true,product:null})}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-white transition px-3 py-2 rounded-xl hover:opacity-90 shrink-0" style={{background:PINK}}>
+                  <Plus size={13}/> <span className="hidden sm:inline">Agregar producto</span><span className="sm:hidden">Agregar</span>
+                </button>
               </div>
-              <div className="flex flex-col gap-2">
-              <div className="flex flex-wrap gap-1.5">
-                {(()=>{
-                  // Conteo por categoría EXCLUYE HIDDEN (porque por defecto no se ven)
-                  const visibleProducts = products.filter(p=>(p.availabilityStatus??"AVAILABLE")!=="HIDDEN");
-                  const items = [{id:"all",label:`Todo (${visibleProducts.length})`},...CATEGORIES.map(c=>({id:c.id,label:`${c.label} (${visibleProducts.filter(p=>p.category===c.id).length})`}))];
-                  return items.map(c=>(
-                    <button key={c.id} onClick={()=>setCatFilter(c.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${catFilter===c.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
-                      style={catFilter===c.id?{background:PINK}:{}}>{c.label}</button>
-                  ));
-                })()}
-              </div>
-              <div className="flex flex-wrap gap-1.5 items-center">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mr-1">Estado:</span>
-                {(()=>{
-                  const hiddenCount = products.filter(p=>p.availabilityStatus==="HIDDEN").length;
-                  const filters: ReadonlyArray<readonly [typeof availabilityFilter, string, string]> = [
-                    ["all",          "Visibles",   "#6b7280"],
-                    ["AVAILABLE",    "Disponibles","#10b981"],
-                    ["OUT_OF_STOCK", "Sin stock",  "#f59e0b"],
-                    ["HIDDEN",       `Ocultas${hiddenCount>0?` (${hiddenCount})`:""}`, "#9ca3af"],
-                  ];
-                  return filters.map(([id,label,color])=>(
-                    <button key={id} onClick={()=>setAvailabilityFilter(id)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold border transition ${availabilityFilter===id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
-                      style={availabilityFilter===id?{background:color}:{}}>{label}</button>
-                  ));
-                })()}
-              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-gray-400 shrink-0">Categoría:</span>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {(()=>{
+                      // Conteo por categoría EXCLUYE HIDDEN (porque por defecto no se ven)
+                      const visibleProducts = products.filter(p=>(p.availabilityStatus??"AVAILABLE")!=="HIDDEN");
+                      const items = [{id:"all",label:`Todo (${visibleProducts.length})`},...CATEGORIES.map(c=>({id:c.id,label:`${c.label} (${visibleProducts.filter(p=>p.category===c.id).length})`}))];
+                      return items.map(c=>(
+                        <button key={c.id} onClick={()=>setCatFilter(c.id)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition ${catFilter===c.id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
+                          style={catFilter===c.id?{background:PINK}:{}}>{c.label}</button>
+                      ));
+                    })()}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-gray-400 shrink-0">Estado:</span>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {(()=>{
+                      const hiddenCount = products.filter(p=>p.availabilityStatus==="HIDDEN").length;
+                      const filters: ReadonlyArray<readonly [typeof availabilityFilter, string, string]> = [
+                        ["all",          "Visibles",   "#6b7280"],
+                        ["AVAILABLE",    "Disponibles","#10b981"],
+                        ["OUT_OF_STOCK", "Sin stock",  "#f59e0b"],
+                        ["HIDDEN",       `Ocultas${hiddenCount>0?` (${hiddenCount})`:""}`, "#9ca3af"],
+                      ];
+                      return filters.map(([id,label,color])=>(
+                        <button key={id} onClick={()=>setAvailabilityFilter(id)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition ${availabilityFilter===id?"text-white border-transparent":"border-[#ede8e0] text-gray-500 hover:border-gray-300"}`}
+                          style={availabilityFilter===id?{background:color}:{}}>{label}</button>
+                      ));
+                    })()}
+                  </div>
+                </div>
               </div>
             </div>
             <h3 className="font-display text-lg mb-4">Productos <span className="text-gray-400 font-normal text-base">({filteredProducts.length})</span></h3>

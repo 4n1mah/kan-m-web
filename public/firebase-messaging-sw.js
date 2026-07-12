@@ -34,7 +34,7 @@ messaging.onBackgroundMessage((payload) => {
   } else if (data.type === "new_cart_order") {
     title = "🛒 Nueva orden del catálogo — Kan M";
     body = `${data.customerName || "Cliente"} · ${data.code || ""} · RD$${data.total || ""}`;
-    url = "/admin/ordenes";
+    url = "/admin/dashboard?tab=ordenes";
   } else if (data.type === "whatsapp_escalation") {
     title = "💬 Cliente pide atención humana — Kan M";
     body = `${data.clientName || data.phone || "Cliente"}: ${data.motivo || ""}`;

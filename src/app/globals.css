@@ -454,6 +454,11 @@ select:focus {
   to   { opacity: 1; transform: none; }
 }
 .modal-pop { animation: modal-pop 0.25s cubic-bezier(.22,1,.36,1) both; }
+@keyframes tab-slide-in {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.tab-panel { animation: tab-slide-in 0.28s cubic-bezier(.22,1,.36,1) both; }
 @keyframes marquee-x {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -495,7 +500,7 @@ select:focus {
   .stagger-fade > *, .skeleton,
   .float-y, .kenburns, .pulse-ring::after, .marquee,
   .text-gradient-animated, .hero-enter > *,
-  .drawer-in, .modal-pop, .badge-pop { animation: none !important; }
+  .drawer-in, .modal-pop, .badge-pop, .tab-panel { animation: none !important; }
   .reveal, .will-reveal, .btn-shine, .card-lift, .card-tilt,
   .img-shine::after, .nav-link::after { transition: none !important; }
   .btn-shine::after, .img-shine::after, .pulse-ring::after { display: none; }

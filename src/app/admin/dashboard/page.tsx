@@ -15,6 +15,7 @@ import {
   Edit3, Save, Calendar, BarChart3, Store, Bell, CalendarPlus
 } from "lucide-react";
 import CakePopup from "@/components/CakePopup";
+import CartOrdersTab, { type CartOrder } from "./CartOrdersTab";
 import { type CakeDetail as MenuCakeDetail } from "@/lib/cakeMenu";
 import { formatDominicanPhone, validateDominicanPhone } from "@/lib/phone";
 import { enablePushNotifications, pushSupported } from "@/lib/fcmClient";
@@ -1300,7 +1301,7 @@ export default function Dashboard() {
 function DashboardInner() {
   const { bakers } = useBakers();
   const router = useRouter();
-  const [mainTab,setMainTab] = useState<"orders"|"catalog">("orders");
+  const [mainTab,setMainTab] = useState<"orders"|"cartOrders"|"catalog">("orders");
   const [orders,setOrders] = useState<Order[]>([]);
   const [ordersLoading,setOrdersLoading] = useState(false);
   const [selectedOrder,setSelectedOrder] = useState<Order|null>(null);
@@ -1314,7 +1315,8 @@ function DashboardInner() {
   const [productModal,setProductModal] = useState<{open:boolean;product:Product|null}>({open:false,product:null});
   const [currentUser,setCurrentUser] = useState<CurrentUser|null>(null);
   const [userMenuOpen,setUserMenuOpen] = useState(false);
-  const [cartOrderBadge,setCartOrderBadge] = useState(0);
+  const [cartOrders,setCartOrders] = useState<CartOrder[]>([]);
+  const [cartOrdersLoading,setCartOrdersLoading] = useState(false);
   const [availabilityFilter,setAvailabilityFilter] = useState<"all"|"AVAILABLE"|"OUT_OF_STOCK"|"HIDDEN">("all");
   const [scheduleOpen,setScheduleOpen] = useState(false);
   const [pushBanner,setPushBanner] = useState<"hidden"|"prompt"|"enabling">("hidden");
@@ -1352,16 +1354,37 @@ function DashboardInner() {
       if (data.user) setCurrentUser(data.user);
     }
   }
-  async function loadCartOrderBadge(){
+  async function loadCartOrders(){
+    setCartOrdersLoading(true);
     const r = await fetch("/api/admin/cart-orders");
-    if(r.status===401){router.push("/admin/login");return;}
+    if(r.status===401){router.push("/admin/login");setCartOrdersLoading(false);return;}
     if (r.ok) {
       const data = await r.json();
-      setCartOrderBadge((Array.isArray(data)?data:[]).filter((o:{status:string})=>o.status==="PENDING").length);
+      setCartOrders(Array.isArray(data)?data:[]);
     }
+    setCartOrdersLoading(false);
   }
+  const updateCartOrderStatus = async (id:string,status:CartOrder["status"])=>{
+    const res = await fetch(`/api/admin/cart-orders/${id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});
+    if(!res.ok){ addToast("Error al actualizar la orden","error"); return; }
+    addToast(status==="CONFIRMED"?"Orden confirmada":"Orden actualizada","success");
+    await loadCartOrders();
+  };
 
-  useEffect(()=>{ load(); loadOrders(); loadMe(); loadCartOrderBadge(); },[]);
+  useEffect(()=>{
+    load(); loadOrders(); loadMe(); loadCartOrders();
+    // Deep link: /admin/dashboard?tab=ordenes|catalogo (evita useSearchParams/Suspense)
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t === "ordenes") setMainTab("cartOrders");
+    else if (t === "catalogo") setMainTab("catalog");
+  },[]);
+
+  // Sincroniza ?tab= al cambiar de pestaña (para recargas y push deep links)
+  const switchTab = (tab:"orders"|"cartOrders"|"catalog")=>{
+    setMainTab(tab);
+    const slug = tab==="cartOrders" ? "?tab=ordenes" : tab==="catalog" ? "?tab=catalogo" : "";
+    window.history.replaceState(null, "", `/admin/dashboard${slug}`);
+  };
 
   // Auto-refresh every 60s — solo si la pestaña está visible.
   // Esto evita las llamadas 401 cada minuto desde pestañas en background con sesión expirada,
@@ -1370,7 +1393,7 @@ function DashboardInner() {
     const tick = ()=>{
       if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
       loadOrders();
-      loadCartOrderBadge();
+      loadCartOrders();
     };
     const id = setInterval(tick, 60_000);
     // Cuando la pestaña vuelve a estar visible, refresca de inmediato.
@@ -1449,6 +1472,7 @@ function DashboardInner() {
     })
     .filter(p=>!catSearch||p.name.toLowerCase().includes(catSearch.toLowerCase()));
   const pendingCount = orders.filter(o=>o.status==="PENDING").length;
+  const cartPendingCount = cartOrders.filter(o=>o.status==="PENDING").length;
   const tabCounts:Record<OrderTabId,number> = {
     PENDING:   orders.filter(o=>o.status==="PENDING").length,
     ACTIVE:    orders.filter(o=>["CONFIRMED","NEEDS_INFO"].includes(o.status)).length,
@@ -1584,16 +1608,22 @@ function DashboardInner() {
           ))}
         </div>
 
-        {/* Main tabs — deslizables en móvil */}
+        {/* Main tabs — deslizables en móvil. Orden: Pedidos, Órdenes, Catálogo, →Calendario, →Reportes */}
         <div className="flex flex-nowrap sm:flex-wrap gap-1 mb-6 bg-white/80 backdrop-blur-md border border-[#ede8e0] rounded-xl p-1 w-full sm:w-fit shadow-sm overflow-x-auto">
-          <button onClick={()=>setMainTab("orders")}
+          <button onClick={()=>switchTab("orders")}
             className={`shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="orders"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
             style={mainTab==="orders"?{background:PINK}:{}}>
             <ClipboardList size={15}/> Pedidos
             {pendingCount>0&&<span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${mainTab==="orders"?"bg-white text-[#f07097]":"bg-[#f07097] text-white"}`}>{pendingCount}</span>}
           </button>
+          <button onClick={()=>switchTab("cartOrders")}
+            className={`shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="cartOrders"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
+            style={mainTab==="cartOrders"?{background:PINK}:{}}>
+            <ShoppingBag size={15}/> Órdenes
+            {cartPendingCount>0&&<span className={`w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold ${mainTab==="cartOrders"?"bg-white text-[#f07097]":"bg-[#f07097] text-white"}`}>{cartPendingCount}</span>}
+          </button>
           {currentUser?.role!=="ASSISTANT"&&(
-            <button onClick={()=>setMainTab("catalog")}
+            <button onClick={()=>switchTab("catalog")}
               className={`shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mainTab==="catalog"?"text-white shadow-sm":"text-gray-500 hover:text-gray-700"}`}
               style={mainTab==="catalog"?{background:PINK}:{}}>
               <Package size={15}/> Catálogo
@@ -1601,10 +1631,6 @@ function DashboardInner() {
           )}
           <Link href="/admin/calendario" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
             <Calendar size={15}/> Calendario
-          </Link>
-          <Link href="/admin/ordenes" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
-            <ShoppingBag size={15}/> Órdenes
-            {cartOrderBadge>0&&<span className="w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold bg-[#f07097] text-white">{cartOrderBadge}</span>}
           </Link>
           {currentUser?.role!=="ASSISTANT"&&(
             <Link href="/admin/reportes" className="shrink-0 whitespace-nowrap flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-700 transition-all">
@@ -1615,7 +1641,7 @@ function DashboardInner() {
 
         {/* ORDERS */}
         {mainTab==="orders"&&(
-          <div>
+          <div key="tab-orders" className="tab-panel">
             <div className="admin-card rounded-2xl shadow-sm mb-5">
               <div className="flex flex-wrap border-b border-[#ede8e0]">
                 {ORDER_TABS.map(t=>{
@@ -1695,9 +1721,22 @@ function DashboardInner() {
           </div>
         )}
 
+        {/* CART ORDERS — órdenes del catálogo online */}
+        {mainTab==="cartOrders"&&(
+          <div key="tab-cartorders" className="tab-panel">
+            <CartOrdersTab
+              orders={cartOrders}
+              loading={cartOrdersLoading}
+              onRefresh={loadCartOrders}
+              onUpdateStatus={updateCartOrderStatus}
+              currentUser={currentUser}
+            />
+          </div>
+        )}
+
         {/* CATALOG */}
         {mainTab==="catalog"&&(
-          <div>
+          <div key="tab-catalog" className="tab-panel">
             <div className="flex flex-wrap items-center gap-3 mb-5">
               <h2 className="font-display text-xl text-gray-900">Catálogo</h2>
               <button onClick={()=>setProductModal({open:true,product:null})} className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition" style={{background:PINK}}>

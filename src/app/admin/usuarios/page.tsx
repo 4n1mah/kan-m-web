@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft, Plus, Trash2, KeyRound, X, Check,
+  ArrowLeft, Plus, Trash2, KeyRound, X, Check, Pencil,
   Shield, ChefHat, User as UserIcon, AlertCircle, LockOpen, Lock,
 } from "lucide-react";
 import { ToastContainer, useToast } from "@/components/Toast";
@@ -59,6 +59,7 @@ export default function UsersPage() {
   const [forbidden, setForbidden] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [resetUser, setResetUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState<User | null>(null);
   const { toasts, addToast, removeToast } = useToast();
   const { confirm, modal: confirmModal } = useConfirm();
 
@@ -212,13 +213,11 @@ export default function UsersPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <select value={u.role}
-                      onChange={e=>patchUser(u.id, { role: e.target.value as Role })}
-                      className="text-xs px-2 py-1.5 rounded-lg border border-[#ede8e0] bg-[#faf8f5] text-gray-600 focus:outline-none focus:border-[#f07097] cursor-pointer">
-                      <option value="OWNER">Admin</option>
-                      <option value="BAKER">Repostera</option>
-                      <option value="ASSISTANT">Asistente</option>
-                    </select>
+                    <button onClick={()=>setEditUser(u)}
+                      title="Editar usuario"
+                      className="p-2 rounded-lg text-gray-400 hover:text-[#f07097] hover:bg-[#fef7f9] transition">
+                      <Pencil size={14}/>
+                    </button>
                     <button onClick={()=>setResetUser(u)}
                       title="Restablecer contraseña"
                       className="p-2 rounded-lg text-gray-400 hover:text-[#f07097] hover:bg-[#fef7f9] transition">
@@ -259,6 +258,7 @@ export default function UsersPage() {
 
       {createOpen && <CreateUserModal onClose={()=>setCreateOpen(false)} onCreated={()=>{ setCreateOpen(false); loadUsers(); addToast("Usuario creado","success"); }}/>}
       {resetUser && <ResetPasswordModal user={resetUser} onClose={()=>setResetUser(null)} onDone={()=>{ setResetUser(null); addToast("Contraseña actualizada","success"); }}/>}
+      {editUser && <EditUserModal user={editUser} onClose={()=>setEditUser(null)} onSaved={()=>{ setEditUser(null); loadUsers(); addToast("Cambios guardados","success"); }}/>}
     </div>
   );
 }
@@ -334,6 +334,76 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
           className="w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg hover:opacity-95 transition disabled:opacity-50"
           style={{ background: PINK }}>
           {submitting ? "Creando…" : "Crear usuaria"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ── Modal: editar usuario (nombre, correo y rol) ─────────────────
+function EditUserModal({ user, onClose, onSaved }: { user: User; onClose: () => void; onSaved: () => void }) {
+  const [form, setForm] = useState({ name: user.name, email: user.email, role: user.role });
+  const [error, setError] = useState<string|null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    const r = await fetch(`/api/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    if (r.ok) { onSaved(); return; }
+    const err = await r.json().catch(() => ({}));
+    setError(err.error || "Error al guardar");
+    setSubmitting(false);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-[fadeIn_.15s_ease-out]">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}/>
+      <form onSubmit={submit} className="modal-pop relative bg-white/95 backdrop-blur-md w-full max-w-md rounded-3xl shadow-xl border border-[#ede8e0] p-6 sm:p-7 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl">Editar usuario</h2>
+          <button type="button" onClick={onClose}
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+            <X size={15}/>
+          </button>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Nombre</label>
+          <input value={form.name} onChange={e=>setForm({...form, name: e.target.value})} required minLength={2}
+            className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#f07097] focus:bg-white transition"
+            placeholder="Nombre completo"/>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Correo</label>
+          <input type="email" value={form.email} onChange={e=>setForm({...form, email: e.target.value})} required
+            autoComplete="off"
+            className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#f07097] focus:bg-white transition"
+            placeholder="usuaria@correo.com"/>
+          <p className="text-[10px] text-gray-400 mt-1">El correo es con el que inicia sesión.</p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">Rol</label>
+          <select value={form.role} onChange={e=>setForm({...form, role: e.target.value as Role})}
+            className="w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#f07097] cursor-pointer">
+            <option value="OWNER">Admin</option>
+            <option value="BAKER">Repostera</option>
+            <option value="ASSISTANT">Asistente</option>
+          </select>
+          <p className="text-[10px] text-gray-400 mt-1">{ROLE_META[form.role].description}</p>
+        </div>
+
+        {error && <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">{error}</div>}
+
+        <button type="submit" disabled={submitting}
+          className="w-full py-3 rounded-xl text-white font-semibold text-sm shadow-md hover:shadow-lg hover:opacity-95 transition disabled:opacity-50"
+          style={{ background: PINK }}>
+          {submitting ? "Guardando…" : "Guardar cambios"}
         </button>
       </form>
     </div>

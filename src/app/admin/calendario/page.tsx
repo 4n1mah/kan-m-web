@@ -504,7 +504,10 @@ function MonthYearPicker({ cursor, setCursor, label, mode }: {
       </button>
 
       {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-2 z-30 admin-card rounded-2xl shadow-lg p-3 w-72 max-w-[calc(100vw-2.5rem)] modal-pop">
+        /* Wrapper posicionado aparte del modal-pop: la animación termina en
+           transform:none y pisaría el -translate-x-1/2 del centrado móvil */
+        <div className="absolute top-full left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-2 z-30">
+        <div className="admin-card rounded-2xl shadow-lg p-3 w-72 max-w-[calc(100vw-2.5rem)] modal-pop">
           {/* Header de navegación: año (modo mes) o mes/año (modo día) */}
           <div className="flex items-center justify-between mb-3">
             <button
@@ -593,6 +596,7 @@ function MonthYearPicker({ cursor, setCursor, label, mode }: {
             </button>
             <span className="text-gray-400">Año actual: {todayY}</span>
           </div>
+        </div>
         </div>
       )}
     </div>

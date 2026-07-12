@@ -12,7 +12,7 @@ import {
   MessageCircle, User, ShoppingBag, FileText, Download,
   Image as ImageIcon, AlertTriangle, Search, Clock,
   CheckCircle2, Truck, Ban, Info, StickyNote, History,
-  Edit3, Save, Calendar, BarChart3, Store, Bell, CalendarPlus
+  Edit3, Save, Calendar, BarChart3, Store, Bell, CalendarPlus, Settings as SettingsIcon
 } from "lucide-react";
 import CakePopup from "@/components/CakePopup";
 import CartOrdersTab, { type CartOrder } from "./CartOrdersTab";
@@ -1536,10 +1536,16 @@ function DashboardInner() {
                 </div>
                 <div className="py-1.5">
                   {currentUser.role === "OWNER" && (
-                    <Link href="/admin/usuarios"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-[#fef7f9] hover:text-[#f07097] transition">
-                      <User size={14}/> Gestión de usuarios
-                    </Link>
+                    <>
+                      <Link href="/admin/usuarios"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-[#fef7f9] hover:text-[#f07097] transition">
+                        <User size={14}/> Gestión de usuarios
+                      </Link>
+                      <Link href="/admin/configuracion"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-[#fef7f9] hover:text-[#f07097] transition">
+                        <SettingsIcon size={14}/> Configuración
+                      </Link>
+                    </>
                   )}
                   <button onClick={logout}
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition text-left">

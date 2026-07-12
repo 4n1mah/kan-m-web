@@ -454,6 +454,15 @@ select:focus {
   to   { opacity: 1; transform: none; }
 }
 .modal-pop { animation: modal-pop 0.25s cubic-bezier(.22,1,.36,1) both; }
+/* Usadas con animate-[...] arbitrario en el panel admin */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulseUrgent {
+  0%, 100% { transform: scale(1);   opacity: 1;   }
+  50%      { transform: scale(1.4); opacity: 0.6; }
+}
 @keyframes tab-slide-in {
   from { opacity: 0; transform: translateX(14px); }
   to   { opacity: 1; transform: none; }

@@ -1,4 +1,9 @@
 import type { Metadata } from "next";
+import ComingSoon from "@/components/ComingSoon";
+import { getSiteSettings } from "@/lib/settings";
+
+// ISR 60s + revalidatePath("/cotizar") desde el switch del admin.
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Cotizar pastel personalizado o catering para evento",
@@ -13,6 +18,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function CotizarLayout({ children }: { children: React.ReactNode }) {
+export default async function CotizarLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings();
+  // Cotizaciones apagadas: el formulario (client) nunca monta.
+  if (!settings.quotesEnabled) return <ComingSoon variant="quotes" />;
   return children;
 }

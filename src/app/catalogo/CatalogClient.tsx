@@ -7,6 +7,7 @@ import ProductCard, { Product } from "@/components/ProductCard";
 import { CartProvider } from "@/components/CartContext";
 import CartFab from "@/components/CartFab";
 import CartDrawer from "@/components/CartDrawer";
+import { useSiteSettings } from "@/components/useSiteSettings";
 
 const CATEGORIES = [
   { id: "all",       label: "Todo" },
@@ -82,6 +83,7 @@ function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
 }
 
 function OrderHelpBanner() {
+  const { quotesEnabled } = useSiteSettings();
   return (
     <div className="grid sm:grid-cols-2 gap-4 mb-10">
       <div
@@ -102,6 +104,7 @@ function OrderHelpBanner() {
         </div>
       </div>
 
+      {quotesEnabled && (
       <Link
         href="/cotizar"
         className="glass-pink card-lift rounded-3xl p-5 flex items-start gap-4"
@@ -120,6 +123,7 @@ function OrderHelpBanner() {
           </p>
         </div>
       </Link>
+      )}
     </div>
   );
 }

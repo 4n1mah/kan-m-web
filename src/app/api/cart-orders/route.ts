@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSiteSettings } from "@/lib/settings";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
@@ -45,6 +46,15 @@ async function generateUniqueCode(): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  // Switch del admin: catálogo en línea apagado.
+  const settings = await getSiteSettings();
+  if (!settings.catalogEnabled) {
+    return NextResponse.json(
+      { error: "El catálogo en línea está deshabilitado temporalmente. Escríbenos por WhatsApp." },
+      { status: 403 }
+    );
+  }
+
   const ip = getClientIp(req);
   const rl = await rateLimit({ key: `cart-order:${ip}`, limit: 5, windowMs: 10 * 60_000 });
   if (!rl.ok) {

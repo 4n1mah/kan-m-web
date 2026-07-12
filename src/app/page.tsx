@@ -6,24 +6,32 @@ import { IMAGES } from "@/lib/images";
 import DeliveryButtons from "@/components/DeliveryButtons";
 import HeroCarousel from "@/components/HeroCarousel";
 import RotatingFeatured from "@/components/RotatingFeatured";
+import { getSiteSettings } from "@/lib/settings";
+import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 
 // ISR: regenera el HTML cada 60s. El home no necesita estado live;
 // reduce queries a Neon y mejora LCP / TTFB de SEO.
 export const revalidate = 60;
 
 export default async function HomePage() {
+  // Switches del sitio (fail-soft a habilitado). El PATCH del admin llama
+  // revalidatePath("/") asi que el cambio se refleja al instante.
+  const settings = await getSiteSettings();
+
   // Si la DB no responde durante el build/revalidate, servimos el home sin
   // destacados en vez de tumbar el deploy; ISR reintenta en 60s.
-  const featured = await prisma.product
-    .findMany({
-      where: { availabilityStatus: "AVAILABLE" },
-      take: 6,
-      orderBy: { createdAt: "desc" },
-    })
-    .catch((e) => {
-      console.error("[home] featured products query failed:", e);
-      return [];
-    });
+  const featured = !settings.catalogEnabled
+    ? []
+    : await prisma.product
+        .findMany({
+          where: { availabilityStatus: "AVAILABLE" },
+          take: 6,
+          orderBy: { createdAt: "desc" },
+        })
+        .catch((e) => {
+          console.error("[home] featured products query failed:", e);
+          return [];
+        });
 
   return (
     <>
@@ -104,20 +112,33 @@ export default async function HomePage() {
               cumpleaños y eventos especiales en todo Santo Domingo. Ubicados en la Zona Colonial.
             </p>
 
-            {/* 3 buttons: Cotizar | Ver catálogo | Contáctanos */}
+            {/* 3 buttons: Cotizar | Ver catálogo | Contáctanos (según switches) */}
             <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href="/cotizar"
-                className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft bg-gradient-rose"
-              >
-                Cotizar <ArrowRight size={18} />
-              </Link>
-              <Link
-                href="/catalogo"
-                className="inline-flex items-center px-6 py-3 rounded-full bg-white/15 backdrop-blur-sm border border-white/40 text-white hover:bg-white/25 transition"
-              >
-                Ver catálogo
-              </Link>
+              {settings.quotesEnabled ? (
+                <Link
+                  href="/cotizar"
+                  className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft bg-gradient-rose"
+                >
+                  Cotizar <ArrowRight size={18} />
+                </Link>
+              ) : (
+                <a
+                  href={waLink(WA_MESSAGES.general)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shadow-soft bg-gradient-rose"
+                >
+                  Escríbenos <ArrowRight size={18} />
+                </a>
+              )}
+              {settings.catalogEnabled && (
+                <Link
+                  href="/catalogo"
+                  className="inline-flex items-center px-6 py-3 rounded-full bg-white/15 backdrop-blur-sm border border-white/40 text-white hover:bg-white/25 transition"
+                >
+                  Ver catálogo
+                </Link>
+              )}
               <Link
                 href="/contacto"
                 className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 transition"
@@ -140,7 +161,8 @@ export default async function HomePage() {
         </div>
       </HeroCarousel>
 
-      {/* FEATURED */}
+      {/* FEATURED — oculto cuando el catálogo está deshabilitado */}
+      {settings.catalogEnabled && (
       <section className="relative max-w-7xl mx-auto px-6 py-10 reveal">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -156,6 +178,7 @@ export default async function HomePage() {
         </div>
         <RotatingFeatured products={featured} />
       </section>
+      )}
 
       <div className="section-divider" />
 
@@ -180,12 +203,23 @@ export default async function HomePage() {
                 <li key={x} className="flex items-center gap-3"><Cake size={17} className="text-rose shrink-0" /> {x}</li>
               ))}
             </ul>
-            <Link
-              href="/cotizar"
-              className="btn-shine mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white shadow-soft bg-gradient-rose"
-            >
-              Cotizar <ArrowRight size={18} />
-            </Link>
+            {settings.quotesEnabled ? (
+              <Link
+                href="/cotizar"
+                className="btn-shine mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white shadow-soft bg-gradient-rose"
+              >
+                Cotizar <ArrowRight size={18} />
+              </Link>
+            ) : (
+              <a
+                href={waLink(WA_MESSAGES.general)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-shine mt-7 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white shadow-soft bg-gradient-rose"
+              >
+                Escríbenos <ArrowRight size={18} />
+              </a>
+            )}
           </div>
         </div>
       </section>
@@ -212,13 +246,15 @@ export default async function HomePage() {
           <p className="font-script text-2xl md:text-4xl text-gradient-rose">
             Brunch todo el dia, todos los dias
           </p>
-          <Link
-            href="/catalogo?cat=brunch"
-            className="btn-shine group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold bg-gradient-rose"
-          >
-            Ver catálogo de Brunch
-            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-          </Link>
+          {settings.catalogEnabled && (
+            <Link
+              href="/catalogo?cat=brunch"
+              className="btn-shine group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold bg-gradient-rose"
+            >
+              Ver catálogo de Brunch
+              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          )}
         </div>
       </section>
 
@@ -299,12 +335,23 @@ export default async function HomePage() {
               <p className="text-foreground/70 mt-4 max-w-xl mx-auto leading-relaxed">
                 Cuéntanos qué imaginas y lo creamos. Cada detalle, cada sabor, hecho a tu medida. Completa la cotización y nuestro equipo te contactará para confirmar disponibilidad.
               </p>
-              <Link
-                href="/cotizar"
-                className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-base shadow-soft bg-gradient-rose"
-              >
-                Cotizar <ArrowRight size={20} />
-              </Link>
+              {settings.quotesEnabled ? (
+                <Link
+                  href="/cotizar"
+                  className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-base shadow-soft bg-gradient-rose"
+                >
+                  Cotizar <ArrowRight size={20} />
+                </Link>
+              ) : (
+                <a
+                  href={waLink(WA_MESSAGES.general)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-base shadow-soft bg-gradient-rose"
+                >
+                  Escríbenos por WhatsApp <ArrowRight size={20} />
+                </a>
+              )}
             </div>
           </div>
         </HeroCarousel>

@@ -4,8 +4,10 @@ import Link from "next/link";
 import { Phone, Mail, Instagram, MapPin, ArrowRight } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { BUSINESS } from "@/lib/bizInfo";
+import { useSiteSettings } from "@/components/useSiteSettings";
 
 export default function ContactoPage() {
+  const { quotesEnabled } = useSiteSettings();
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
@@ -163,12 +165,23 @@ export default function ContactoPage() {
                   Completa el formulario en menos de 2 minutos y nuestro equipo te respondera para endulzar tu proximo evento.
                 </p>
               </div>
-              <Link
-                href="/cotizar"
-                className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold shadow-md text-sm bg-gradient-rose"
-              >
-                Cotizar ahora <ArrowRight size={17} />
-              </Link>
+              {quotesEnabled ? (
+                <Link
+                  href="/cotizar"
+                  className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold shadow-md text-sm bg-gradient-rose"
+                >
+                  Cotizar ahora <ArrowRight size={17} />
+                </Link>
+              ) : (
+                <a
+                  href={waLink(WA_MESSAGES.general)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold shadow-md text-sm bg-gradient-rose"
+                >
+                  Escríbenos por WhatsApp <ArrowRight size={17} />
+                </a>
+              )}
               <p className="text-xs text-[var(--muted-foreground)]">
                 Respuesta en menos de 24 horas · Sin compromiso
               </p>

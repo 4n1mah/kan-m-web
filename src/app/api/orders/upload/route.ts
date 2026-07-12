@@ -3,6 +3,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
+import { getSiteSettings } from "@/lib/settings";
+import { getSession } from "@/lib/auth";
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg", "image/jpg", "image/png", "image/webp",
@@ -25,6 +27,19 @@ async function detectMime(file: File): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  // Switch del admin: con cotizaciones apagadas solo el panel (con
+  // sesión) puede subir fotos por esta ruta.
+  const settings = await getSiteSettings();
+  if (!settings.quotesEnabled) {
+    const session = await getSession(req);
+    if (!session) {
+      return NextResponse.json(
+        { error: "Las cotizaciones en línea están deshabilitadas temporalmente." },
+        { status: 403 }
+      );
+    }
+  }
+
   // Rate limit: 30 imágenes cada 10 min por IP
   const ip = getClientIp(req);
   const rl = await rateLimit({ key: `upload:${ip}`, limit: 30, windowMs: 10 * 60_000 });

@@ -4,9 +4,11 @@ import { usePathname } from "next/navigation";
 import { Phone, Mail, Instagram } from "lucide-react";
 import { WHATSAPP_NUMBER, waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { BUSINESS } from "@/lib/bizInfo";
+import { useSiteSettings } from "@/components/useSiteSettings";
 
 export default function Footer() {
   const pathname = usePathname();
+  const settings = useSiteSettings();
   // Ocultar el footer público en rutas de admin
   if (pathname?.startsWith("/admin")) return null;
   return (
@@ -65,7 +67,7 @@ export default function Footer() {
           <h4 className="text-xs uppercase tracking-widest font-medium mb-4">Explorar</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link href="/" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Inicio</Link></li>
-            <li><Link href="/catalogo" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Catálogo</Link></li>
+            {settings.catalogEnabled && <li><Link href="/catalogo" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Catálogo</Link></li>}
             <li><Link href="/catering" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Catering</Link></li>
             <li><Link href="/nosotros" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Nosotros</Link></li>
             <li><Link href="/contacto" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Contacto</Link></li>

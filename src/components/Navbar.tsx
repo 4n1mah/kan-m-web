@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import { useSiteSettings } from "@/components/useSiteSettings";
 
 const links = [
   { href: "/", label: "Inicio" },
@@ -19,6 +20,8 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const settings = useSiteSettings();
+  const visibleLinks = links.filter(l => l.href !== "/catalogo" || settings.catalogEnabled);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -56,7 +59,7 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1">
-          {links.map((l) => {
+          {visibleLinks.map((l) => {
             const active = pathname === l.href;
             return (
               <Link
@@ -89,12 +92,14 @@ export default function Navbar() {
             </svg>
             WhatsApp
           </a>
-          <Link
-            href="/cotizar"
-            className="btn-shine flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold hover:bg-white/90 transition-all shadow-sm"
-          >
-            Cotizar
-          </Link>
+          {settings.quotesEnabled && (
+            <Link
+              href="/cotizar"
+              className="btn-shine flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold hover:bg-white/90 transition-all shadow-sm"
+            >
+              Cotizar
+            </Link>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -113,7 +118,7 @@ export default function Navbar() {
         style={{ borderTop: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(240,112,151,0.94)" }}
       >
         <div className={`max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1 ${open ? "stagger-fade" : ""}`}>
-          {links.map((l) => {
+          {visibleLinks.map((l) => {
             const active = pathname === l.href;
             return (
               <Link
@@ -140,13 +145,15 @@ export default function Navbar() {
             >
               WhatsApp
             </a>
-            <Link
-              href="/cotizar"
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold shadow-sm"
-            >
-              Cotizar
-            </Link>
+            {settings.quotesEnabled && (
+              <Link
+                href="/cotizar"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold shadow-sm"
+              >
+                Cotizar
+              </Link>
+            )}
           </div>
         </div>
       </div>

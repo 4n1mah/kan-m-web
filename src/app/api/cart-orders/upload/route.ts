@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
+import { getSiteSettings } from "@/lib/settings";
 
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -35,6 +36,15 @@ async function detectMime(file: File): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  // Switch del admin: catálogo en línea apagado.
+  const settings = await getSiteSettings();
+  if (!settings.catalogEnabled) {
+    return NextResponse.json(
+      { error: "El catálogo en línea está deshabilitado temporalmente." },
+      { status: 403 }
+    );
+  }
+
   const ip = getClientIp(req);
   const rl = await rateLimit({ key: `receipt-upload:${ip}`, limit: 10, windowMs: 10 * 60_000 });
   if (!rl.ok) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { getSiteSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { validateDominicanPhone } from "@/lib/phone";
 import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
@@ -103,6 +104,18 @@ export async function POST(req: NextRequest) {
   // Sin sesión, `source` se ignora y el pedido entra como ONLINE normal.
   const session = data.source === "IN_PERSON" ? await getSession(req) : null;
   const isInPerson = data.source === "IN_PERSON" && !!session;
+
+  // Switch del admin: cotizaciones públicas apagadas. Los pedidos EN
+  // PERSONA del panel siguen funcionando.
+  if (!isInPerson) {
+    const settings = await getSiteSettings();
+    if (!settings.quotesEnabled) {
+      return NextResponse.json(
+        { error: "Las cotizaciones en línea están deshabilitadas temporalmente. Escríbenos por WhatsApp." },
+        { status: 403 }
+      );
+    }
+  }
 
   // Validar que la fecha sea al menos today + 3 días (zona horaria RD = UTC-4).
   // En persona la repostera decide la fecha — solo exigimos que no sea pasada.

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { IMAGES } from "@/lib/images";
 import HeroCarousel from "@/components/HeroCarousel";
 import Lightbox from "@/components/Lightbox";
+import { useSiteSettings } from "@/components/useSiteSettings";
+import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 
 const COTIZAR_MAP: Record<string, string> = {
   "Pasteles personalizados": "Cumpleaños",
@@ -136,6 +138,7 @@ function buildCotizarUrl(service: typeof services[number]) {
 }
 
 export default function CateringPage() {
+  const { quotesEnabled } = useSiteSettings();
   return (
     <div>
       {/* Hero carousel */}
@@ -210,12 +213,23 @@ export default function CateringPage() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href={buildCotizarUrl(s)}
-                className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm bg-gradient-rose"
-              >
-                Cotizar <ArrowRight size={16} />
-              </Link>
+              {quotesEnabled ? (
+                <Link
+                  href={buildCotizarUrl(s)}
+                  className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm bg-gradient-rose"
+                >
+                  Cotizar <ArrowRight size={16} />
+                </Link>
+              ) : (
+                <a
+                  href={waLink(WA_MESSAGES.general)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm bg-gradient-rose"
+                >
+                  Escríbenos <ArrowRight size={16} />
+                </a>
+              )}
             </div>
           </div>
         ))}

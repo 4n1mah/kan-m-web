@@ -4,6 +4,7 @@ import { ChevronDown, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { FAQS as FAQ_SOURCE } from "@/lib/bizInfo";
+import { useSiteSettings } from "@/components/useSiteSettings";
 
 // Las FAQs viven en src/lib/bizInfo.ts (fuente única de verdad consumida
 // también por el bot externo de WhatsApp). Para editar el contenido, ir
@@ -12,6 +13,7 @@ const FAQS: { q: string; a: string }[] = FAQ_SOURCE.map(({ q, a }) => ({ q, a })
 
 export default function FAQPage() {
   const [open, setOpen] = useState<number | null>(null);
+  const { quotesEnabled } = useSiteSettings();
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -97,12 +99,14 @@ export default function FAQPage() {
             >
               Escribir por WhatsApp
             </a>
-            <Link
-              href="/cotizar"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--rose)] text-[var(--rose)] text-sm font-semibold hover:bg-[var(--rose)]/5 transition"
-            >
-              Cotizar mi evento
-            </Link>
+            {quotesEnabled && (
+              <Link
+                href="/cotizar"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--rose)] text-[var(--rose)] text-sm font-semibold hover:bg-[var(--rose)]/5 transition"
+              >
+                Cotizar mi evento
+              </Link>
+            )}
           </div>
         </div>
       </section>

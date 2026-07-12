@@ -201,6 +201,20 @@ model wa_test_diag {
   @@ignore
 }
 
+// Configuración del sitio público (fila única id=1). La tabla se
+// auto-crea en runtime (src/lib/settings.ts, CREATE TABLE IF NOT EXISTS)
+// para no depender de migraciones manuales; scripts/site-settings-migration.sql
+// tiene el DDL equivalente por si se quiere baselinear a mano.
+model SiteSettings {
+  id             Int      @id @default(1)
+  catalogEnabled Boolean  @default(true) @map("catalog_enabled")
+  quotesEnabled  Boolean  @default(true) @map("quotes_enabled")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  updatedBy      String?  @map("updated_by")
+
+  @@map("site_settings")
+}
+
 model WhatsappEscalation {
   id          String    @id @default(cuid())
   phone       String    @unique

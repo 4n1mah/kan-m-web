@@ -6,7 +6,7 @@ import type { SessionPayload } from "@/lib/auth";
 export async function logActivity(opts: {
   user: SessionPayload | null;
   action: string;          // ej: "order.status", "product.create", "user.update"
-  entityType: "order" | "product" | "user" | "cart_order";
+  entityType: "order" | "product" | "user" | "cart_order" | "settings";
   entityId: string;
   metadata?: Record<string, unknown>;
 }) {

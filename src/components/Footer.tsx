@@ -69,6 +69,7 @@ export default function Footer() {
             <li><Link href="/" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Inicio</Link></li>
             {settings.catalogEnabled && <li><Link href="/catalogo" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Catálogo</Link></li>}
             <li><Link href="/catering" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Catering</Link></li>
+            <li><Link href="/picaderas" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Picaderas</Link></li>
             <li><Link href="/nosotros" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Nosotros</Link></li>
             <li><Link href="/contacto" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Contacto</Link></li>
           </ul>

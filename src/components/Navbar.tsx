@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { useSiteSettings } from "@/components/useSiteSettings";
+import { useWipe, wipeClickHandler } from "@/components/BrandWipe";
 
 const links = [
   { href: "/", label: "Inicio" },
@@ -21,7 +22,11 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const settings = useSiteSettings();
+  const { navigateWithWipe } = useWipe();
   const visibleLinks = links.filter(l => l.href !== "/catalogo" || settings.catalogEnabled);
+
+  // Modo Empanadoteca: el navbar cambia de mundo en /picaderas
+  const isEmpanadoteca = pathname?.startsWith("/picaderas") ?? false;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -32,28 +37,46 @@ export default function Navbar() {
   // Ocultar el navbar público en rutas de admin (tienen su propio header)
   if (pathname?.startsWith("/admin")) return null;
 
+  const navBg = isEmpanadoteca
+    ? scrolled ? "rgba(179,40,45,0.9)" : "#b3282d"
+    : scrolled ? "rgba(240,112,151,0.9)" : "#f07097";
+  const navShadow = isEmpanadoteca
+    ? "0 2px 24px rgba(179,40,45,0.4)"
+    : "0 2px 24px rgba(240,112,151,0.4)";
+
   return (
     <header
-      className="sticky top-0 z-50 transition-all duration-300 hairline-b"
+      className="sticky top-0 z-50 transition-all duration-700 hairline-b"
       style={{
-        backgroundColor: scrolled ? "rgba(240,112,151,0.9)" : "#f07097",
+        backgroundColor: navBg,
         backdropFilter: scrolled ? "blur(12px) saturate(160%)" : "none",
         WebkitBackdropFilter: scrolled ? "blur(12px) saturate(160%)" : "none",
-        boxShadow: scrolled ? "0 2px 24px rgba(240,112,151,0.4)" : "none",
+        boxShadow: scrolled ? navShadow : "none",
       }}
     >
       <div className="max-w-7xl mx-auto px-5 h-22 flex items-center justify-between gap-4" style={{ height: "5rem" }}>
 
-        {/* Logo — transparent PNG, white letters on pink navbar */}
+        {/* Logo — crossfade entre Kan M y Empanadoteca según la sección */}
         <Link href="/" className="flex items-center shrink-0">
           <div className="relative" style={{ width: "8.5rem", height: "4.5rem" }}>
             <Image
               src="/logo-kanm.png"
               alt="Kan M Repostería y Catering"
               fill
-              className="object-contain object-left"
+              className={`object-contain object-left transition-opacity duration-700 ${isEmpanadoteca ? "opacity-0" : "opacity-100"}`}
               priority
             />
+            <div className={`absolute inset-0 flex items-center gap-2.5 transition-opacity duration-700 ${isEmpanadoteca ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-empanadoteca.png"
+                alt="Empanadoteca"
+                className="h-12 w-12 rounded-full shadow-md shrink-0"
+              />
+              <span className="font-display font-bold text-white text-sm leading-tight tracking-wide">
+                EMPANA-<br />DOTECA
+              </span>
+            </div>
           </div>
         </Link>
 
@@ -77,6 +100,27 @@ export default function Navbar() {
               </Link>
             );
           })}
+          {/* Portal al otro negocio: Picaderas (Empanadoteca) ⇄ Kan M */}
+          {isEmpanadoteca ? (
+            <a
+              href="/"
+              onClick={wipeClickHandler(navigateWithWipe, "/", "kanm")}
+              className="kanm-link ml-1 flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-rose text-white text-sm font-semibold shadow-sm"
+              style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
+            >
+              <span className="font-script text-base leading-none">Kan M</span>
+            </a>
+          ) : (
+            <a
+              href="/picaderas"
+              onClick={wipeClickHandler(navigateWithWipe, "/picaderas", "empanadoteca")}
+              className="empanadoteca-link ml-1 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-empanadoteca.png" alt="" aria-hidden className="emp-mini-logo h-5 rounded-full" />
+              Picaderas
+            </a>
+          )}
         </nav>
 
         {/* Desktop CTAs */}
@@ -92,7 +136,7 @@ export default function Navbar() {
             </svg>
             WhatsApp
           </a>
-          {settings.quotesEnabled && (
+          {settings.quotesEnabled && !isEmpanadoteca && (
             <Link
               href="/cotizar"
               className="btn-shine flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold hover:bg-white/90 transition-all shadow-sm"
@@ -114,8 +158,11 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       <div
-        className={`lg:hidden overflow-hidden transition-all duration-300 backdrop-blur-md ${open ? "max-h-[520px] opacity-100" : "max-h-0 opacity-0"}`}
-        style={{ borderTop: "1px solid rgba(255,255,255,0.15)", backgroundColor: "rgba(240,112,151,0.94)" }}
+        className={`lg:hidden overflow-hidden transition-all duration-300 backdrop-blur-md ${open ? "max-h-[560px] opacity-100" : "max-h-0 opacity-0"}`}
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.15)",
+          backgroundColor: isEmpanadoteca ? "rgba(179,40,45,0.94)" : "rgba(240,112,151,0.94)",
+        }}
       >
         <div className={`max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1 ${open ? "stagger-fade" : ""}`}>
           {visibleLinks.map((l) => {
@@ -136,6 +183,26 @@ export default function Navbar() {
               </Link>
             );
           })}
+          {/* Portal móvil al otro negocio */}
+          {isEmpanadoteca ? (
+            <a
+              href="/"
+              onClick={(e) => { setOpen(false); wipeClickHandler(navigateWithWipe, "/", "kanm")(e); }}
+              className="px-3 py-2.5 rounded-lg text-base font-semibold text-white bg-white/20 flex items-center gap-2"
+            >
+              <span className="font-script text-lg leading-none">Kan M</span> · Volver a la repostería
+            </a>
+          ) : (
+            <a
+              href="/picaderas"
+              onClick={(e) => { setOpen(false); wipeClickHandler(navigateWithWipe, "/picaderas", "empanadoteca")(e); }}
+              className="empanadoteca-link px-3 py-2.5 rounded-lg text-base font-semibold text-white bg-white/10 flex items-center gap-2"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-empanadoteca.png" alt="" aria-hidden className="h-6 w-6 rounded-full" />
+              Picaderas · Empanadoteca
+            </a>
+          )}
           <div className="flex flex-col gap-2 pt-3 border-t border-white/15 mt-2">
             <a
               href={waLink(WA_MESSAGES.general)}
@@ -145,7 +212,7 @@ export default function Navbar() {
             >
               WhatsApp
             </a>
-            {settings.quotesEnabled && (
+            {settings.quotesEnabled && !isEmpanadoteca && (
               <Link
                 href="/cotizar"
                 onClick={() => setOpen(false)}

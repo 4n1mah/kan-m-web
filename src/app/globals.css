@@ -26,6 +26,13 @@
   --rose-glow: rgba(240, 112, 151, 0.35);
   --rose-soft: rgba(240, 112, 151, 0.08);
 
+  /* Paleta Empanadoteca (segundo negocio) — del logo: empanada roja,
+     libro azul marino, fondo crema. */
+  --emp-red: #b3282d;
+  --emp-navy: #22314a;
+  --emp-cream: #f6efe2;
+  --gradient-emp: linear-gradient(135deg, #b3282d 0%, #8f1f24 100%);
+
   --font-display: "Playfair Display", serif;
   --font-script: "Dancing Script", cursive;
   --font-sans: "Outfit", system-ui, sans-serif;
@@ -340,6 +347,102 @@ select:focus {
   background-size: 22px 22px;
 }
 
+/* ── Tema Empanadoteca — redefine las variables del sitio ───── */
+/* PicaderasClient agrega esta clase a <html>; todo lo que usa vars
+   (fondos, textos, footer, chips) cambia de mundo. Los gradientes
+   literales quedan cubiertos por el wipe durante la transición. */
+html.theme-empanadoteca {
+  --background: #f6efe2;
+  --foreground: #22314a;
+  --card: #fffdf8;
+  --secondary: #efe6d2;
+  --muted: #f0e8d8;
+  --muted-foreground: #5d6b83;
+  --accent: #e8d9c0;
+  --border: #e3d9c6;
+  --input: #e3d9c6;
+  --ring: #b3282d;
+  --rose: #b3282d;
+  --blush: #d98a8d;
+  --cream: #f1e7d2;
+  --gold: #22314a;
+  --gradient-rose: var(--gradient-emp);
+  --rose-glow: rgba(179, 40, 45, 0.3);
+  --rose-soft: rgba(179, 40, 45, 0.08);
+}
+html.theme-empanadoteca .site-backdrop {
+  background:
+    radial-gradient(42% 36% at 12% 6%,  rgba(179, 40, 45, 0.08), transparent 70%),
+    radial-gradient(36% 30% at 88% 10%, rgba(34, 49, 74, 0.08), transparent 70%),
+    radial-gradient(50% 44% at 80% 94%, rgba(179, 40, 45, 0.06), transparent 70%),
+    radial-gradient(40% 36% at 6% 88%,  rgba(232, 217, 192, 0.5), transparent 70%);
+}
+html.theme-empanadoteca .site-backdrop::after {
+  background-image: radial-gradient(rgba(179, 40, 45, 0.05) 1px, transparent 1px);
+}
+
+/* Morph gradual: clase temporal (~1s) en <html> durante el cambio de marca */
+.brand-morph,
+.brand-morph * {
+  transition: background-color 0.8s ease, color 0.8s ease,
+              border-color 0.8s ease, fill 0.8s ease !important;
+}
+
+/* ── Wipe circular de cambio de marca ───────────────────────── */
+.brand-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+  clip-path: circle(0% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+}
+.brand-wipe.wipe-in {
+  opacity: 1;
+  clip-path: circle(150% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+  transition: clip-path 0.55s cubic-bezier(.4, 0, .8, 1);
+}
+.brand-wipe.wipe-out {
+  opacity: 0;
+  clip-path: circle(150% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+  transition: opacity 0.45s ease 0.15s;
+}
+
+/* ── Botón Picaderas (Empanadoteca) — absorbe el logo al hover ── */
+.empanadoteca-link {
+  position: relative;
+  border: 1.5px solid transparent;
+  transition: background-color 0.35s ease, color 0.35s ease,
+              border-color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+}
+.empanadoteca-link:hover {
+  background-color: var(--emp-cream) !important;
+  color: var(--emp-red) !important;
+  border-color: var(--emp-navy);
+  box-shadow: 0 8px 24px -8px rgba(179, 40, 45, 0.45);
+  transform: translateY(-1px);
+}
+.empanadoteca-link .emp-mini-logo {
+  width: 0;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: width 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
+}
+.empanadoteca-link:hover .emp-mini-logo {
+  width: 1.25rem;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Botón inverso "Kan M" (dentro de Empanadoteca) */
+.kanm-link {
+  transition: box-shadow 0.35s ease, transform 0.35s ease, opacity 0.35s ease;
+}
+.kanm-link:hover {
+  box-shadow: 0 8px 24px -8px rgba(240, 112, 151, 0.6);
+  transform: translateY(-1px);
+}
+
 /* ── Utilidades modernas de marca ───────────────────────────── */
 /* Borde en gradiente rosa→gold (doble background, sin pseudo) */
 .border-gradient {
@@ -511,7 +614,9 @@ select:focus {
   .text-gradient-animated, .hero-enter > *,
   .drawer-in, .modal-pop, .badge-pop, .tab-panel { animation: none !important; }
   .reveal, .will-reveal, .btn-shine, .card-lift, .card-tilt,
-  .img-shine::after, .nav-link::after { transition: none !important; }
+  .img-shine::after, .nav-link::after,
+  .brand-wipe, .brand-morph, .brand-morph *,
+  .empanadoteca-link, .empanadoteca-link .emp-mini-logo { transition: none !important; }
   .btn-shine::after, .img-shine::after, .pulse-ring::after { display: none; }
 }
 *:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

@@ -3,6 +3,7 @@ import { Playfair_Display, Dancing_Script, Outfit } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import SiteBackdrop from "@/components/SiteBackdrop";
+import { WipeProvider } from "@/components/BrandWipe";
 import Footer from "@/components/Footer";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -109,12 +110,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <SiteBackdrop />
-        <Navbar />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-        <WhatsAppFab />
-        <ScrollReveal />
+        <WipeProvider>
+          <SiteBackdrop />
+          <Navbar />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <WhatsAppFab />
+          <ScrollReveal />
+        </WipeProvider>
         <Analytics />
         <SpeedInsights />
       </body>

@@ -8,6 +8,7 @@ import HeroCarousel from "@/components/HeroCarousel";
 import RotatingFeatured from "@/components/RotatingFeatured";
 import { getSiteSettings } from "@/lib/settings";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import EmpanadotecaBanner from "@/components/EmpanadotecaBanner";
 
 // ISR: regenera el HTML cada 60s. El home no necesita estado live;
 // reduce queries a Neon y mejora LCP / TTFB de SEO.
@@ -309,6 +310,9 @@ export default async function HomePage() {
       </section>
 
       <div className="section-divider" />
+
+      {/* EMPANADOTECA — el otro negocio */}
+      <EmpanadotecaBanner />
 
       {/* MARQUEE — franja decorativa de servicios */}
       <div className="overflow-hidden py-6" aria-hidden="true">

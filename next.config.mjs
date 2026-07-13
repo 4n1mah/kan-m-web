@@ -7,6 +7,8 @@ const nextConfig = {
       // La bandeja de WhatsApp se retiró del admin; SWs cacheados viejos y
       // bookmarks siguen resolviendo. El API /api/whatsapp/* sigue activo.
       { source: "/admin/whatsapp", destination: "/admin/dashboard", permanent: false },
+      // La sección Empanadoteca se llamó /picaderas por un día
+      { source: "/picaderas", destination: "/empanadoteca", permanent: true },
     ];
   },
   images: {

@@ -25,8 +25,8 @@ export default function Navbar() {
   const { navigateWithWipe } = useWipe();
   const visibleLinks = links.filter(l => l.href !== "/catalogo" || settings.catalogEnabled);
 
-  // Modo Empanadoteca: el navbar cambia de mundo en /picaderas
-  const isEmpanadoteca = pathname?.startsWith("/picaderas") ?? false;
+  // Modo Empanadoteca: el navbar cambia de mundo en /empanadoteca
+  const isEmpanadoteca = pathname?.startsWith("/empanadoteca") ?? false;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -66,15 +66,15 @@ export default function Navbar() {
               className={`object-contain object-left transition-opacity duration-700 ${isEmpanadoteca ? "opacity-0" : "opacity-100"}`}
               priority
             />
-            <div className={`absolute inset-0 flex items-center gap-2.5 transition-opacity duration-700 ${isEmpanadoteca ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+            <div className={`absolute inset-y-0 left-0 w-max flex items-center gap-2.5 transition-opacity duration-700 ${isEmpanadoteca ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo-empanadoteca.png"
                 alt="Empanadoteca"
                 className="h-12 w-12 rounded-full shadow-md shrink-0"
               />
-              <span className="font-display font-bold text-white text-sm leading-tight tracking-wide">
-                EMPANA-<br />DOTECA
+              <span className="font-display font-bold text-white text-[15px] leading-none tracking-wide whitespace-nowrap">
+                EMPANADOTECA
               </span>
             </div>
           </div>
@@ -112,13 +112,13 @@ export default function Navbar() {
             </a>
           ) : (
             <a
-              href="/picaderas"
-              onClick={wipeClickHandler(navigateWithWipe, "/picaderas", "empanadoteca")}
+              href="/empanadoteca"
+              onClick={wipeClickHandler(navigateWithWipe, "/empanadoteca", "empanadoteca")}
               className="empanadoteca-link ml-1 flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/15 text-white text-sm font-semibold"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-empanadoteca.png" alt="" aria-hidden className="emp-mini-logo h-5 rounded-full" />
-              Picaderas
+              Empanadoteca
             </a>
           )}
         </nav>
@@ -194,13 +194,13 @@ export default function Navbar() {
             </a>
           ) : (
             <a
-              href="/picaderas"
-              onClick={(e) => { setOpen(false); wipeClickHandler(navigateWithWipe, "/picaderas", "empanadoteca")(e); }}
+              href="/empanadoteca"
+              onClick={(e) => { setOpen(false); wipeClickHandler(navigateWithWipe, "/empanadoteca", "empanadoteca")(e); }}
               className="empanadoteca-link px-3 py-2.5 rounded-lg text-base font-semibold text-white bg-white/10 flex items-center gap-2"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-empanadoteca.png" alt="" aria-hidden className="h-6 w-6 rounded-full" />
-              Picaderas · Empanadoteca
+              Empanadoteca
             </a>
           )}
           <div className="flex flex-col gap-2 pt-3 border-t border-white/15 mt-2">

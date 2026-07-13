@@ -9,7 +9,15 @@ export default function EmpanadotecaBanner() {
   const { navigateWithWipe } = useWipe();
 
   return (
-    <section className="relative overflow-hidden py-12 px-6 bg-grain" style={{ background: "#f6efe2" }}>
+    <section
+      className="relative overflow-hidden py-16 sm:py-20 px-6 bg-grain"
+      style={{
+        // Difuminado: la banda crema se funde con el fondo del sitio
+        // arriba y abajo en vez de cortar como un cuadrado.
+        background:
+          "linear-gradient(180deg, rgba(246,239,226,0) 0%, rgba(246,239,226,0.85) 22%, #f6efe2 45%, #f6efe2 55%, rgba(246,239,226,0.85) 78%, rgba(246,239,226,0) 100%)",
+      }}
+    >
       {/* Acentos decorativos rojo/navy */}
       <div className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full blur-3xl" style={{ background: "rgba(179,40,45,0.12)" }} />
       <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full blur-3xl" style={{ background: "rgba(34,49,74,0.1)" }} />
@@ -32,14 +40,14 @@ export default function EmpanadotecaBanner() {
           </p>
         </div>
         <a
-          href="/picaderas"
-          onClick={wipeClickHandler(navigateWithWipe, "/picaderas", "empanadoteca")}
+          href="/empanadoteca"
+          onClick={wipeClickHandler(navigateWithWipe, "/empanadoteca", "empanadoteca")}
           className="empanadoteca-link group inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold shrink-0"
           style={{ background: "#22314a" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-empanadoteca.png" alt="" aria-hidden className="emp-mini-logo h-5 rounded-full" />
-          Picaderas
+          Empanadoteca
           <ArrowRight size={17} className="group-hover:translate-x-0.5 transition-transform" />
         </a>
       </div>

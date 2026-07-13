@@ -16,7 +16,7 @@ const EMP = {
   maps: "https://maps.app.goo.gl/BJYk1J1fWJonbhzF7",
 };
 
-export default function PicaderasClient() {
+export default function EmpanadotecaClient() {
   const { navigateWithWipe } = useWipe();
 
   // Tema Empanadoteca con morph gradual de entrada y salida

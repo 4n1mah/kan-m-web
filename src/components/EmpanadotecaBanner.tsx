@@ -9,18 +9,24 @@ export default function EmpanadotecaBanner() {
   const { navigateWithWipe } = useWipe();
 
   return (
-    <section
-      className="relative overflow-hidden py-16 sm:py-20 px-6 bg-grain"
-      style={{
-        // Difuminado: la banda crema se funde con el fondo del sitio
-        // arriba y abajo en vez de cortar como un cuadrado.
-        background:
-          "linear-gradient(180deg, rgba(246,239,226,0) 0%, rgba(246,239,226,0.85) 22%, #f6efe2 45%, #f6efe2 55%, rgba(246,239,226,0.85) 78%, rgba(246,239,226,0) 100%)",
-      }}
-    >
-      {/* Acentos decorativos rojo/navy */}
-      <div className="pointer-events-none absolute -top-16 -right-16 w-64 h-64 rounded-full blur-3xl" style={{ background: "rgba(179,40,45,0.12)" }} />
-      <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full blur-3xl" style={{ background: "rgba(34,49,74,0.1)" }} />
+    <section className="relative overflow-hidden py-16 sm:py-20 px-6">
+      {/* Fondo completo (crema + halos + grano) bajo una misma máscara de
+          desvanecido vertical: nada puede cortar en línea recta arriba/abajo. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(180deg, transparent 0%, black 35%, black 65%, transparent 100%)",
+          maskImage:
+            "linear-gradient(180deg, transparent 0%, black 35%, black 65%, transparent 100%)",
+        }}
+      >
+        <div className="absolute inset-0" style={{ background: "#f6efe2" }} />
+        {/* Acentos decorativos rojo/navy */}
+        <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full blur-3xl" style={{ background: "rgba(179,40,45,0.12)" }} />
+        <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full blur-3xl" style={{ background: "rgba(34,49,74,0.1)" }} />
+        <div className="absolute inset-0 bg-grain" />
+      </div>
 
       <div className="relative max-w-5xl mx-auto flex flex-col sm:flex-row items-center gap-6 sm:gap-10 reveal" data-reveal="scale">
         {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -37,7 +37,7 @@ export default function EmpanadotecaBanner() {
           style={{ boxShadow: "0 12px 36px -10px rgba(179,40,45,0.4)" }}
         />
         <div className="flex-1 text-center sm:text-left">
-          <p className="font-script text-2xl" style={{ color: "#b3282d" }}>¿antojo de empanadas?</p>
+          <p className="font-script text-2xl" style={{ color: "#b3282d" }}>¿Antojo de empanadas?</p>
           <h2 className="font-display text-2xl md:text-3xl mt-1" style={{ color: "#22314a" }}>
             Conoce <span className="font-bold tracking-wide">EMPANADOTECA</span>
           </h2>

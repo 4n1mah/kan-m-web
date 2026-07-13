@@ -13,7 +13,7 @@ import { useWipe, wipeClickHandler } from "@/components/BrandWipe";
 
 const EMP = {
   instagram: "https://instagram.com/empanadotecard",
-  maps: "https://maps.app.goo.gl/BJYk1J1fWJonbhzF7",
+  maps: "https://maps.app.goo.gl/hQtrJ3wqUeYyGCvJ9",
 };
 
 export default function EmpanadotecaClient() {

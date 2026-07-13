@@ -388,24 +388,95 @@ html.theme-empanadoteca .site-backdrop::after {
               border-color 0.8s ease, fill 0.8s ease !important;
 }
 
-/* ── Wipe circular de cambio de marca ───────────────────────── */
+/* ── Wipe circular de cambio de marca (v2) ──────────────────────
+   Tres capas: halo difuminado que abre camino (borde suave), relleno
+   con brillo radial desde el punto del click, y el brandmark de la
+   marca destino que aparece mientras la pantalla está cubierta. */
 .brand-wipe {
   position: fixed;
   inset: 0;
   z-index: 200;
   pointer-events: none;
   opacity: 0;
-  clip-path: circle(0% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+  visibility: hidden;
 }
 .brand-wipe.wipe-in {
   opacity: 1;
-  clip-path: circle(150% at var(--wipe-x, 50%) var(--wipe-y, 50%));
-  transition: clip-path 0.55s cubic-bezier(.4, 0, .8, 1);
+  visibility: visible;
 }
 .brand-wipe.wipe-out {
   opacity: 0;
+  visibility: visible;
+  transition: opacity 0.55s ease 0.05s;
+}
+.wipe-halo,
+.wipe-fill {
+  position: absolute;
+  inset: 0;
+  clip-path: circle(0% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+}
+.wipe-halo {
+  opacity: 0.55;
+  filter: blur(28px) saturate(130%);
+}
+.wipe-in .wipe-halo {
+  clip-path: circle(165% at var(--wipe-x, 50%) var(--wipe-y, 50%));
+  transition: clip-path 0.72s cubic-bezier(0.5, 0, 0.25, 1);
+}
+.wipe-in .wipe-fill {
   clip-path: circle(150% at var(--wipe-x, 50%) var(--wipe-y, 50%));
-  transition: opacity 0.45s ease 0.15s;
+  transition: clip-path 0.72s cubic-bezier(0.6, 0, 0.2, 1) 0.07s;
+}
+/* Brillo que emana del punto del click — da profundidad al círculo */
+.wipe-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--wipe-x, 50%) var(--wipe-y, 50%),
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.08) 30%,
+    transparent 55%
+  );
+}
+.brand-wipe[data-brand="kanm"] .wipe-halo,
+.brand-wipe[data-brand="kanm"] .wipe-fill {
+  /* gradiente literal (no la var): el círculo de regreso debe ser
+     rosa aunque el tema Empanadoteca siga activo */
+  background: linear-gradient(135deg, #f07097 0%, #f4899e 50%, #e85d82 100%);
+}
+.brand-wipe[data-brand="empanadoteca"] .wipe-halo,
+.brand-wipe[data-brand="empanadoteca"] .wipe-fill {
+  background: linear-gradient(135deg, #b3282d 0%, #8f1f24 60%, #22314a 100%);
+}
+.wipe-brandmark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  opacity: 0;
+  transform: translateY(14px) scale(0.9);
+}
+.wipe-in .wipe-brandmark {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 0.45s ease 0.4s,
+              transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.15) 0.4s;
+}
+.wipe-out .wipe-brandmark {
+  opacity: 0;
+  transform: translateY(-10px) scale(1.05);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+/* La página saliente se aleja sutilmente mientras el círculo la cubre */
+html.wipe-zoom main {
+  transform: scale(0.97);
+  opacity: 0.75;
+  transform-origin: 50% 35%;
+  transition: transform 0.7s cubic-bezier(0.55, 0, 0.3, 1), opacity 0.7s ease;
 }
 
 /* ── Botón Picaderas (Empanadoteca) — absorbe el logo al hover ── */
@@ -616,7 +687,9 @@ html.theme-empanadoteca .site-backdrop::after {
   .reveal, .will-reveal, .btn-shine, .card-lift, .card-tilt,
   .img-shine::after, .nav-link::after,
   .brand-wipe, .brand-morph, .brand-morph *,
+  .wipe-halo, .wipe-fill, .wipe-brandmark,
   .empanadoteca-link, .empanadoteca-link .emp-mini-logo { transition: none !important; }
+  html.wipe-zoom main { transform: none; opacity: 1; transition: none !important; }
   .btn-shine::after, .img-shine::after, .pulse-ring::after { display: none; }
 }
 *:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

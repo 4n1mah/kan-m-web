@@ -2,10 +2,14 @@
 // ─────────────────────────────────────────────────────────────
 //  BrandWipe — transición de marca entre Kan M y Empanadoteca.
 //
-//  useWipe().navigateWithWipe(href, brand, {x,y}) despliega un
-//  círculo con el gradiente de la marca DESTINO desde el punto del
-//  click, navega a mitad de la expansión y desvanece el overlay al
-//  llegar. Con prefers-reduced-motion navega directo sin efecto.
+//  Coreografía (v2):
+//   1. La página actual se aleja sutilmente (zoom-out) mientras un
+//      halo difuminado + círculo con el gradiente de la marca DESTINO
+//      se expanden desde el punto del click.
+//   2. Con la pantalla cubierta aparece el brandmark (logo) de la
+//      marca destino y se navega por debajo.
+//   3. El overlay se desvanece revelando la página nueva ya montada.
+//  Con prefers-reduced-motion navega directo sin efecto.
 // ─────────────────────────────────────────────────────────────
 import {
   createContext, useCallback, useContext, useRef, useState,
@@ -14,10 +18,10 @@ import { useRouter } from "next/navigation";
 
 type Brand = "kanm" | "empanadoteca";
 
-const BRAND_GRADIENT: Record<Brand, string> = {
-  kanm: "var(--gradient-rose, linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%))",
-  empanadoteca: "linear-gradient(135deg, #b3282d 0%, #8f1f24 60%, #22314a 100%)",
-};
+// Línea de tiempo del wipe (ms)
+const T_PUSH = 500;     // navegar cuando el círculo ya cubre la pantalla
+const T_FADE = 1000;    // empezar a desvanecer el overlay
+const T_CLEANUP = 1650; // overlay fuera, listo para otro wipe
 
 type WipeCtx = {
   navigateWithWipe: (href: string, brand: Brand, origin?: { x: number; y: number }) => void;
@@ -39,6 +43,7 @@ export function WipeProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const overlayRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
+  const [brand, setBrand] = useState<Brand>("empanadoteca");
 
   const navigateWithWipe = useCallback(
     (href: string, brand: Brand, origin?: { x: number; y: number }) => {
@@ -49,29 +54,32 @@ export function WipeProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       setBusy(true);
-      // Kan M usa el gradiente LITERAL (no la var) para que el círculo de
-      // regreso sea rosa aunque el tema Empanadoteca siga activo.
-      el.style.background =
-        brand === "kanm"
-          ? "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)"
-          : BRAND_GRADIENT.empanadoteca;
-      el.style.setProperty("--wipe-x", `${origin?.x ?? window.innerWidth / 2}px`);
-      el.style.setProperty("--wipe-y", `${origin?.y ?? 80}px`);
+      setBrand(brand);
+      // data-brand imperativo además del estado: el gradiente debe ser
+      // correcto desde el primer frame, antes del re-render de React.
+      el.dataset.brand = brand;
+      const html = document.documentElement;
+      html.style.setProperty("--wipe-x", `${origin?.x ?? window.innerWidth / 2}px`);
+      html.style.setProperty("--wipe-y", `${origin?.y ?? 80}px`);
       el.classList.remove("wipe-out");
       // reflow para reiniciar la transición desde circle(0%)
       void el.offsetWidth;
       el.classList.add("wipe-in");
+      html.classList.add("wipe-zoom");
 
-      // Navegar cuando el círculo ya cubre la pantalla
-      window.setTimeout(() => router.push(href), 420);
-      // Desvanecer y limpiar
+      // Navegar bajo el overlay; quitar el zoom para que la página
+      // nueva monte sin transform (snap invisible: está cubierta).
+      window.setTimeout(() => {
+        router.push(href);
+        html.classList.remove("wipe-zoom");
+      }, T_PUSH);
       window.setTimeout(() => {
         el.classList.add("wipe-out");
-      }, 780);
+      }, T_FADE);
       window.setTimeout(() => {
         el.classList.remove("wipe-in", "wipe-out");
         setBusy(false);
-      }, 1400);
+      }, T_CLEANUP);
     },
     [router, busy]
   );
@@ -79,7 +87,32 @@ export function WipeProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={{ navigateWithWipe }}>
       {children}
-      <div ref={overlayRef} aria-hidden className="brand-wipe" />
+      <div ref={overlayRef} aria-hidden className="brand-wipe" data-brand={brand}>
+        <div className="wipe-halo" />
+        <div className="wipe-fill" />
+        <div className="wipe-brandmark">
+          {brand === "kanm" ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src="/logo-kanm.png"
+              alt=""
+              className="h-24 w-auto object-contain drop-shadow-lg"
+            />
+          ) : (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-empanadoteca.png"
+                alt=""
+                className="h-24 w-24 rounded-full shadow-2xl"
+              />
+              <span className="font-display font-bold text-white text-xl tracking-[0.3em] pl-[0.3em]">
+                EMPANADOTECA
+              </span>
+            </>
+          )}
+        </div>
+      </div>
     </Ctx.Provider>
   );
 }

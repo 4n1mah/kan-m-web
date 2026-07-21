@@ -141,7 +141,7 @@ export default async function HomePage() {
                 </Link>
               )}
               <Link
-                href="/contacto"
+                href="/nosotros"
                 className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
                 Contáctanos

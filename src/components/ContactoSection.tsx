@@ -6,25 +6,26 @@ import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { BUSINESS } from "@/lib/bizInfo";
 import { useSiteSettings } from "@/components/useSiteSettings";
 
-export default function ContactoPage() {
+/**
+ * Bloque de contacto. Vivía en la página /contacto (eliminada); ahora se
+ * embebe dentro de /nosotros como sección final. Client component para poder
+ * usar useSiteSettings y mantener Nosotros como server component.
+ */
+export default function ContactoSection() {
   const { quotesEnabled } = useSiteSettings();
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      {/* Header */}
-      <section className="relative overflow-hidden py-12 md:py-16 px-6 text-center bg-mesh">
-        <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl" />
-        <div className="blob-float-2 pointer-events-none absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[var(--accent)]/40 blur-3xl" />
-        <div className="hero-enter relative">
-          <p className="font-script text-xl md:text-2xl text-rose">conversemos</p>
-          <h1 className="font-display text-3xl md:text-4xl mt-2">Contáctanos</h1>
-          <p className="text-[var(--muted-foreground)] mt-4 max-w-xl mx-auto">
-            Estamos aquí para hacer tu evento especial. Encuéntranos en tus plataformas favoritas.
-          </p>
-        </div>
-      </section>
+    <section className="mt-24 reveal" data-reveal="up">
+      {/* Encabezado de sección */}
+      <div className="text-center max-w-xl mx-auto">
+        <p className="font-script text-2xl text-rose">conversemos</p>
+        <h2 className="font-display text-3xl md:text-4xl mt-1">Contáctanos</h2>
+        <p className="text-[var(--muted-foreground)] mt-4">
+          Estamos aquí para hacer tu evento especial. Encuéntranos en tus plataformas favoritas.
+        </p>
+      </div>
 
       {/* 3-column layout: redes | divider "o" | cotizar */}
-      <section className="max-w-5xl mx-auto px-6 pb-16 md:pb-20">
+      <div className="max-w-5xl mx-auto mt-12">
         <div className="flex flex-col md:flex-row items-stretch gap-0">
 
           {/* LEFT — redes sociales y delivery */}
@@ -158,9 +159,9 @@ export default function ContactoPage() {
               </div>
               <div>
                 <p className="font-script text-xl text-rose">sin compromiso</p>
-                <h2 className="font-display text-xl md:text-2xl mt-1 leading-tight">
+                <h3 className="font-display text-xl md:text-2xl mt-1 leading-tight">
                   ¡Mejor dinos qué quieres y cotiza desde ahora!
-                </h2>
+                </h3>
                 <p className="text-[var(--muted-foreground)] mt-2 text-sm leading-relaxed">
                   Completa el formulario en menos de 2 minutos y nuestro equipo te respondera para endulzar tu proximo evento.
                 </p>
@@ -188,7 +189,7 @@ export default function ContactoPage() {
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

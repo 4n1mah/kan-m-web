@@ -13,7 +13,6 @@ const links = [
   { href: "/catalogo", label: "Catálogo" },
   { href: "/catering", label: "Catering" },
   { href: "/nosotros", label: "Nosotros" },
-  { href: "/contacto", label: "Contacto" },
   { href: "/faq", label: "FAQ" },
 ];
 
@@ -82,7 +81,9 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-1">
-          {visibleLinks.map((l) => {
+          {/* En modo Empanadoteca ocultamos los links de Kan M: son secciones de
+              la repostería, no del portal de picaderas. Solo queda el botón "Kan M". */}
+          {!isEmpanadoteca && visibleLinks.map((l) => {
             const active = pathname === l.href;
             return (
               <Link
@@ -165,7 +166,7 @@ export default function Navbar() {
         }}
       >
         <div className={`max-w-7xl mx-auto px-5 py-4 flex flex-col gap-1 ${open ? "stagger-fade" : ""}`}>
-          {visibleLinks.map((l) => {
+          {!isEmpanadoteca && visibleLinks.map((l) => {
             const active = pathname === l.href;
             return (
               <Link

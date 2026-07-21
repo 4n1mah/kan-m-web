@@ -44,7 +44,7 @@ export default function ComingSoon({ variant }: { variant: keyof typeof COPY }) 
             Escríbenos por WhatsApp
           </a>
           <Link
-            href="/contacto"
+            href="/nosotros"
             className="chip-glass inline-flex items-center px-6 py-3 rounded-full text-foreground/80 hover:text-rose transition"
           >
             Contáctanos

@@ -1,6 +1,7 @@
 import { IMAGES } from "@/lib/images";
 import Image from "next/image";
-import { MapPin, Phone, Mail, Instagram, Clock, Cake, Palette, Gem } from "lucide-react";
+import { Clock, Cake, Palette, Gem } from "lucide-react";
+import ContactoSection from "@/components/ContactoSection";
 
 export default function NosotrosPage() {
   return (
@@ -34,46 +35,6 @@ export default function NosotrosPage() {
             y celebraciones íntimas en toda República Dominicana.
           </p>
 
-          {/* Contact & location info */}
-          <div className="mt-8 space-y-3">
-            <a
-              href="https://maps.app.goo.gl/RRVXx7NSkbYMwDgQA"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-start gap-3 text-sm text-muted-foreground hover:text-rose transition-colors group"
-            >
-              <MapPin size={17} className="shrink-0 mt-0.5 text-rose" />
-              <span>
-                <span className="font-medium text-foreground">Zona Colonial</span>
-                <span className="block text-xs mt-0.5">C. Espaillat 58, Santo Domingo</span>
-              </span>
-            </a>
-            <a
-              href="tel:+18296107064"
-              className="flex items-center gap-3 text-sm text-muted-foreground hover:text-rose transition-colors"
-            >
-              <Phone size={17} className="shrink-0 text-rose" />
-              <span>
-                <span className="font-medium text-foreground">+1 (829) 610-7064</span>
-              </span>
-            </a>
-            <a
-              href="mailto:kanmreposteriaycatering@gmail.com"
-              className="flex items-center gap-3 text-sm text-muted-foreground hover:text-rose transition-colors"
-            >
-              <Mail size={17} className="shrink-0 text-rose" />
-              kanmreposteriaycatering@gmail.com
-            </a>
-            <a
-              href="https://www.instagram.com/kanm.reposteriacafe/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 text-sm text-muted-foreground hover:text-rose transition-colors"
-            >
-              <Instagram size={17} className="shrink-0 text-rose" />
-              @kanm.reposteriacafe
-            </a>
-          </div>
         </div>
       </div>
 
@@ -115,6 +76,9 @@ export default function NosotrosPage() {
           </p>
         </div>
       </div>
+
+      {/* Contacto — antes vivía en /nosotros aparte; ahora es la sección final. */}
+      <ContactoSection />
     </section>
   );
 }

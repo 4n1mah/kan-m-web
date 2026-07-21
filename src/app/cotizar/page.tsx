@@ -510,7 +510,7 @@ function CotizarForm() {
   return(
     <div className="min-h-screen bg-[var(--background)]">
       {pendingCakeItem&&<CakePopup item={pendingCakeItem} initial={cakeDetails[pendingCakeItem]??null} onSave={handleCakeSave} onClose={()=>setPendingCakeItem(null)}/>}
-      <section className="relative overflow-hidden py-12 px-6 text-center">
+      <section className="relative overflow-hidden py-12 md:py-16 px-6 text-center">
         <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl"/>
         <div className="hero-enter relative">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--rose)]/10 border border-[var(--rose)]/20 text-xs uppercase tracking-widest text-[var(--rose)]">

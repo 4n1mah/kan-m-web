@@ -18,13 +18,13 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Header */}
-      <section className="relative overflow-hidden py-12 px-6 text-center bg-grain">
+      <section className="relative overflow-hidden py-12 md:py-16 px-6 text-center bg-grain">
         {/* Decorative blobs */}
         <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl" />
         <div className="blob-float-2 pointer-events-none absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[var(--accent)]/40 blur-3xl" />
 
         <div className="hero-enter relative">
-          <p className="font-script text-xl text-[var(--rose)]">
+          <p className="font-script text-xl md:text-2xl text-[var(--rose)]">
             Resolvemos tus dudas
           </p>
           <h1 className="font-display text-3xl md:text-4xl mt-2">
@@ -102,7 +102,7 @@ export default function FAQPage() {
             {quotesEnabled && (
               <Link
                 href="/cotizar"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--rose)] text-[var(--rose)] text-sm font-semibold hover:bg-[var(--rose)]/5 transition"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--rose)] text-[var(--rose)] text-sm font-semibold hover:bg-[var(--rose)]/5 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
                 Cotizar mi evento
               </Link>

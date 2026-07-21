@@ -189,7 +189,7 @@ export default function CateringPage() {
       </HeroCarousel>
 
       {/* Services — alternating layout, info in glass box */}
-      <section className="max-w-7xl mx-auto px-6 py-10 space-y-12">
+      <section className="max-w-7xl mx-auto px-6 py-14 md:py-20 space-y-14 md:space-y-20">
         {services.map((s, i) => (
           <div
             key={s.title}

@@ -135,14 +135,14 @@ export default async function HomePage() {
               {settings.catalogEnabled && (
                 <Link
                   href="/catalogo"
-                  className="inline-flex items-center px-6 py-3 rounded-full bg-white/15 backdrop-blur-sm border border-white/40 text-white hover:bg-white/25 transition"
+                  className="inline-flex items-center px-6 py-3 rounded-full bg-white/15 backdrop-blur-sm border border-white/40 text-white hover:bg-white/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                 >
                   Ver catálogo
                 </Link>
               )}
               <Link
                 href="/contacto"
-                className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 transition"
+                className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
                 Contáctanos
               </Link>
@@ -164,11 +164,11 @@ export default async function HomePage() {
 
       {/* FEATURED — oculto cuando el catálogo está deshabilitado */}
       {settings.catalogEnabled && (
-      <section className="relative max-w-7xl mx-auto px-6 py-10 reveal">
-        <div className="flex items-center justify-between mb-6">
+      <section className="relative max-w-7xl mx-auto px-6 py-14 md:py-20 reveal">
+        <div className="flex items-center justify-between gap-4 mb-8">
           <div>
-            <p className="font-script text-xl text-rose">Lo más pedido</p>
-            <h2 className="font-display text-2xl md:text-3xl mt-0.5">Nuestras creaciones</h2>
+            <p className="font-script text-xl md:text-2xl text-rose">Lo más pedido</p>
+            <h2 className="font-display text-2xl md:text-3xl mt-1">Nuestras creaciones</h2>
           </div>
           <Link
             href="/catalogo"
@@ -184,7 +184,7 @@ export default async function HomePage() {
       <div className="section-divider" />
 
       {/* CATERING */}
-      <section className="relative overflow-hidden py-10 px-6">
+      <section className="relative overflow-hidden py-16 md:py-24 px-6">
         <div className="blob-float pointer-events-none absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[var(--blush)]/35 blur-3xl" />
         <div className="blob-float-2 pointer-events-none absolute -bottom-16 -right-16 w-72 h-72 rounded-full bg-[var(--accent)]/40 blur-3xl" />
         <div className="relative max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center">
@@ -226,7 +226,7 @@ export default async function HomePage() {
       </section>
 
       {/* BRUNCH — ribbon/bow style */}
-      <section className="bg-grain relative py-10 px-6 text-center">
+      <section className="bg-grain relative py-14 md:py-20 px-6 text-center">
         {/* Ribbon background SVG — no overflow-hidden so loops show fully */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.08]">
           <svg viewBox="0 0 800 220" className="w-full max-w-4xl" preserveAspectRatio="xMidYMid meet" style={{ overflow: "visible" }}>
@@ -262,9 +262,9 @@ export default async function HomePage() {
       <div className="section-divider" />
 
       {/* TESTIMONIALS */}
-      <section className="bg-secondary/40 py-10">
+      <section className="bg-secondary/40 py-14 md:py-20">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-7 reveal">
+          <div className="text-center mb-9 reveal">
             <p className="font-script text-2xl text-rose">testimonios</p>
             <h2 className="font-display text-2xl md:text-3xl mt-1">Experiencias reales de clientes</h2>
             <a href="https://www.google.com/search?q=Kan+M+Reposteria+y+Catering" target="_blank" rel="noopener noreferrer"
@@ -287,7 +287,7 @@ export default async function HomePage() {
               { q: "Sus dulces son la gloria, especialmente ese bizcocho de Fresa y alfajores 🍓💗 hicieron que nuestra noche fuera mejor, gracias por el excelente servicio y los postres 💗 volveremos sin lugar a dudas 100/5", n: "Franchesca Nicole Romero", r: "⭐⭐⭐⭐⭐ · Local Guide" },
             ].map((t, i) => (
               <a key={i} href="https://www.google.com/maps/search/Kan+M+Reposteria+y+Catering+Santo+Domingo" target="_blank" rel="noopener noreferrer"
-                className={`glass card-tilt rounded-2xl p-6 block reveal reveal-delay-${i + 1}`} data-reveal="scale">
+                className={`glass card-tilt rounded-2xl p-6 flex flex-col h-full reveal reveal-delay-${i + 1}`} data-reveal="scale">
                 <div className="flex items-center gap-2 mb-3">
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 shrink-0" fill="none">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -297,9 +297,9 @@ export default async function HomePage() {
                   </svg>
                   <span className="text-xs font-medium text-muted-foreground">Google Review</span>
                 </div>
-                <div className="font-display text-2xl leading-none" style={{ color: "#f07097" }}>&quot;</div>
+                <div className="font-display text-4xl leading-none -mb-1" style={{ color: "#f07097" }}>&quot;</div>
                 <p className="text-foreground/80 leading-relaxed mt-1 text-sm">{t.q}</p>
-                <div className="border-t border-[var(--border)]/60 mt-5 pt-4">
+                <div className="border-t border-[var(--border)]/60 mt-auto pt-4">
                   <div className="font-semibold text-sm">{t.n}</div>
                   <div className="text-xs text-muted-foreground">{t.r}</div>
                 </div>
@@ -329,7 +329,7 @@ export default async function HomePage() {
       <section className="relative overflow-hidden reveal">
         {/* Full-width carousel as background */}
         <HeroCarousel images={IMAGES.heroCarousel} autoplayMs={5000}>
-          <div className="max-w-4xl mx-auto px-6 py-14 text-center">
+          <div className="max-w-4xl mx-auto px-6 py-16 md:py-24 text-center">
             {/* Glass card over the carousel */}
             <div className="glass-strong rounded-3xl px-8 py-12 inline-block w-full">
               <p className="font-script text-2xl text-rose">hagamos algo especial</p>

@@ -8,7 +8,7 @@ import { isAllowedStoredImageUrl } from "@/lib/cloudinary";
 const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().trim().min(1).max(1000),
-  category: z.enum(["cakes", "desserts", "events", "picaderas", "brunch", "drinks"]),
+  category: z.enum(["cakes", "desserts", "events", "picaderas", "brunch", "drinks", "laticas"]),
   imageUrl: z.string().max(500).refine(
     (v) => isAllowedStoredImageUrl(v),
     { message: "Debe ser una imagen valida de Cloudinary" }

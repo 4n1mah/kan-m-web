@@ -63,7 +63,19 @@ export const CATALOG_CATEGORIES: { id: string; label: string }[] = [
   { id: "picaderas", label: "Picaderas para eventos" },
   { id: "brunch", label: "Brunch" },
   { id: "drinks", label: "Bebidas" },
+  { id: "laticas", label: "Laticas" },
 ];
+
+// La Latica — producto estrella (postres en lata). Fuente única del precio y
+// copy base; la web (/la-latica) lee de aquí. Si cambia el precio, cambiarlo
+// también en el knowledge_base.txt del bot para no contradecir a la web.
+export const LATICA = {
+  name: "La Latica",
+  tagline:
+    "Postres en lata, fáciles de abrir y comer con cuchara hasta el fondo.",
+  priceRD: 400,
+  priceDisplay: "RD$400",
+} as const;
 
 // Link externo copiado EXACTO desde src/components/DeliveryButtons.tsx
 // (web fallback que sirve para Uber Eats en cualquier plataforma).

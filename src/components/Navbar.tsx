@@ -12,6 +12,7 @@ const links = [
   { href: "/", label: "Inicio" },
   { href: "/catalogo", label: "Catálogo" },
   { href: "/catering", label: "Catering" },
+  { href: "/la-latica", label: "La Latica" },
   { href: "/nosotros", label: "Nosotros" },
   { href: "/faq", label: "FAQ" },
 ];

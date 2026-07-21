@@ -22,6 +22,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   picaderas: "Picaderas",
   brunch: "Brunch",
   drinks: "Bebidas",
+  laticas: "Laticas",
 };
 
 export default function ProductCard({ product }: { product: Product }) {

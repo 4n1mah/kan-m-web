@@ -70,6 +70,7 @@ const CATEGORIES = [
   {id:"cakes",label:"Pasteles"},{id:"desserts",label:"Postres"},
   {id:"events",label:"Mesa de dulces"},{id:"picaderas",label:"Picaderas"},
   {id:"brunch",label:"Brunch"},{id:"drinks",label:"Bebidas"},
+  {id:"laticas",label:"Laticas"},
 ];
 const catLabel = (id: string) => CATEGORIES.find(c=>c.id===id)?.label ?? id;
 const empty = { name:"", description:"", category:"cakes", imageUrl:"", price:"" };

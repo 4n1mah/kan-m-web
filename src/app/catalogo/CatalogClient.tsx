@@ -17,6 +17,7 @@ const CATEGORIES = [
   { id: "picaderas", label: "Picaderas para eventos" },
   { id: "brunch",    label: "Brunch" },
   { id: "drinks",    label: "Bebidas" },
+  { id: "laticas",   label: "Laticas" },
 ];
 
 function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {

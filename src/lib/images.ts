@@ -78,4 +78,14 @@ export const IMAGES = {
   "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777607818/dulces2_hzjbxo.jpg",
   "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777607820/Inicio4_pjbryu.jpg",
   ],
+
+  // ── LA LATICA — postres en lata (producto estrella) ──────
+  //  Pega aquí las URLs de Cloudinary de las fotos de las laticas.
+  //  Mientras esté vacío, la sección /la-latica muestra placeholders
+  //  ("Foto próximamente") y aparecen automáticamente al agregar URLs.
+  //  La PRIMERA foto se usa como imagen destacada del hero.
+  laticas: [
+    // "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/vXXXX/latica1.jpg",
+    // "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/vXXXX/latica2.jpg",
+  ] as string[],
 };

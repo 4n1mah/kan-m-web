@@ -3,13 +3,68 @@ import { useState } from "react";
 import { ChevronDown, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
-import { FAQS as FAQ_SOURCE } from "@/lib/bizInfo";
+import { FAQS as FAQ_SOURCE, LINKS, BUSINESS } from "@/lib/bizInfo";
 import { useSiteSettings } from "@/components/useSiteSettings";
 
 // Las FAQs viven en src/lib/bizInfo.ts (fuente única de verdad consumida
 // también por el bot externo de WhatsApp). Para editar el contenido, ir
 // a bizInfo.ts. Acá sólo proyectamos { q, a } para el render.
 const FAQS: { q: string; a: string }[] = FAQ_SOURCE.map(({ q, a }) => ({ q, a }));
+
+// El texto de bizInfo se guarda plano (el bot lo auto-enlaza en WhatsApp).
+// En la web convertimos URLs y el teléfono en hipervínculos, con etiquetas
+// amables para los links conocidos, preservando los saltos de línea (\n).
+const WA_LINK = `https://wa.me/${BUSINESS.phoneTel.replace(/[^\d]/g, "")}`;
+const LINK_LABELS: Record<string, string> = {
+  [LINKS.uberEats]: "Uber Eats",
+  [BUSINESS.mapsUrl]: "Google Maps",
+  [LINKS.catalogo]: "nuestro catálogo",
+  [LINKS.cotizar]: "cotización online",
+};
+const LINK_CLASS =
+  "text-[var(--rose)] font-medium underline underline-offset-2 decoration-[var(--rose)]/40 hover:decoration-[var(--rose)] transition-colors";
+
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function renderAnswer(text: string): Array<string | JSX.Element> {
+  const phone = BUSINESS.phoneDisplay;
+  const re = new RegExp(`(https?:\\/\\/[^\\s]+|${escapeRegExp(phone)})`, "g");
+  const out: Array<string | JSX.Element> = [];
+  let last = 0;
+  let key = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    let token = m[0];
+    let trailing = "";
+    if (token !== phone) {
+      const t = token.match(/[.,;:)\]}]+$/);
+      if (t) {
+        trailing = t[0];
+        token = token.slice(0, -trailing.length);
+      }
+    }
+    if (token === phone) {
+      out.push(
+        <a key={key++} href={WA_LINK} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+          {phone}
+        </a>,
+      );
+    } else {
+      out.push(
+        <a key={key++} href={token} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
+          {LINK_LABELS[token] ?? token}
+        </a>,
+      );
+    }
+    if (trailing) out.push(trailing);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
 
 export default function FAQPage() {
   const [open, setOpen] = useState<number | null>(null);
@@ -73,8 +128,8 @@ export default function FAQPage() {
                 }`}
               >
                 <div className="overflow-hidden">
-                  <p className="px-6 pb-5 text-[var(--muted-foreground)] leading-relaxed border-t border-[var(--border)]/40 pt-4">
-                    {item.a}
+                  <p className="px-6 pb-5 text-[var(--muted-foreground)] leading-relaxed border-t border-[var(--border)]/40 pt-4 whitespace-pre-line">
+                    {renderAnswer(item.a)}
                   </p>
                 </div>
               </div>

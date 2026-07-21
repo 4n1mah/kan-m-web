@@ -111,7 +111,7 @@ export const FAQS: Faq[] = [
   {
     id: "horario",
     q: "¿Cuál es su horario de atención?",
-    a: `${SCHEDULE_TEXT} Si quieres confirmar si estamos abiertos ahora mismo, pregúntame y te digo.`,
+    a: SCHEDULE_TEXT,
     tags: [
       "horario",
       "hora",
@@ -126,7 +126,7 @@ export const FAQS: Faq[] = [
   {
     id: "ubicacion",
     q: "¿Dónde están ubicados?",
-    a: `Estamos en ${BUSINESS.address}. Aquí tienes la ubicación en Google Maps: ${BUSINESS.mapsUrl}`,
+    a: `Estamos en ${BUSINESS.address}. Nuestra ubicación aquí: ${BUSINESS.mapsUrl}`,
     tags: [
       "ubicacion",
       "direccion",
@@ -143,10 +143,10 @@ export const FAQS: Faq[] = [
     id: "delivery",
     q: "¿Cómo puedo recibir mi pedido?",
     a:
-      `Tienes tres opciones: ` +
-      `1) Pickup gratis en ${BUSINESS.address}. ` +
-      `2) Entrega propia desde un mínimo de RD$${RULES.deliveryMinAmountRD}; el costo varía según la distancia. ` +
-      `3) Pídelo por Uber Eats (${LINKS.uberEats}).`,
+      `Tienes tres opciones:\n` +
+      `1) Pickup gratis en ${BUSINESS.address}.\n` +
+      `2) Entrega propia desde un mínimo de RD$${RULES.deliveryMinAmountRD}; el costo varía según la distancia.\n` +
+      `3) Pídelo a domicilio por ${LINKS.uberEats}.`,
     tags: [
       "delivery",
       "envio",
@@ -164,11 +164,9 @@ export const FAQS: Faq[] = [
     id: "como-ordenar",
     q: "¿Cómo hago un pedido?",
     a:
-      `Puedes ordenar de varias formas: ` +
-      `del catálogo en ${LINKS.catalogo}, ` +
-      `cotizar un pastel o evento personalizado en ${LINKS.cotizar}, ` +
-      `escribirnos al WhatsApp ${BUSINESS.phoneDisplay}, ` +
-      `o pedir por Uber Eats.`,
+      `Es muy sencillo: haz tu pedido con al menos ${RULES.minLeadDays} días de antelación, ` +
+      `escríbenos por WhatsApp al ${BUSINESS.phoneDisplay} ` +
+      `y coordina tu cotización con nuestras reposteras.`,
     tags: [
       "ordenar",
       "pedir",
@@ -182,9 +180,7 @@ export const FAQS: Faq[] = [
   {
     id: "personalizados",
     q: "¿Hacen pasteles personalizados?",
-    a:
-      `¡Claro que sí! Diseños temáticos, fotos comestibles, colores y sabores a tu gusto. ` +
-      `Cuéntanos qué tienes en mente desde ${LINKS.cotizar} y te enviamos la cotización.`,
+    a: `¡Claro que sí! Diseños temáticos, fotos comestibles, colores y sabores a tu gusto. Cuéntanos qué tienes en mente y te enviamos la cotización.`,
     tags: [
       "personalizado",
       "personalizados",
@@ -216,41 +212,6 @@ export const FAQS: Faq[] = [
     ],
   },
   {
-    id: "cotizar-evento",
-    q: "¿Cómo cotizo mi evento?",
-    a:
-      `Lo más rápido es completar el formulario en ${LINKS.cotizar}; te respondemos en menos de 24 horas. ` +
-      `Si prefieres hablar directo con una persona, dímelo y te conecto con el equipo.`,
-    tags: [
-      "cotizar",
-      "cotizacion",
-      "evento",
-      "eventos",
-      "presupuesto",
-      "boda",
-      "bodas",
-      "cumpleanos",
-      "cumple",
-    ],
-  },
-  {
-    id: "precios",
-    q: "¿Cuánto cuestan los productos?",
-    a:
-      `Si el producto está en nuestro catálogo (${LINKS.catalogo}) puedo darte el precio al momento. ` +
-      `Si no está listado o se trata de algo personalizado, no tengo esa info ahora mismo — te conecto con el equipo para que te lo cotice correctamente.`,
-    tags: [
-      "precio",
-      "precios",
-      "cuesta",
-      "cuestan",
-      "cuanto",
-      "valor",
-      "tarifa",
-      "costo",
-    ],
-  },
-  {
     id: "pagos",
     q: "¿Qué métodos de pago aceptan?",
     a:
@@ -272,7 +233,7 @@ export const FAQS: Faq[] = [
   {
     id: "delivery-apps",
     q: "¿Están en Uber Eats?",
-    a: `Sí. Puedes pedir por Uber Eats aquí: ${LINKS.uberEats}.`,
+    a: `Sí. Haz tu pedido a domicilio aquí: ${LINKS.uberEats}.`,
     tags: [
       "ubereats",
       "uber",
@@ -280,23 +241,6 @@ export const FAQS: Faq[] = [
       "app",
       "apps",
       "delivery",
-    ],
-  },
-  {
-    id: "productos",
-    q: "¿Qué productos tienen?",
-    a:
-      `Manejamos seis categorías: ${CATALOG_CATEGORIES.map((c) => c.label).join(", ")}. ` +
-      `Puedes verlos todos con fotos y precios en ${LINKS.catalogo}.`,
-    tags: [
-      "productos",
-      "menu",
-      "carta",
-      "catalogo",
-      "tienen",
-      "venden",
-      "ofrecen",
-      "que hay",
     ],
   },
   {
@@ -325,7 +269,7 @@ export const FAQS: Faq[] = [
     a:
       `Sí, hacemos catering para eventos sociales y corporativos. ` +
       `El precio se cotiza según el tipo de evento, cantidad de invitados y menú elegido. ` +
-      `Empieza tu cotización en ${LINKS.cotizar} o cuéntanos los detalles por WhatsApp.`,
+      `Empieza tu cotización a través de nuestro WhatsApp: ${BUSINESS.phoneDisplay}.`,
     tags: [
       "catering",
       "corporativo",

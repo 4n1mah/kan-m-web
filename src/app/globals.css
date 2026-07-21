@@ -113,14 +113,19 @@ body {
    CAPA DE DISEÑO — animaciones y utilidades reutilizables
    ══════════════════════════════════════════════════════════════ */
 
-/* Blobs decorativos que flotan lentamente */
+/* Blobs decorativos que flotan lentamente.
+   Solo animamos translate3d (compuesto por la GPU, sin re-rasterizar) — nunca
+   scale(): escalar un elemento con blur-3xl fuerza a redibujar el blur completo
+   en cada frame, que era la causa principal del lag en FAQ y Nosotros. Se
+   promueven a su propia capa con will-change para que el blur se rasterice una
+   sola vez y luego solo se traslade. */
 @keyframes blob-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(24px, -18px) scale(1.06); }
-  66%      { transform: translate(-16px, 14px) scale(0.96); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  33%      { transform: translate3d(24px, -18px, 0); }
+  66%      { transform: translate3d(-16px, 14px, 0); }
 }
-.blob-float   { animation: blob-drift 14s ease-in-out infinite; }
-.blob-float-2 { animation: blob-drift 18s ease-in-out infinite reverse; }
+.blob-float   { animation: blob-drift 14s ease-in-out infinite; will-change: transform; }
+.blob-float-2 { animation: blob-drift 18s ease-in-out infinite reverse; will-change: transform; }
 
 /* Entrada escalonada para grids y listas (hijos directos) */
 @keyframes fade-up {
@@ -289,8 +294,10 @@ select:focus {
 /* ── Glass — cristal en capas: gradiente, saturación y highlights ── */
 .glass {
   background: linear-gradient(145deg, rgba(255,255,255,0.78), rgba(255,255,255,0.52));
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  /* blur reducido de 16→12px: el costo del backdrop-filter escala con el radio
+     y estas tarjetas se apilan de a muchas (FAQ, contacto de Nosotros). */
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
   border: 1px solid rgba(255,255,255,0.65);
   box-shadow: 0 8px 32px rgba(240,112,151,0.10),
               inset 0 1px 0 rgba(255,255,255,0.95),
@@ -310,8 +317,8 @@ select:focus {
 /* Con tinte blush — para cards de acento */
 .glass-pink {
   background: linear-gradient(145deg, rgba(255,255,255,0.75), rgba(248,179,197,0.20));
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(11px) saturate(150%);
+  -webkit-backdrop-filter: blur(11px) saturate(150%);
   border: 1px solid rgba(255,255,255,0.65);
   box-shadow: 0 8px 32px rgba(240,112,151,0.12),
               inset 0 1px 0 rgba(255,255,255,0.9);
@@ -588,10 +595,10 @@ html.wipe-zoom main {
   animation: gradient-pan 6s ease-in-out infinite alternate;
 }
 @keyframes float-y {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -6px, 0); }
 }
-.float-y { animation: float-y 5s ease-in-out infinite; }
+.float-y { animation: float-y 5s ease-in-out infinite; will-change: transform; }
 @keyframes pulse-ring {
   0%   { transform: scale(1); opacity: 0.45; }
   100% { transform: scale(1.6); opacity: 0; }

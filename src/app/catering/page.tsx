@@ -142,8 +142,8 @@ export default function CateringPage() {
   return (
     <div>
       {/* Hero carousel */}
-      <HeroCarousel images={HERO_IMAGES} autoplayMs={4000} minHeight="46vh">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center hero-enter">
+      <HeroCarousel images={HERO_IMAGES} autoplayMs={4000} minHeight="54vh">
+        <div className="max-w-7xl mx-auto px-6 pt-12 pb-20 text-center hero-enter">
           {/* Decorative pill */}
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white/90 mb-6">
             ✦ Repostería artesanal · Eventos · Catering

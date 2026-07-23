@@ -52,7 +52,7 @@ export const BUSINESS = {
 
 // SITE_URL sin slash final — los helpers de LINKS concatenan rutas con "/".
 const RAW_SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://kan-m-reposteria.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.kanmreposteriaycatering.com";
 export const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
 // Categorías del catálogo. DEBEN coincidir con src/app/catalogo/CatalogClient.tsx.

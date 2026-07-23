@@ -16,7 +16,7 @@ const sans = Outfit({ subsets: ["latin"], variable: "--font-sans", weight: ["300
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://kan-m-reposteria.vercel.app";
+  "https://www.kanmreposteriaycatering.com";
 
 const DEFAULT_OG_IMAGE =
   "https://res.cloudinary.com/dsvcag6oo/image/upload/q_auto/f_auto/v1777569347/Inicio3_b6dnzx.jpg";

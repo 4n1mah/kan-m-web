@@ -7,7 +7,20 @@
       "Bash(npm.cmd run *)",
       "Bash(npx.cmd prisma *)",
       "Bash(npx.cmd next *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "PowerShell(npx next lint --file src/app/page.tsx)",
+      "Bash(command -v jq)",
+      "Bash(claude --version)",
+      "Read(//c/Users/sadie/**)",
+      "Bash(awk '{print $5, $9}')",
+      "Read(//c/Users/sadie/.claude/**)",
+      "Bash(awk '{print $5,$9}')",
+      "Bash(git config *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "PowerShell(npx next lint --file src/app/catering/page.tsx --file src/app/faq/page.tsx --file src/app/contacto/page.tsx --file src/app/cotizar/page.tsx)",
+      "WebSearch"
     ]
   }
 }

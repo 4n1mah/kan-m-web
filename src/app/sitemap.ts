@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://kan-m-reposteria.vercel.app";
+  "https://www.kanmreposteriaycatering.com";
 
 export const revalidate = 3600;
 

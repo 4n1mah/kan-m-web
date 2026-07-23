@@ -64,8 +64,14 @@ function PhotoTile({
 export default function LaLaticaPage() {
   const photos = IMAGES.laticas;
   const hasPhotos = photos.length > 0;
-  // Galería: usa las fotos disponibles o 6 placeholders para mostrar el layout.
-  const galleryTiles = hasPhotos ? photos : Array.from({ length: 6 }, () => undefined);
+  const heroPhoto = photos[0];
+  const conceptoPhoto = photos[1] ?? photos[0];
+  // Galería: el resto de fotos (sin repetir hero/concepto). Con pocas fotos usa
+  // todas; sin fotos, 6 placeholders para mostrar el layout.
+  const galleryPhotos = photos.length > 2 ? photos.slice(2) : photos;
+  const galleryTiles = hasPhotos
+    ? galleryPhotos
+    : Array.from({ length: 6 }, () => undefined);
 
   return (
     <div className="min-h-screen">
@@ -114,7 +120,7 @@ export default function LaLaticaPage() {
           {/* Foto destacada */}
           <div className="reveal" data-reveal="right">
             <PhotoTile
-              src={hasPhotos ? photos[0] : undefined}
+              src={heroPhoto}
               label="La Latica"
               aspect="aspect-[4/5]"
               eager
@@ -128,7 +134,7 @@ export default function LaLaticaPage() {
         <div className="grid md:grid-cols-2 gap-10 md:gap-14 items-center">
           <div className="reveal" data-reveal="left">
             <PhotoTile
-              src={hasPhotos ? photos[1] ?? photos[0] : undefined}
+              src={conceptoPhoto}
               label="Postre en lata"
               aspect="aspect-[4/3]"
             />

@@ -63,8 +63,8 @@ export const metadata: Metadata = {
     images: [DEFAULT_OG_IMAGE],
   },
   icons: {
-    icon: "/logo-kanm.png",
-    apple: "/logo-kanm.png",
+    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: "/apple-touch-icon.png",
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
 };

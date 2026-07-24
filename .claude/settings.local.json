@@ -20,7 +20,10 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "PowerShell(npx next lint --file src/app/catering/page.tsx --file src/app/faq/page.tsx --file src/app/contacto/page.tsx --file src/app/cotizar/page.tsx)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(pkill -9 -f \"next-serve[r]\")"
     ]
   }
 }

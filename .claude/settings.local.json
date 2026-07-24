@@ -23,7 +23,10 @@
       "WebSearch",
       "Bash(git checkout *)",
       "Bash(git stash *)",
-      "Bash(pkill -9 -f \"next-serve[r]\")"
+      "Bash(pkill -9 -f \"next-serve[r]\")",
+      "Bash(git fetch *)",
+      "Bash(git commit -m 'Actualizar allowlist local de permisos \\(git fetch\\) *)",
+      "Bash(git merge *)"
     ]
   }
 }

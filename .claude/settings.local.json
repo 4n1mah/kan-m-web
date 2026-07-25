@@ -21,12 +21,18 @@
       "Bash(git push *)",
       "PowerShell(npx next lint --file src/app/catering/page.tsx --file src/app/faq/page.tsx --file src/app/contacto/page.tsx --file src/app/cotizar/page.tsx)",
       "WebSearch",
-      "Bash(git checkout *)",
+      "Bash(git pull *)",
       "Bash(git stash *)",
-      "Bash(pkill -9 -f \"next-serve[r]\")",
-      "Bash(git fetch *)",
-      "Bash(git commit -m 'Actualizar allowlist local de permisos \\(git fetch\\) *)",
-      "Bash(git merge *)"
+      "Bash(git checkout *)",
+      "Bash(command -v magick)",
+      "Bash(command -v convert)",
+      "Bash(command -v python)",
+      "Bash(command -v python3)",
+      "Bash(command -v node)",
+      "Bash(py -c \"import PIL; print\\('PIL ok'\\)\")",
+      "Bash(python -c \"import PIL\")",
+      "PowerShell(py *)",
+      "PowerShell($a=\"C:\\\\Users\\\\sadie\\\\anaconda3\"; $env:PATH=\"$a;$a\\\\Library\\\\bin;$a\\\\Library\\\\usr\\\\bin;$a\\\\Scripts;$a\\\\DLLs;\"+$env:PATH; & \"$a\\\\python.exe\" \"C:\\\\Users\\\\sadie\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-sadie-OneDrive-Desktop-Proyects-kan-m\\\\10a218bd-c0ad-4b51-a3d2-d9f0c705a607\\\\scratchpad\\\\make_favicon.py\")"
     ]
   }
 }

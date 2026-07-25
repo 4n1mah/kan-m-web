@@ -1344,7 +1344,7 @@ function DashboardInner() {
   async function loadOrders(){
     setOrdersLoading(true);
     const r=await fetch("/api/orders");
-    if(r.status===401){router.push("/admin/login");setOrdersLoading(false);return;}
+    if(r.status===401){router.push("/");setOrdersLoading(false);return;}
     if(r.ok) setOrders(await r.json());
     setOrdersLoading(false);
   }
@@ -1358,7 +1358,7 @@ function DashboardInner() {
   async function loadCartOrders(){
     setCartOrdersLoading(true);
     const r = await fetch("/api/admin/cart-orders");
-    if(r.status===401){router.push("/admin/login");setCartOrdersLoading(false);return;}
+    if(r.status===401){router.push("/");setCartOrdersLoading(false);return;}
     if (r.ok) {
       const data = await r.json();
       setCartOrders(Array.isArray(data)?data:[]);
@@ -1420,7 +1420,7 @@ function DashboardInner() {
     prevPendingRef.current = pending;
     return ()=>{ document.title = "Kan M Admin"; };
   },[orders]);
-  async function logout(){ await fetch("/api/auth/logout",{method:"POST"}); router.push("/admin/login"); }
+  async function logout(){ await fetch("/api/auth/logout",{method:"POST"}); router.push("/"); }
 
   const updateOrder = useCallback(async (id:string,data:Partial<Order>)=>{
     const res = await fetch(`/api/orders/${id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});

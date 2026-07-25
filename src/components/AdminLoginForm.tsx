@@ -5,7 +5,10 @@ import { Lock, Mail, Eye, EyeOff } from "lucide-react";
 
 const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 
-export default function AdminLogin() {
+// Formulario de acceso al panel. Vive en un componente reutilizable porque
+// la página que lo renderiza está en una URL secreta (src/app/acceso/[key]),
+// no en una ruta fija adivinable. Ver .env.example → ADMIN_LOGIN_SLUG.
+export default function AdminLoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

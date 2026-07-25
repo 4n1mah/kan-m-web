@@ -43,8 +43,10 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/api/admin/settings") ||
     (pathname.startsWith("/api/users") && pathname !== "/api/users/fcm-token");
 
-  // Páginas y APIs protegidas (cualquier usuario logueado)
-  const isAdminPage = pathname.startsWith("/admin") && pathname !== "/admin/login";
+  // Páginas y APIs protegidas (cualquier usuario logueado).
+  // El login ya NO vive en /admin/login (esa ruta da 404); está en la URL
+  // secreta /acceso/<slug>, que es pública y no pasa por este matcher.
+  const isAdminPage = pathname.startsWith("/admin");
   const isWriteApi =
     (pathname.startsWith("/api/products") && req.method !== "GET") ||
     pathname.startsWith("/api/upload") ||
@@ -67,8 +69,9 @@ export async function middleware(req: NextRequest) {
   if (isOwnerOnly && (!isLogged || role !== "OWNER")) {
     if (!isLogged) {
       if (isApiCall) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // No revelamos la existencia del panel: mandamos al inicio.
       const url = req.nextUrl.clone();
-      url.pathname = "/admin/login";
+      url.pathname = "/";
       return NextResponse.redirect(url);
     }
     if (isApiCall) return NextResponse.json({ error: "Solo el dueño puede hacer esto" }, { status: 403 });
@@ -90,15 +93,9 @@ export async function middleware(req: NextRequest) {
   // Bloqueos generales
   if ((isAdminPage || isWriteApi || isAdminApi || isWhatsappReadApi) && !isLogged) {
     if (isApiCall) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Páginas del panel sin sesión → al inicio (no exponemos el login).
     const url = req.nextUrl.clone();
-    url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
-  }
-
-  // Si está logueado y va al login, mandar al dashboard
-  if (pathname === "/admin/login" && isLogged) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/admin/dashboard";
+    url.pathname = "/";
     return NextResponse.redirect(url);
   }
 

@@ -89,13 +89,13 @@ export default function ConfiguracionPage() {
   const loadSettings = useCallback(async () => {
     const r = await fetch("/api/admin/settings");
     if (r.status === 403) { setForbidden(true); return; }
-    if (r.status === 401) { router.push("/admin/login"); return; }
+    if (r.status === 401) { router.push("/"); return; }
     if (r.ok) setSettings(await r.json());
   }, [router]);
 
   useEffect(() => {
     fetch("/api/auth/me").then(async (r) => {
-      if (!r.ok) { router.push("/admin/login"); return; }
+      if (!r.ok) { router.push("/"); return; }
       const data = await r.json();
       if (data.user?.role !== "OWNER") { setForbidden(true); return; }
       setReady(true);

@@ -67,7 +67,7 @@ export default function UsersPage() {
     setLoading(true);
     const r = await fetch("/api/users");
     if (r.status === 403) { setForbidden(true); setLoading(false); return; }
-    if (r.status === 401) { router.push("/admin/login"); return; }
+    if (r.status === 401) { router.push("/"); return; }
     if (r.ok) setUsers(await r.json());
     setLoading(false);
   }, [router]);

@@ -8,26 +8,22 @@ import { CartProvider } from "@/components/CartContext";
 import CartFab from "@/components/CartFab";
 import CartDrawer from "@/components/CartDrawer";
 import { useSiteSettings } from "@/components/useSiteSettings";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
-const CATEGORIES = [
-  { id: "all",       label: "Todo" },
-  { id: "cakes",     label: "Pasteles" },
-  { id: "desserts",  label: "Postres" },
-  { id: "events",    label: "Mesa de dulces" },
-  { id: "picaderas", label: "Picaderas para eventos" },
-  { id: "brunch",    label: "Brunch" },
-  { id: "drinks",    label: "Bebidas" },
-  { id: "laticas",   label: "Laticas" },
-];
+// Ids de categoría estables (independientes del idioma) para validar el
+// parámetro ?cat= de la URL. Las etiquetas visibles vienen del diccionario.
+const CATEGORY_IDS = ["all", "cakes", "desserts", "events", "picaderas", "brunch", "drinks", "laticas"];
 
 function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
+  const { t } = useLang();
+  const CATEGORIES = t.catalog.categories;
   const [active, setActive]   = useState("all");
   const [gridKey, setGridKey] = useState(0);
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const cat = searchParams.get("cat");
-    if (cat && CATEGORIES.some((c) => c.id === cat)) setActive(cat);
+    if (cat && CATEGORY_IDS.includes(cat)) setActive(cat);
   }, [searchParams]);
 
   const visible = useMemo(
@@ -67,8 +63,8 @@ function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
           <div className="float-y w-16 h-16 mx-auto rounded-full bg-[var(--rose)]/10 flex items-center justify-center mb-4">
             <Sparkles size={26} className="text-rose" />
           </div>
-          <p className="text-muted-foreground">No hay productos en esta categoría aún.</p>
-          <p className="text-sm text-muted-foreground/70 mt-1">Vuelve pronto — siempre estamos horneando algo nuevo.</p>
+          <p className="text-muted-foreground">{t.catalog.emptyTitle}</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">{t.catalog.emptySub}</p>
         </div>
       ) : (
         <div
@@ -85,6 +81,7 @@ function CatalogContent({ initialProducts }: { initialProducts: Product[] }) {
 
 function OrderHelpBanner() {
   const { quotesEnabled } = useSiteSettings();
+  const { t } = useLang();
   return (
     <div className="grid sm:grid-cols-2 gap-4 mb-10">
       <div
@@ -96,11 +93,10 @@ function OrderHelpBanner() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-[#e85d82] mb-1">
-            Ordena aquí
+            {t.catalog.bannerOrderTitle}
           </p>
           <p className="text-sm text-foreground/80 leading-relaxed">
-            Para pedidos rápidos del catálogo. Agrégalos al carrito,
-            transfiere y recoge en el local.
+            {t.catalog.bannerOrderDesc}
           </p>
         </div>
       </div>
@@ -116,11 +112,10 @@ function OrderHelpBanner() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-[#e85d82] mb-1 flex items-center gap-1.5">
-            Cotiza por aquí <ArrowRight size={12} />
+            {t.catalog.bannerQuoteTitle} <ArrowRight size={12} />
           </p>
           <p className="text-sm text-foreground/80 leading-relaxed">
-            Para pasteles personalizados, mesas dulces, bodas y catering
-            de eventos. Te respondemos en menos de 24h.
+            {t.catalog.bannerQuoteDesc}
           </p>
         </div>
       </Link>
@@ -130,20 +125,21 @@ function OrderHelpBanner() {
 }
 
 export default function CatalogClient({ initialProducts }: { initialProducts: Product[] }) {
+  const { t } = useLang();
   return (
     <CartProvider>
       <section className="max-w-7xl mx-auto px-6 py-16">
         <div className="text-center mb-10 hero-enter">
-          <p className="font-script text-2xl text-rose">nuestro catálogo</p>
-          <h1 className="font-display text-4xl md:text-5xl mt-1">Creaciones Kan M</h1>
+          <p className="font-script text-2xl text-rose">{t.catalog.kicker}</p>
+          <h1 className="font-display text-4xl md:text-5xl mt-1">{t.catalog.title}</h1>
           <p className="text-muted-foreground mt-3 max-w-xl mx-auto">
-            Explora nuestra colección de pasteles, postres, mesas de dulces y picaderas para eventos.
+            {t.catalog.subtitle}
           </p>
         </div>
 
         <OrderHelpBanner />
 
-        <Suspense fallback={<p className="text-center text-muted-foreground py-10">Cargando…</p>}>
+        <Suspense fallback={<p className="text-center text-muted-foreground py-10">{t.catalog.loading}</p>}>
           <CatalogContent initialProducts={initialProducts} />
         </Suspense>
       </section>

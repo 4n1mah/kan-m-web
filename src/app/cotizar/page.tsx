@@ -8,6 +8,7 @@ import {
 import { formatDominicanPhone, validateDominicanPhone } from "@/lib/phone";
 import CakePopup from "@/components/CakePopup";
 import { type CakeDetail } from "@/lib/cakeMenu";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 const EVENT_TYPES = ["Cumpleaños","Boda / Compromiso","Baby shower","Corporativo","Graduación","Quinceañera","Otro"];
 const PRODUCT_CATEGORIES = [
@@ -33,6 +34,7 @@ function StepHeader({n,label}:{n:number;label:string}) {
 // Reemplaza solo la función DatePicker con esta versión corregida:
 
 function DatePicker({ value, onChange }: { value: string; onChange: (date: string) => void }) {
+  const { t } = useLang();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const today = new Date();
@@ -133,14 +135,14 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
     }
   };
 
-  const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-  const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const monthNames = t.quote.months;
+  const dayNames = t.quote.days;
   const daysInMonth = getDaysInMonth(displayMonth, displayYear);
   const firstDay = getFirstDayOfMonth(displayMonth, displayYear);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
 
-  const displayValue = value ? new Date(value + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" }) : "Selecciona una fecha";
+  const displayValue = value ? new Date(value + "T00:00:00").toLocaleDateString(t.quote.dateLocale, { day: "numeric", month: "long", year: "numeric" }) : t.quote.selectDate;
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
@@ -185,7 +187,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
             >
               <ChevronUp size={16} className="text-[var(--muted-foreground)]" />
             </button>
-            <span className="text-sm font-medium text-[var(--muted-foreground)]">Año: {displayYear}</span>
+            <span className="text-sm font-medium text-[var(--muted-foreground)]">{t.quote.yearLabel} {displayYear}</span>
             <button
               type="button"
               onClick={nextYear}
@@ -233,7 +235,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
               onClick={() => setIsOpen(false)}
               className="flex-1 py-2 rounded-lg text-[var(--rose)] font-semibold text-sm transition border border-[var(--rose)] hover:bg-[var(--rose)]/5"
             >
-              Cancelar
+              {t.quote.cancel}
             </button>
             {value && (
               <button
@@ -245,7 +247,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
                 className="flex-1 py-2 rounded-lg text-white font-semibold text-sm transition hover:opacity-90"
                 style={{ background: "linear-gradient(135deg, #999 0%, #aaa 50%, #888 100%)" }}
               >
-                Limpiar
+                {t.quote.clear}
               </button>
             )}
           </div>
@@ -256,6 +258,7 @@ function DatePicker({ value, onChange }: { value: string; onChange: (date: strin
 }
 
 function TimePicker({ value, onChange }: { value: string; onChange: (time: string) => void }) {
+  const { t } = useLang();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -307,7 +310,7 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
     setIsOpen(false);
   };
 
-  const displayText = value ? `${displayHours}:${displayMinutes} ${displayPeriod}` : "Selecciona una hora";
+  const displayText = value ? `${displayHours}:${displayMinutes} ${displayPeriod}` : t.quote.selectTime;
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
@@ -392,14 +395,14 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
               onClick={handleCancel}
               className="flex-1 py-2.5 rounded-lg text-[var(--rose)] font-semibold text-sm transition hover:bg-[var(--rose)]/5"
             >
-              Cancelar
+              {t.quote.cancel}
             </button>
             <button
               type="button"
               onClick={handleConfirm}
               className="flex-1 py-2.5 rounded-lg text-white font-semibold text-sm transition hover:opacity-90 bg-gradient-rose"
             >
-              Guardar
+              {t.quote.save}
             </button>
           </div>
         </div>
@@ -409,6 +412,7 @@ function TimePicker({ value, onChange }: { value: string; onChange: (time: strin
 }
 
 function CotizarForm() {
+  const { t } = useLang();
   const searchParams = useSearchParams();
   const [form,setForm] = useState<FormState>(EMPTY);
   const [cakeDetails,setCakeDetails] = useState<Record<string,CakeDetail>>({});
@@ -464,14 +468,14 @@ function CotizarForm() {
       const imageUrls: string[] = [];
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
-        setUploadProgress(`Subiendo foto ${i + 1} de ${imageFiles.length}…`);
+        setUploadProgress(`${t.quote.uploadingPhotoPre}${i + 1}${t.quote.uploadingPhotoMid}${imageFiles.length}…`);
         const fd = new FormData();
         fd.append("file", file);
         let res: Response;
         try {
           res = await fetch("/api/orders/upload", { method: "POST", body: fd });
         } catch (networkErr) {
-          throw new Error(`Error de red al subir foto ${i + 1}. Verifica tu conexión.`);
+          throw new Error(`${t.quote.errNetworkPre}${i + 1}${t.quote.errNetworkSuf}`);
         }
         const data = await res.json().catch(() => ({ error: `Respuesta inválida del servidor (${res.status})` }));
         if (!res.ok || !data.url) {
@@ -479,11 +483,11 @@ function CotizarForm() {
         }
         imageUrls.push(data.url);
       }
-      setUploadProgress("Guardando pedido…");
+      setUploadProgress(t.quote.savingOrder);
       const res=await fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,cakeDetails,imageUrls})});
-      if(!res.ok) throw new Error("Error al guardar el pedido");
+      if(!res.ok) throw new Error(t.quote.errSaveOrder);
       setSubmitted(true);
-    } catch(e:unknown){ setError(e instanceof Error?e.message:"Ocurrió un error. Por favor intenta de nuevo."); }
+    } catch(e:unknown){ setError(e instanceof Error?e.message:t.quote.errGeneric); }
     finally{ setSubmitting(false); setUploadProgress(""); }
   };
 
@@ -492,15 +496,15 @@ function CotizarForm() {
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-6">
         <div className="modal-pop max-w-md w-full text-center glass rounded-3xl shadow-md p-10">
           <CheckCircle2 size={52} className="mx-auto mb-4" style={{color:"#f07097"}}/>
-          <h2 className="font-display text-3xl text-gradient-rose">¡Solicitud enviada!</h2>
-          <p className="text-[var(--muted-foreground)] mt-3 leading-relaxed">Recibimos tu encargo, <strong>{form.name}</strong>. Te contactaremos por Whatsapp en unos momentos.</p>
+          <h2 className="font-display text-3xl text-gradient-rose">{t.quote.successTitle}</h2>
+          <p className="text-[var(--muted-foreground)] mt-3 leading-relaxed">{t.quote.successMsgPre}<strong>{form.name}</strong>{t.quote.successMsgSuf}</p>
           <div className="mt-5 p-4 rounded-2xl bg-[var(--muted)]/50 text-sm text-left space-y-1">
-            <p><span className="font-medium">Evento:</span> {form.eventType}</p>
-            <p><span className="font-medium">Fecha:</span> {form.eventDate}{form.deliveryTime?` · ${form.deliveryTime}`:""}</p>
+            <p><span className="font-medium">{t.quote.summaryEvent}</span> {t.quote.eventTypeLabels[form.eventType] ?? form.eventType}</p>
+            <p><span className="font-medium">{t.quote.summaryDate}</span> {form.eventDate}{form.deliveryTime?` · ${form.deliveryTime}`:""}</p>
           </div>
           <button onClick={()=>{setForm(EMPTY);setImageFiles([]);setImagePreviews([]);setCakeDetails({});setSubmitted(false);}}
             className="btn-shine mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full text-white font-semibold bg-gradient-rose">
-            Hacer otra cotización
+            {t.quote.anotherQuote}
           </button>
         </div>
       </div>
@@ -514,10 +518,10 @@ function CotizarForm() {
         <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl"/>
         <div className="hero-enter relative">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--rose)]/10 border border-[var(--rose)]/20 text-xs uppercase tracking-widest text-[var(--rose)]">
-            <Sparkles size={13}/> Cotización sin compromiso
+            <Sparkles size={13}/> {t.quote.badge}
           </span>
-          <h1 className="font-display text-3xl md:text-4xl mt-3">Cotiza tu evento</h1>
-          <p className="text-[var(--muted-foreground)] mt-3 max-w-xl mx-auto leading-relaxed">Cuéntanos qué imaginas. Te contactamos en menos de 24 horas.</p>
+          <h1 className="font-display text-3xl md:text-4xl mt-3">{t.quote.title}</h1>
+          <p className="text-[var(--muted-foreground)] mt-3 max-w-xl mx-auto leading-relaxed">{t.quote.subtitle}</p>
         </div>
       </section>
 
@@ -526,16 +530,16 @@ function CotizarForm() {
 
           {/* Step 1 */}
           <div>
-            <StepHeader n={1} label="Tus datos"/>
+            <StepHeader n={1} label={t.quote.step1}/>
             <div className="grid sm:grid-cols-2 gap-4">
-              <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">Nombre completo <span className="text-[var(--rose)]">*</span></span>
-                <input type="text" placeholder="Tu nombre" value={form.name} onChange={e=>set("name",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+              <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">{t.quote.fullName} <span className="text-[var(--rose)]">*</span></span>
+                <input type="text" placeholder={t.quote.namePlaceholder} value={form.name} onChange={e=>set("name",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
               </label>
-              <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">WhatsApp / Teléfono <span className="text-[var(--rose)]">*</span></span>
+              <label className="flex flex-col gap-1.5"><span className="text-sm font-medium">{t.quote.phoneLabel} <span className="text-[var(--rose)]">*</span></span>
                 <input type="tel" placeholder="809-000-0000" value={form.phone} onChange={e=>set("phone",formatDominicanPhone(e.target.value))} maxLength={12} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
-                {form.phone.length>0&&!validateDominicanPhone(form.phone)&&<p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={11}/>Ingresa un número dominicano válido, ejemplo: 809-555-6666.</p>}
+                {form.phone.length>0&&!validateDominicanPhone(form.phone)&&<p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={11}/>{t.quote.phoneError}</p>}
               </label>
-              <label className="flex flex-col gap-1.5 sm:col-span-2"><span className="text-sm font-medium">Correo <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>
+              <label className="flex flex-col gap-1.5 sm:col-span-2"><span className="text-sm font-medium">{t.quote.emailLabel} <span className="text-[var(--muted-foreground)] font-normal">{t.quote.optional}</span></span>
                 <input type="email" placeholder="tu@correo.com" value={form.email} onChange={e=>set("email",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
               </label>
             </div>
@@ -545,35 +549,35 @@ function CotizarForm() {
 
           {/* Step 2 */}
           <div>
-            <StepHeader n={2} label="Tu evento"/>
+            <StepHeader n={2} label={t.quote.step2}/>
             <div className="space-y-4">
               <div>
-                <span className="text-sm font-medium flex items-center gap-1.5 mb-2"><Cake size={15} className="text-[var(--rose)]"/> Tipo <span className="text-[var(--rose)]">*</span></span>
+                <span className="text-sm font-medium flex items-center gap-1.5 mb-2"><Cake size={15} className="text-[var(--rose)]"/> {t.quote.typeLabel} <span className="text-[var(--rose)]">*</span></span>
                 <div className="flex flex-wrap gap-2">
                   {EVENT_TYPES.map(type=>(
                     <button key={type} type="button" onClick={()=>set("eventType",type)}
-                      className={`px-4 py-2 rounded-full text-sm border transition ${form.eventType===type?"text-white border-transparent bg-gradient-rose shadow-glow":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"}`}>{type}</button>
+                      className={`px-4 py-2 rounded-full text-sm border transition ${form.eventType===type?"text-white border-transparent bg-gradient-rose shadow-glow":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)] hover:text-[var(--rose)]"}`}>{t.quote.eventTypeLabels[type] ?? type}</button>
                   ))}
                 </div>
               </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-medium flex items-center gap-1.5"><CalendarDays size={15} className="text-[var(--rose)]"/> Fecha <span className="text-[var(--rose)]">*</span></span>
+                  <span className="text-sm font-medium flex items-center gap-1.5"><CalendarDays size={15} className="text-[var(--rose)]"/> {t.quote.dateLabel} <span className="text-[var(--rose)]">*</span></span>
                   <DatePicker value={form.eventDate} onChange={(date) => set("eventDate", date)} />
-                  <p className="text-xs text-amber-600 flex items-center gap-1 -mt-0.5"><AlertCircle size={11}/>Mínimo 3 días de antelación</p>
+                  <p className="text-xs text-amber-600 flex items-center gap-1 -mt-0.5"><AlertCircle size={11}/>{t.quote.leadTimeNote}</p>
                 </label>
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-medium flex items-center gap-1.5"><Clock size={15} className="text-[var(--rose)]"/> Hora de entrega <span className="text-[var(--muted-foreground)] font-normal">(opcional)</span></span>
+                  <span className="text-sm font-medium flex items-center gap-1.5"><Clock size={15} className="text-[var(--rose)]"/> {t.quote.deliveryTimeLabel} <span className="text-[var(--muted-foreground)] font-normal">{t.quote.optional}</span></span>
                   <TimePicker value={form.deliveryTime} onChange={(time) => set("deliveryTime", time)} />
                 </label>
                 <label className="flex flex-col gap-1.5 sm:col-span-2">
-                  <span className="text-sm font-medium flex items-center gap-1.5"><Users size={15} className="text-[var(--rose)]"/> Personas <span className="text-[var(--rose)]">*</span></span>
-                  <input type="number" placeholder="ej. 50" min={1} value={form.guestCount} onChange={e=>set("guestCount",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
+                  <span className="text-sm font-medium flex items-center gap-1.5"><Users size={15} className="text-[var(--rose)]"/> {t.quote.guestsLabel} <span className="text-[var(--rose)]">*</span></span>
+                  <input type="number" placeholder={t.quote.guestsPlaceholder} min={1} value={form.guestCount} onChange={e=>set("guestCount",e.target.value)} className="px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm focus:outline-none focus:border-[var(--rose)] transition"/>
                 </label>
                 <label className="flex flex-col gap-1.5 sm:col-span-2">
-                  <span className="text-sm font-medium">Método de entrega</span>
+                  <span className="text-sm font-medium">{t.quote.deliveryMethodLabel}</span>
                   <div className="flex gap-3">
-                    {[{id:"pickup",label:"🏠 Recogida en tienda"},{id:"delivery",label:"🚗 Delivery / Envío"}].map(opt=>(
+                    {[{id:"pickup",label:t.quote.pickupOption},{id:"delivery",label:t.quote.deliveryOption}].map(opt=>(
                       <button key={opt.id} type="button" onClick={()=>set("deliveryMethod",form.deliveryMethod===opt.id?"":opt.id)}
                         className={`flex-1 px-4 py-2.5 rounded-xl text-sm border-2 font-medium transition ${form.deliveryMethod===opt.id?"text-[var(--rose)] border-[var(--rose)] bg-[var(--rose)]/5":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)]/50"}`}>
                         {opt.label}
@@ -581,7 +585,7 @@ function CotizarForm() {
                     ))}
                   </div>
                   <span className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                    El delivery / envío tiene un costo adicional desde RD$250.00.
+                    {t.quote.deliveryCostNote}
                   </span>
                 </label>
               </div>
@@ -592,13 +596,13 @@ function CotizarForm() {
 
           {/* Step 3 */}
           <div>
-            <StepHeader n={3} label="¿Qué te interesa?"/>
-            <p className="text-sm text-[var(--muted-foreground)] mb-4 -mt-2">Los pasteles pedirán detalles adicionales</p>
+            <StepHeader n={3} label={t.quote.step3}/>
+            <p className="text-sm text-[var(--muted-foreground)] mb-4 -mt-2">{t.quote.step3Note}</p>
             <div className="space-y-4">
               {PRODUCT_CATEGORIES.map(cat=>(
                 <div key={cat.label}>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-1">{cat.label}</p>
-                  {cat.note && <p className="text-xs text-[var(--muted-foreground)]/70 italic mb-2">{cat.note}</p>}
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-1">{t.quote.categoryLabels[cat.label] ?? cat.label}</p>
+                  {cat.note && <p className="text-xs text-[var(--muted-foreground)]/70 italic mb-2">{t.quote.categoryNotes[cat.label] ?? cat.note}</p>}
                   <div className="flex flex-wrap gap-2">
                     {cat.items.map(item=>{
                       const selected=form.selectedItems.includes(item);
@@ -607,12 +611,12 @@ function CotizarForm() {
                         <div key={item} className="relative">
                           <button type="button" onClick={()=>toggleItem(item)}
                             className={`px-3.5 py-1.5 rounded-full text-sm border transition flex items-center gap-1.5 ${selected?"text-[var(--rose)] border-[var(--rose)]/40 bg-[var(--rose)]/10":"border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)]/50 hover:text-[var(--rose)]"}`}>
-                            {item}
+                            {t.quote.itemLabels[item] ?? item}
                             {selected&&cat.isCake&&<span className="w-4 h-4 rounded-full bg-[var(--rose)] text-white text-[10px] flex items-center justify-center font-bold">✓</span>}
                           </button>
                           {selected&&cat.isCake&&hasCakeDetail&&(
                             <button type="button" onClick={()=>setPendingCakeItem(item)}
-                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center bg-gradient-rose" title="Editar">✏</button>
+                              className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white text-[9px] flex items-center justify-center bg-gradient-rose" title={t.quote.editTitle}>✏</button>
                           )}
                         </div>
                       );
@@ -625,7 +629,7 @@ function CotizarForm() {
                         return(
                           <div key={item} className="text-xs bg-[var(--rose)]/5 border border-[var(--rose)]/15 rounded-xl px-3 py-2 flex items-start gap-2">
                             <Cake size={12} className="text-[var(--rose)] shrink-0 mt-0.5"/>
-                            <div><span className="font-semibold text-[var(--rose)]">{item}: </span><span className="text-[var(--muted-foreground)]">{d.cakeType==="tradicional"?`${d.masa} · ${d.filling} · ${d.decoration}`:d.flavor} · {d.size}{d.colors?` · Colores: ${d.colors}`:""}{d.message?` · "${d.message}"`:""}{d.estimatedPrice!=null?` · Est. RD$${d.estimatedPrice.toLocaleString("es-DO")}`:" · Precio a cotizar"}</span></div>
+                            <div><span className="font-semibold text-[var(--rose)]">{t.quote.itemLabels[item] ?? item}: </span><span className="text-[var(--muted-foreground)]">{d.cakeType==="tradicional"?`${d.masa} · ${d.filling} · ${d.decoration}`:d.flavor} · {d.size}{d.colors?` · ${t.quote.colorsLabel} ${d.colors}`:""}{d.message?` · "${d.message}"`:""}{d.estimatedPrice!=null?` · Est. RD$${d.estimatedPrice.toLocaleString("es-DO")}`:` · ${t.quote.priceToQuote}`}</span></div>
                           </div>
                         );
                       })}
@@ -640,8 +644,8 @@ function CotizarForm() {
 
           {/* Step 4 — Images */}
           <div>
-            <StepHeader n={4} label="Imágenes de inspiración"/>
-            <p className="text-sm text-[var(--muted-foreground)] mb-4 -mt-2">Sube hasta 5 fotos de referencia (opcional)</p>
+            <StepHeader n={4} label={t.quote.step4}/>
+            <p className="text-sm text-[var(--muted-foreground)] mb-4 -mt-2">{t.quote.step4Note}</p>
             {imagePreviews.length>0&&(
               <div className="flex flex-wrap gap-3 mb-4">
                 {imagePreviews.map((src,i)=>(
@@ -657,7 +661,7 @@ function CotizarForm() {
               <button type="button" onClick={()=>fileRef.current?.click()}
                 className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-[var(--border)] text-[var(--muted-foreground)] hover:border-[var(--rose)]/50 hover:text-[var(--rose)] transition">
                 <ImagePlus size={18}/>
-                {imageFiles.length===0?"Agregar imágenes de referencia":`Agregar más (${imageFiles.length}/5)`}
+                {imageFiles.length===0?t.quote.addImages:`${t.quote.addMore} (${imageFiles.length}/5)`}
               </button>
             )}
             <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e=>handleImages(e.target.files)}/>
@@ -667,8 +671,8 @@ function CotizarForm() {
 
           {/* Step 5 */}
           <div>
-            <StepHeader n={5} label="Notas adicionales"/>
-            <textarea rows={4} placeholder="Cuéntanos tu idea, colores, sabores, inspiración..." value={form.notes} onChange={e=>set("notes",e.target.value)}
+            <StepHeader n={5} label={t.quote.step5}/>
+            <textarea rows={4} placeholder={t.quote.notesPlaceholder} value={form.notes} onChange={e=>set("notes",e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm resize-none focus:outline-none focus:border-[var(--rose)] transition"/>
           </div>
 
@@ -677,11 +681,11 @@ function CotizarForm() {
           <button type="button" onClick={handleSubmit} disabled={!isValid||submitting}
             className={`w-full py-4 rounded-2xl font-semibold text-white text-base flex items-center justify-center gap-2 transition shadow-md bg-gradient-rose ${isValid&&!submitting?"btn-shine cursor-pointer":"opacity-50 cursor-not-allowed"}`}>
             {submitting?(
-              <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Enviando...</>
-            ):<>Enviar cotización <ArrowRight size={18}/></>}
+              <><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> {t.quote.sending}</>
+            ):<>{t.quote.submit} <ArrowRight size={18}/></>}
           </button>
           <p className="text-center text-xs text-[var(--muted-foreground)]">
-            Los campos <span className="text-[var(--rose)]">*</span> son obligatorios· Te contactamos por WhatsApp en menos de 24 horas.
+            {t.quote.requiredNote}
           </p>
         </div>
       </section>

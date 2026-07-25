@@ -5,22 +5,24 @@ import { Phone, Mail, Instagram, MapPin, ArrowRight } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { BUSINESS } from "@/lib/bizInfo";
 import { useSiteSettings } from "@/components/useSiteSettings";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 /**
  * Bloque de contacto. Vivía en la página /contacto (eliminada); ahora se
  * embebe dentro de /nosotros como sección final. Client component para poder
- * usar useSiteSettings y mantener Nosotros como server component.
+ * usar useSiteSettings y el idioma.
  */
 export default function ContactoSection() {
   const { quotesEnabled } = useSiteSettings();
+  const { t } = useLang();
   return (
     <section className="mt-24 reveal" data-reveal="up">
       {/* Encabezado de sección */}
       <div className="text-center max-w-xl mx-auto">
-        <p className="font-script text-2xl text-rose">conversemos</p>
-        <h2 className="font-display text-3xl md:text-4xl mt-1">Contáctanos</h2>
+        <p className="font-script text-2xl text-rose">{t.contact.kicker}</p>
+        <h2 className="font-display text-3xl md:text-4xl mt-1">{t.contact.title}</h2>
         <p className="text-[var(--muted-foreground)] mt-4">
-          Estamos aquí para hacer tu evento especial. Encuéntranos en tus plataformas favoritas.
+          {t.contact.subtitle}
         </p>
       </div>
 
@@ -31,7 +33,7 @@ export default function ContactoSection() {
           {/* LEFT — redes sociales y delivery */}
           <div className="flex-1 space-y-2 md:pr-10 reveal" data-reveal="left">
             <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
-              Encuéntranos aquí
+              {t.contact.findUsHere}
             </p>
 
             <a
@@ -44,7 +46,7 @@ export default function ContactoSection() {
                 <MapPin size={16} />
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Ubicación</div>
+                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">{t.contact.labelLocation}</div>
                 <div className="font-semibold text-sm mt-0.5">{BUSINESS.address}</div>
               </div>
             </a>
@@ -57,7 +59,7 @@ export default function ContactoSection() {
                 <Phone size={16} />
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Teléfono</div>
+                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">{t.contact.labelPhone}</div>
                 <div className="font-semibold text-sm mt-0.5">{BUSINESS.phoneDisplay}</div>
               </div>
             </a>
@@ -70,7 +72,7 @@ export default function ContactoSection() {
                 <Mail size={16} />
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Email</div>
+                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">{t.contact.labelEmail}</div>
                 <div className="font-semibold text-sm mt-0.5">{BUSINESS.email}</div>
               </div>
             </a>
@@ -87,8 +89,8 @@ export default function ContactoSection() {
                 </svg>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">WhatsApp</div>
-                <div className="font-semibold text-sm mt-0.5">Escríbenos directo</div>
+                <div className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">{t.contact.labelWhatsapp}</div>
+                <div className="font-semibold text-sm mt-0.5">{t.contact.whatsappValue}</div>
               </div>
             </a>
 
@@ -127,7 +129,7 @@ export default function ContactoSection() {
             {/* Delivery */}
             <div className="pt-2">
               <p className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-foreground)] mb-3">
-                Pide a domicilio
+                {t.contact.orderDelivery}
               </p>
               <DeliveryButtons variant="card" />
             </div>
@@ -137,7 +139,7 @@ export default function ContactoSection() {
           <div className="hidden md:flex flex-col items-center px-4 self-stretch gap-0">
             <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" style={{ minHeight: "3rem" }} />
             <span className="shrink-0 w-9 h-9 rounded-full border-2 border-[var(--border)] bg-[var(--background)] flex items-center justify-center text-sm font-semibold text-[var(--muted-foreground)] my-2">
-              o
+              {t.contact.or}
             </span>
             <div className="flex-1 w-px bg-gradient-to-b from-transparent via-[var(--border)] to-transparent" style={{ minHeight: "3rem" }} />
           </div>
@@ -145,7 +147,7 @@ export default function ContactoSection() {
           <div className="md:hidden flex items-center gap-3 py-4">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
             <span className="shrink-0 w-9 h-9 rounded-full border-2 border-[var(--border)] bg-[var(--background)] flex items-center justify-center text-sm font-semibold text-[var(--muted-foreground)]">
-              o
+              {t.contact.or}
             </span>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
           </div>
@@ -158,12 +160,12 @@ export default function ContactoSection() {
                 🎂
               </div>
               <div>
-                <p className="font-script text-xl text-rose">sin compromiso</p>
+                <p className="font-script text-xl text-rose">{t.contact.ctaKicker}</p>
                 <h3 className="font-display text-xl md:text-2xl mt-1 leading-tight">
-                  ¡Mejor dinos qué quieres y cotiza desde ahora!
+                  {t.contact.ctaTitle}
                 </h3>
                 <p className="text-[var(--muted-foreground)] mt-2 text-sm leading-relaxed">
-                  Completa el formulario en menos de 2 minutos y nuestro equipo te respondera para endulzar tu proximo evento.
+                  {t.contact.ctaSubtitle}
                 </p>
               </div>
               {quotesEnabled ? (
@@ -171,7 +173,7 @@ export default function ContactoSection() {
                   href="/cotizar"
                   className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold shadow-md text-sm bg-gradient-rose"
                 >
-                  Cotizar ahora <ArrowRight size={17} />
+                  {t.contact.ctaButton} <ArrowRight size={17} />
                 </Link>
               ) : (
                 <a
@@ -180,11 +182,11 @@ export default function ContactoSection() {
                   rel="noopener noreferrer"
                   className="btn-shine inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-white font-semibold shadow-md text-sm bg-gradient-rose"
                 >
-                  Escríbenos por WhatsApp <ArrowRight size={17} />
+                  {t.contact.ctaButtonWhatsapp} <ArrowRight size={17} />
                 </a>
               )}
               <p className="text-xs text-[var(--muted-foreground)]">
-                Respuesta en menos de 24 horas · Sin compromiso
+                {t.contact.ctaFootnote}
               </p>
             </div>
           </div>

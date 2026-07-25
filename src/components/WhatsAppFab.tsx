@@ -1,16 +1,18 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 export default function WhatsAppFab() {
   const pathname = usePathname();
+  const { t } = useLang();
   if (pathname?.startsWith("/admin")) return null;
   return (
     <a
       href={waLink(WA_MESSAGES.general)}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Chatear por WhatsApp"
+      aria-label={t.delivery.whatsappAria}
       className="whatsapp-fab pulse-ring fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-rose shadow-soft flex items-center justify-center text-white hover:scale-105 hover:shadow-glow transition-all duration-200"
     >
       <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden>

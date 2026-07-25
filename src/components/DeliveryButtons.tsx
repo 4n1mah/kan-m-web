@@ -1,4 +1,5 @@
 "use client";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 const UBER_WEB =
   "https://www.ubereats.com/do/store/kan-m-reposteria-y-catering/QOT7Ijk8VG2ghDALNJ_MKA";
@@ -29,10 +30,11 @@ function openUber() {
 interface Props { variant?: "hero" | "card"; }
 
 export default function DeliveryButtons({ variant = "hero" }: Props) {
+  const { t } = useLang();
   if (variant === "hero") {
     return (
       <div className="mt-5 flex items-center gap-3 flex-wrap">
-        <span className="text-xs text-white/80 font-medium">Pide a domicilio:</span>
+        <span className="text-xs text-white/80 font-medium">{t.delivery.orderDelivery}</span>
         <button
           onClick={openUber}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/85 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold hover:bg-black hover:-translate-y-0.5 transition-all cursor-pointer"
@@ -62,7 +64,7 @@ export default function DeliveryButtons({ variant = "hero" }: Props) {
         </div>
         <div>
           <div className="font-semibold text-sm">Uber Eats</div>
-          <div className="text-xs text-muted-foreground">Pide tus postres en minutos</div>
+          <div className="text-xs text-muted-foreground">{t.delivery.uberSubtitle}</div>
         </div>
         <svg className="w-4 h-4 text-muted-foreground ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>

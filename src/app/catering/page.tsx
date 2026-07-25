@@ -7,6 +7,7 @@ import HeroCarousel from "@/components/HeroCarousel";
 import Lightbox from "@/components/Lightbox";
 import { useSiteSettings } from "@/components/useSiteSettings";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 const COTIZAR_MAP: Record<string, string> = {
   "Pasteles personalizados": "Cumpleaños",
@@ -65,6 +66,7 @@ const services = [
 function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
   const [idx, setIdx] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+  const { t } = useLang();
 
   useEffect(() => {
     if (imgs.length < 2) return;
@@ -78,7 +80,7 @@ function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
         className="img-shine group relative w-full rounded-3xl overflow-hidden shadow-card cursor-zoom-in transition-shadow duration-300 hover:shadow-glow"
         style={{ aspectRatio: "4/3" }}
         onClick={() => setLightbox(true)}
-        title="Clic para ver en grande"
+        title={t.catering.zoomTitle}
       >
         {imgs.map((src, i) => (
           <div key={src + i} className="absolute inset-0 transition-opacity duration-700" style={{ opacity: i === idx ? 1 : 0 }}>
@@ -92,7 +94,7 @@ function ServiceCarousel({ imgs, title }: { imgs: string[]; title: string }) {
           <svg viewBox="0 0 20 20" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" d="M3 3h5M3 3v5M17 3h-5M17 3v5M3 17h5M3 17v-5M17 17h-5M17 17v-5"/>
           </svg>
-          Ver
+          {t.catering.expandHint}
         </div>
 
         {imgs.length > 1 && (
@@ -139,6 +141,7 @@ function buildCotizarUrl(service: typeof services[number]) {
 
 export default function CateringPage() {
   const { quotesEnabled } = useSiteSettings();
+  const { t } = useLang();
   return (
     <div>
       {/* Hero carousel */}
@@ -146,15 +149,15 @@ export default function CateringPage() {
         <div className="max-w-7xl mx-auto px-6 pt-12 pb-20 text-center hero-enter">
           {/* Decorative pill */}
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white/90 mb-6">
-            ✦ Repostería artesanal · Eventos · Catering
+            {t.catering.heroBadge}
           </span>
 
           <p className="font-script text-2xl md:text-3xl drop-shadow" style={{ color: "#f8d5a3" }}>
-            para tus eventos
+            {t.catering.heroKicker}
           </p>
 
           <h1 className="font-display text-4xl md:text-5xl mt-2 text-white drop-shadow-lg leading-[1.1]">
-            Catering que{" "}
+            {t.catering.heroTitlePre}{" "}
             <span
               className="font-script italic"
               style={{
@@ -165,18 +168,18 @@ export default function CateringPage() {
                 fontSize: "1.15em",
               }}
             >
-              enamora
+              {t.catering.heroTitleScript}
             </span>
           </h1>
 
           <p className="text-white/80 mt-4 max-w-xl mx-auto leading-relaxed text-sm drop-shadow">
-            Diseñamos experiencias dulces a medida de tu evento,<br className="hidden md:block" />
-            con productos artesanales y servicio impecable.
+            {t.catering.heroSubtitle1}<br className="hidden md:block" />
+            {t.catering.heroSubtitle2}
           </p>
 
           {/* Service quick-links */}
           <div className="mt-5 flex flex-wrap justify-center gap-2">
-            {["Pasteles", "Bodas", "Mesa de dulces", "Cumpleaños", "Eventos"].map((label) => (
+            {t.catering.heroChips.map((label) => (
               <span
                 key={label}
                 className="px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/25 text-white/90 text-sm"
@@ -197,17 +200,17 @@ export default function CateringPage() {
             data-reveal={i % 2 === 1 ? "right" : "left"}
           >
             {/* Carousel */}
-            <ServiceCarousel imgs={s.imgs} title={s.title} />
+            <ServiceCarousel imgs={s.imgs} title={t.catering.services[i].title} />
 
             {/* Glass info box — same style as "catering que enamora" on homepage */}
             <div className="glass rounded-3xl p-6">
               <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-white text-xs font-bold mb-4 bg-gradient-rose shadow-glow">
                 {i + 1}
               </span>
-              <h2 className="font-display text-xl md:text-2xl">{s.title}</h2>
-              <p className="text-muted-foreground mt-2 leading-relaxed text-sm">{s.desc}</p>
+              <h2 className="font-display text-xl md:text-2xl">{t.catering.services[i].title}</h2>
+              <p className="text-muted-foreground mt-2 leading-relaxed text-sm">{t.catering.services[i].desc}</p>
               <ul className="mt-3 space-y-1.5">
-                {s.bullets.map((b) => (
+                {t.catering.services[i].bullets.map((b) => (
                   <li key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Cake size={15} className="shrink-0" style={{ color: "#f07097" }} /> {b}
                   </li>
@@ -218,7 +221,7 @@ export default function CateringPage() {
                   href={buildCotizarUrl(s)}
                   className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm bg-gradient-rose"
                 >
-                  Cotizar <ArrowRight size={16} />
+                  {t.catering.ctaQuote} <ArrowRight size={16} />
                 </Link>
               ) : (
                 <a
@@ -227,7 +230,7 @@ export default function CateringPage() {
                   rel="noopener noreferrer"
                   className="btn-shine mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-semibold shadow-sm bg-gradient-rose"
                 >
-                  Escríbenos <ArrowRight size={16} />
+                  {t.catering.ctaWriteUs} <ArrowRight size={16} />
                 </a>
               )}
             </div>

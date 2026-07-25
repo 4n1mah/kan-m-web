@@ -1,9 +1,13 @@
+"use client";
 import { IMAGES } from "@/lib/images";
 import Image from "next/image";
 import { Clock, Cake, Palette, Gem } from "lucide-react";
 import ContactoSection from "@/components/ContactoSection";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 export default function NosotrosPage() {
+  const { t } = useLang();
+  const valueIcons = [Cake, Palette, Gem];
   return (
     <section className="max-w-7xl mx-auto px-6 py-20">
       <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -21,40 +25,36 @@ export default function NosotrosPage() {
           </div>
         </div>
         <div className="reveal" data-reveal="right">
-          <p className="font-script text-2xl text-rose">nuestra historia</p>
+          <p className="font-script text-2xl text-rose">{t.about.kicker}</p>
           <h1 className="font-display text-4xl md:text-5xl mt-1">
-            Pasión por lo <span className="font-script text-gradient-rose">artesanal</span>
+            {t.about.titlePre} <span className="font-script text-gradient-rose">{t.about.titleScript}</span>
           </h1>
           <p className="text-muted-foreground mt-6 leading-relaxed">
-            Kan M nació del amor por crear momentos memorables a través de la repostería.
-            Cada pastel, cada postre, cada mesa dulce es elaborada con ingredientes seleccionados
-            y un toque de cariño que se siente en cada bocado.
+            {t.about.p1}
           </p>
           <p className="text-muted-foreground mt-4 leading-relaxed">
-            Más de 500 eventos endulzados nos respaldan: bodas, cumpleaños, brunches corporativos
-            y celebraciones íntimas en toda República Dominicana.
+            {t.about.p2}
           </p>
 
         </div>
       </div>
 
       <div className="stagger-fade grid md:grid-cols-3 gap-6 mt-20">
-        {[
-          { t: "Artesanal", d: "Recetas propias, ingredientes frescos.", Icon: Cake },
-          { t: "Personalizado", d: "Diseñamos según tu visión y tema.", Icon: Palette },
-          { t: "Detallista", d: "Cuidamos cada elemento del montaje.", Icon: Gem },
-        ].map((v) => (
-          <div key={v.t} className="card-tilt glass rounded-3xl p-7 text-center">
+        {t.about.values.map((v, i) => {
+          const Icon = valueIcons[i];
+          return (
+          <div key={v.title} className="card-tilt glass rounded-3xl p-7 text-center">
             <div
               className="w-12 h-12 mx-auto rounded-2xl flex items-center justify-center text-white mb-4 shadow-glow"
               style={{ background: "linear-gradient(135deg,#f9c4d4 0%,#f07097 100%)" }}
             >
-              <v.Icon size={22} />
+              <Icon size={22} />
             </div>
-            <h3 className="font-display text-xl">{v.t}</h3>
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{v.d}</p>
+            <h3 className="font-display text-xl">{v.title}</h3>
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{v.desc}</p>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Horario de atención */}
@@ -67,12 +67,12 @@ export default function NosotrosPage() {
         </div>
         <div className="text-center sm:text-left">
           <p className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">
-            Horario de atención
+            {t.about.scheduleLabel}
           </p>
           <p className="font-display text-lg mt-1 leading-snug">
-            Lunes a Jueves <span className="text-rose">·</span> 9:00 am – 7:00 pm
+            {t.about.scheduleDays1} <span className="text-rose">·</span> 9:00 am – 7:00 pm
             <br />
-            Viernes a Domingo <span className="text-rose">·</span> 9:00 am – 10:00 pm
+            {t.about.scheduleDays2} <span className="text-rose">·</span> 9:00 am – 10:00 pm
           </p>
         </div>
       </div>

@@ -5,10 +5,12 @@ import { Phone, Mail, Instagram } from "lucide-react";
 import { WHATSAPP_NUMBER, waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { BUSINESS } from "@/lib/bizInfo";
 import { useSiteSettings } from "@/components/useSiteSettings";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 export default function Footer() {
   const pathname = usePathname();
   const settings = useSiteSettings();
+  const { t } = useLang();
   // Ocultar el footer público en rutas de admin
   if (pathname?.startsWith("/admin")) return null;
   return (
@@ -24,8 +26,7 @@ export default function Footer() {
         <div>
           <div className="font-script text-3xl text-rose">Kan M</div>
           <p className="text-sm text-muted-foreground mt-3 max-w-xs leading-relaxed">
-            Repostería artesanal y catering boutique. Endulzamos los momentos
-            que más importan, con amor y detalle.
+            {t.footer.tagline}
           </p>
           {/* Redes sociales — botones circulares */}
           <div className="flex items-center gap-2.5 mt-5">
@@ -64,19 +65,19 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-xs uppercase tracking-widest font-medium mb-4">Explorar</h4>
+          <h4 className="text-xs uppercase tracking-widest font-medium mb-4">{t.footer.explore}</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="/" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Inicio</Link></li>
-            {settings.catalogEnabled && <li><Link href="/catalogo" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Catálogo</Link></li>}
-            <li><Link href="/catering" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Catering</Link></li>
-            <li><Link href="/la-latica" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">La Latica</Link></li>
-            <li><Link href="/empanadoteca" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Empanadoteca</Link></li>
-            <li><Link href="/nosotros" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">Nosotros</Link></li>
+            <li><Link href="/" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.home}</Link></li>
+            {settings.catalogEnabled && <li><Link href="/catalogo" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.catalog}</Link></li>}
+            <li><Link href="/catering" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.catering}</Link></li>
+            <li><Link href="/la-latica" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.latica}</Link></li>
+            <li><Link href="/empanadoteca" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.empanadoteca}</Link></li>
+            <li><Link href="/nosotros" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.about}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-xs uppercase tracking-widest font-medium mb-4">Contacto</h4>
+          <h4 className="text-xs uppercase tracking-widest font-medium mb-4">{t.footer.contact}</h4>
           <ul className="space-y-3 text-sm text-muted-foreground">
             <li className="flex items-center gap-2"><Phone size={14} className="text-rose" /> 829-610-7064</li>
             <li className="flex items-center gap-2">

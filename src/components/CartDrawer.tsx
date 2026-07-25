@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useCart, CartItem, RecentOrder } from "./CartContext";
 import { formatDominicanPhone, validateDominicanPhone } from "@/lib/phone";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 type Step = "cart" | "info" | "payment" | "success";
 
@@ -23,11 +24,11 @@ type InfoForm = {
 
 type CartOrderStatus = "PENDING" | "CONFIRMED" | "DENIED" | "SENT";
 
-const STATUS_INFO: Record<CartOrderStatus, { label: string; color: string; bg: string }> = {
-  PENDING:   { label: "Pendiente de revisión", color: "#92400e", bg: "#fef3c7" },
-  CONFIRMED: { label: "Confirmada",            color: "#065f46", bg: "#d1fae5" },
-  DENIED:    { label: "No procesada",          color: "#991b1b", bg: "#fee2e2" },
-  SENT:      { label: "Enviada",               color: "#1e40af", bg: "#dbeafe" },
+const STATUS_COLORS: Record<CartOrderStatus, { color: string; bg: string }> = {
+  PENDING:   { color: "#92400e", bg: "#fef3c7" },
+  CONFIRMED: { color: "#065f46", bg: "#d1fae5" },
+  DENIED:    { color: "#991b1b", bg: "#fee2e2" },
+  SENT:      { color: "#1e40af", bg: "#dbeafe" },
 };
 
 function RecentOrderCard({
@@ -37,6 +38,13 @@ function RecentOrderCard({
   order: RecentOrder;
   onReorder: (items: CartItem[]) => void;
 }) {
+  const { t } = useLang();
+  const STATUS_LABELS: Record<CartOrderStatus, string> = {
+    PENDING: t.cart.statusPending,
+    CONFIRMED: t.cart.statusConfirmed,
+    DENIED: t.cart.statusDenied,
+    SENT: t.cart.statusSent,
+  };
   const [status, setStatus] = useState<CartOrderStatus | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
   const [statusErr, setStatusErr] = useState("");
@@ -50,10 +58,10 @@ function RecentOrderCard({
         const data = await r.json();
         setStatus(data.status as CartOrderStatus);
       } else {
-        setStatusErr("No se pudo obtener el estado.");
+        setStatusErr(t.cart.statusError);
       }
     } catch {
-      setStatusErr("Error de conexión.");
+      setStatusErr(t.cart.connectionError);
     } finally {
       setLoadingStatus(false);
     }
@@ -64,7 +72,7 @@ function RecentOrderCard({
     month: "short",
   });
 
-  const info = status ? STATUS_INFO[status] : null;
+  const info = status ? { label: STATUS_LABELS[status], ...STATUS_COLORS[status] } : null;
 
   return (
     <div className="bg-white rounded-2xl border border-[#ede8e0] p-4 space-y-3">
@@ -73,7 +81,7 @@ function RecentOrderCard({
           <p className="font-mono font-bold text-[#e85d82] text-sm tracking-wide">{order.code}</p>
           <p className="text-xs text-gray-400 mt-0.5">{date}</p>
           <p className="text-xs text-gray-500 mt-0.5">
-            {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
+            {order.items.length} {order.items.length === 1 ? t.cart.itemSingular : t.cart.itemPlural}
           </p>
         </div>
         <div className="text-right shrink-0">
@@ -93,7 +101,7 @@ function RecentOrderCard({
               disabled={loadingStatus}
               className="text-xs text-[#f07097] hover:underline mt-1 block ml-auto disabled:opacity-50"
             >
-              {loadingStatus ? "Consultando…" : "Ver estado →"}
+              {loadingStatus ? t.cart.checking : t.cart.viewStatus}
             </button>
           )}
           {statusErr && (
@@ -105,7 +113,7 @@ function RecentOrderCard({
         onClick={() => onReorder(order.items)}
         className="btn-shine w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-rose hover:opacity-90 transition"
       >
-        Pedir de nuevo
+        {t.cart.reorder}
       </button>
     </div>
   );
@@ -129,19 +137,20 @@ function CartStep({
   recentOrders: RecentOrder[];
   onReorder: (items: CartItem[]) => void;
 }) {
+  const { t } = useLang();
   if (items.length === 0) {
     return (
       <div className="flex flex-col h-full overflow-y-auto px-5 py-8">
         <div className="flex flex-col items-center text-center mb-8">
           <ShoppingCart size={48} className="text-[#f0dde4] mb-4" />
-          <p className="font-display text-xl text-gray-700 mb-2">Tu carrito está vacío</p>
+          <p className="font-display text-xl text-gray-700 mb-2">{t.cart.emptyTitle}</p>
           <p className="text-sm text-gray-400">
-            Agrega productos desde el catálogo para comenzar tu pedido.
+            {t.cart.emptySub}
           </p>
         </div>
         {recentOrders.length > 0 && (
           <div className="space-y-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Órdenes recientes</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{t.cart.recentOrders}</p>
             {recentOrders.map((order) => (
               <RecentOrderCard key={order.code} order={order} onReorder={onReorder} />
             ))}
@@ -171,14 +180,14 @@ function CartStep({
               </p>
               {item.price != null ? (
                 <p className="text-xs text-[#f07097] font-medium mt-0.5">
-                  RD${item.price.toLocaleString("es-DO")} c/u
+                  RD${item.price.toLocaleString("es-DO")} {t.cart.each}
                 </p>
               ) : (
-                <p className="text-xs text-gray-400 mt-0.5">Precio a consultar</p>
+                <p className="text-xs text-gray-400 mt-0.5">{t.cart.priceOnRequest}</p>
               )}
               {item.price != null && (
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Subtotal: RD${(item.price * item.quantity).toLocaleString("es-DO")}
+                  {t.cart.subtotalLabel}: RD${(item.price * item.quantity).toLocaleString("es-DO")}
                 </p>
               )}
             </div>
@@ -186,7 +195,7 @@ function CartStep({
               <button
                 onClick={() => remove(item.id)}
                 className="text-gray-300 hover:text-red-400 transition"
-                aria-label="Eliminar"
+                aria-label={t.cart.remove}
               >
                 <Trash2 size={14} />
               </button>
@@ -215,11 +224,11 @@ function CartStep({
         <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="text-amber-600 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-800 leading-relaxed">
-            Las órdenes realizadas por la página son únicamente para pasar a recoger en el local. No tenemos delivery disponible para este tipo de orden.
+            {t.cart.pickupNotice}
           </p>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Subtotal</span>
+          <span className="text-sm text-gray-600">{t.cart.subtotalLabel}</span>
           <span className="font-display text-xl font-bold text-gray-900">
             RD${subtotal.toLocaleString("es-DO")}
           </span>
@@ -228,7 +237,7 @@ function CartStep({
           onClick={onNext}
           className="btn-shine w-full py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition active:scale-95"
         >
-          Ordenar →
+          {t.cart.order}
         </button>
       </div>
     </div>
@@ -245,6 +254,7 @@ function InfoStep({
   setForm: (f: InfoForm) => void;
   onNext: () => void;
 }) {
+  const { t } = useLang();
   const inputCls =
     "w-full rounded-xl border border-[#ede8e0] bg-[#faf8f5] px-4 py-3 text-sm focus:outline-none focus:border-[#f07097] transition";
 
@@ -264,9 +274,9 @@ function InfoStep({
         <div className="flex items-start gap-3 bg-[#fef7f9] border border-[#f9c8d8] rounded-2xl px-4 py-3.5">
           <span className="text-lg shrink-0">🛍️</span>
           <div>
-            <p className="text-sm font-semibold text-[#e85d82]">Pasar a recoger en el local</p>
+            <p className="text-sm font-semibold text-[#e85d82]">{t.cart.pickupTitle}</p>
             <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-              Las órdenes realizadas por la página son únicamente para pasar a recoger. No tenemos delivery disponible para este tipo de orden.
+              {t.cart.pickupDesc}
             </p>
           </div>
         </div>
@@ -274,20 +284,20 @@ function InfoStep({
         <div className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">
-              Tu nombre *
+              {t.cart.nameLabel}
             </label>
             <input
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Nombre completo"
+              placeholder={t.cart.namePlaceholder}
               className={inputCls}
             />
           </div>
 
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-1.5 block">
-              Teléfono *
+              {t.cart.phoneLabel}
             </label>
             <input
               required
@@ -301,7 +311,7 @@ function InfoStep({
             {form.phone.length > 0 && !phoneValid && (
               <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
                 <AlertCircle size={11} />
-                Ingresa un número dominicano válido, ejemplo: 809-519-5688.
+                {t.cart.phoneError}
               </p>
             )}
           </div>
@@ -314,7 +324,7 @@ function InfoStep({
           disabled={!canSubmit}
           className="btn-shine w-full py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition active:scale-95 disabled:opacity-40"
         >
-          Continuar al pago →
+          {t.cart.continueToPayment}
         </button>
       </div>
     </form>
@@ -343,6 +353,7 @@ function PaymentStep({
   onFileChange: (file: File) => void;
   onSubmit: () => void;
 }) {
+  const { t } = useLang();
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
@@ -354,30 +365,30 @@ function PaymentStep({
             border: "1px solid #f9c8d8",
           }}
         >
-          <p className="text-xs text-gray-500 mb-1">Total a transferir</p>
+          <p className="text-xs text-gray-500 mb-1">{t.cart.totalToTransfer}</p>
           <p className="font-display text-3xl font-bold text-[#e85d82]">
             RD${subtotal.toLocaleString("es-DO")}
           </p>
-          <p className="text-xs text-gray-400 mt-1">Transfiere el monto exacto</p>
+          <p className="text-xs text-gray-400 mt-1">{t.cart.transferExact}</p>
         </div>
 
         {/* Bank details */}
         <div className="bg-white rounded-2xl border border-[#ede8e0] overflow-hidden">
           <div className="px-4 py-2.5 bg-[#faf8f5] border-b border-[#ede8e0]">
             <p className="text-xs font-bold uppercase tracking-widest text-gray-500">
-              Transfiere a una de estas cuentas
+              {t.cart.transferToAccounts}
             </p>
           </div>
           <div className="px-4 py-4 space-y-4">
             <p className="text-xs text-gray-500 leading-relaxed">
-              Transfiere el monto exacto de tu orden y luego sube el comprobante para que podamos validar tu pedido.
+              {t.cart.transferInstructions}
             </p>
 
             {/* BHD */}
             <div className="border border-[#ede8e0] rounded-xl p-3.5 space-y-2">
               <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">BHD León</p>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Cuenta de ahorro</span>
+                <span className="text-xs text-gray-500">{t.cart.savingsAccount}</span>
                 <span className="text-sm font-mono font-bold text-gray-800">23842820013</span>
               </div>
             </div>
@@ -386,7 +397,7 @@ function PaymentStep({
             <div className="border border-[#ede8e0] rounded-xl p-3.5 space-y-2">
               <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Banreservas</p>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Cuenta de ahorro</span>
+                <span className="text-xs text-gray-500">{t.cart.savingsAccount}</span>
                 <span className="text-sm font-mono font-bold text-gray-800">9606681469</span>
               </div>
             </div>
@@ -394,11 +405,11 @@ function PaymentStep({
             {/* Titular */}
             <div className="space-y-1.5 border-t border-[#f0e8e0] pt-3">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Titular</span>
+                <span className="text-xs text-gray-500">{t.cart.accountHolder}</span>
                 <span className="text-sm font-semibold text-gray-800">Karolyn Sierra</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Cédula</span>
+                <span className="text-xs text-gray-500">{t.cart.idNumber}</span>
                 <span className="text-sm font-mono text-gray-700">402-2795-6733</span>
               </div>
             </div>
@@ -408,7 +419,7 @@ function PaymentStep({
         {/* Receipt upload */}
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
-            Comprobante de pago *
+            {t.cart.receiptLabel}
           </p>
           {receiptUrl ? (
             <div className="relative rounded-2xl overflow-hidden border-2 border-green-300 bg-green-50">
@@ -420,14 +431,14 @@ function PaymentStep({
               />
               <div className="absolute top-2 right-2">
                 <span className="flex items-center gap-1 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  <CheckCircle2 size={12} /> Subido
+                  <CheckCircle2 size={12} /> {t.cart.uploaded}
                 </span>
               </div>
               <button
                 onClick={() => fileRef.current?.click()}
                 className="w-full py-2 text-xs text-gray-500 hover:text-[#f07097] transition border-t border-green-200"
               >
-                Cambiar imagen
+                {t.cart.changeImage}
               </button>
             </div>
           ) : (
@@ -439,9 +450,9 @@ function PaymentStep({
             >
               <Upload size={24} />
               <span className="text-sm font-medium">
-                {uploading ? "Subiendo…" : "Subir foto del comprobante"}
+                {uploading ? t.cart.uploading : t.cart.uploadReceipt}
               </span>
-              <span className="text-xs">JPG, PNG, HEIC — máx. 10MB</span>
+              <span className="text-xs">{t.cart.fileHint}</span>
             </button>
           )}
           {uploadErr && (
@@ -474,7 +485,7 @@ function PaymentStep({
           disabled={!receiptUrl || uploading || submitting}
           className="btn-shine w-full py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition active:scale-95 disabled:opacity-40"
         >
-          {submitting ? "Enviando orden…" : "Confirmar orden"}
+          {submitting ? t.cart.sendingOrder : t.cart.confirmOrder}
         </button>
       </div>
     </div>
@@ -483,12 +494,13 @@ function PaymentStep({
 
 // ── Step: Success ─────────────────────────────────────────────
 function SuccessStep({ code, total, onClose }: { code: string; total: number | null; onClose: () => void }) {
+  const { t } = useLang();
   return (
     <div className="flex flex-col items-center justify-center text-center px-6 py-12 h-full">
       <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6 bg-green-100">
         <CheckCircle2 size={40} className="text-green-500" />
       </div>
-      <p className="font-display text-2xl text-gray-900 mb-2">¡Orden recibida!</p>
+      <p className="font-display text-2xl text-gray-900 mb-2">{t.cart.orderReceived}</p>
       <div
         className="my-4 px-6 py-3 rounded-2xl text-2xl font-bold tracking-widest"
         style={{
@@ -501,19 +513,19 @@ function SuccessStep({ code, total, onClose }: { code: string; total: number | n
       </div>
       {total != null && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3 mb-4 w-full max-w-xs">
-          <p className="text-xs text-amber-700 font-semibold uppercase tracking-wide mb-1">Total confirmado</p>
+          <p className="text-xs text-amber-700 font-semibold uppercase tracking-wide mb-1">{t.cart.confirmedTotal}</p>
           <p className="text-xl font-bold text-amber-900">RD${total.toLocaleString("es-DO")}</p>
-          <p className="text-xs text-amber-600 mt-0.5">Asegúrate de que tu transferencia sea por este monto exacto.</p>
+          <p className="text-xs text-amber-600 mt-0.5">{t.cart.exactAmountNote}</p>
         </div>
       )}
       <p className="text-sm text-gray-600 leading-relaxed mb-8 max-w-xs">
-        Tu código es <strong>{code}</strong>. Revisaremos tu comprobante y te contactaremos si necesitamos confirmar algo.
+        {t.cart.successCodePre}<strong>{code}</strong>{t.cart.successCodeSuf}
       </p>
       <button
         onClick={onClose}
         className="btn-shine px-8 py-3 rounded-2xl text-white font-semibold text-sm bg-gradient-rose hover:opacity-90 transition"
       >
-        Cerrar
+        {t.cart.close}
       </button>
     </div>
   );
@@ -522,6 +534,7 @@ function SuccessStep({ code, total, onClose }: { code: string; total: number | n
 // ── Main Drawer ───────────────────────────────────────────────
 export default function CartDrawer() {
   const { items, subtotal, setQuantity, remove, clear, isOpen, close, recentOrders, addRecentOrder, reorder } = useCart();
+  const { t } = useLang();
   const [step, setStep] = useState<Step>("cart");
   const [form, setForm] = useState<InfoForm>({ name: "", phone: "" });
   const [receiptUrl, setReceiptUrl] = useState("");
@@ -535,7 +548,7 @@ export default function CartDrawer() {
 
   useEffect(() => {
     if (!isOpen) {
-      const t = setTimeout(() => {
+      const timer = setTimeout(() => {
         if (step !== "success") setStep("cart");
         setForm({ name: "", phone: "" });
         setReceiptUrl("");
@@ -543,7 +556,7 @@ export default function CartDrawer() {
         setSubmitErr("");
         setConfirmedTotal(null);
       }, 300);
-      return () => clearTimeout(t);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, step]);
 
@@ -562,8 +575,8 @@ export default function CartDrawer() {
     const res = await fetch("/api/cart-orders/upload", { method: "POST", body: fd });
     setUploading(false);
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Error al subir" }));
-      setUploadErr(err.error ?? "Error al subir el comprobante.");
+      const err = await res.json().catch(() => ({ error: "" }));
+      setUploadErr(err.error || t.cart.uploadFailed);
       return;
     }
     const { url } = await res.json();
@@ -571,7 +584,7 @@ export default function CartDrawer() {
   }
 
   async function submitOrder() {
-    if (!receiptUrl) { setUploadErr("Debes subir el comprobante antes de confirmar."); return; }
+    if (!receiptUrl) { setUploadErr(t.cart.receiptRequired); return; }
     setSubmitting(true);
     setSubmitErr("");
     const res = await fetch("/api/cart-orders", {
@@ -593,8 +606,8 @@ export default function CartDrawer() {
     });
     setSubmitting(false);
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: "Error" }));
-      setSubmitErr(err.error ?? "Error al enviar la orden. Intenta de nuevo.");
+      const err = await res.json().catch(() => ({ error: "" }));
+      setSubmitErr(err.error || t.cart.submitFailed);
       return;
     }
     const data = await res.json();
@@ -612,10 +625,10 @@ export default function CartDrawer() {
   }
 
   const STEP_TITLES: Record<Step, string> = {
-    cart: "Carrito",
-    info: "Tu pedido",
-    payment: "Pago",
-    success: "¡Listo!",
+    cart: t.cart.stepCart,
+    info: t.cart.stepInfo,
+    payment: t.cart.stepPayment,
+    success: t.cart.stepSuccess,
   };
 
   if (!isOpen) return null;

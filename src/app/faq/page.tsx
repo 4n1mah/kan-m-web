@@ -3,13 +3,13 @@ import { useState } from "react";
 import { ChevronDown, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
-import { FAQS as FAQ_SOURCE, LINKS, BUSINESS } from "@/lib/bizInfo";
+import { LINKS, BUSINESS } from "@/lib/bizInfo";
 import { useSiteSettings } from "@/components/useSiteSettings";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
-// Las FAQs viven en src/lib/bizInfo.ts (fuente única de verdad consumida
-// también por el bot externo de WhatsApp). Para editar el contenido, ir
-// a bizInfo.ts. Acá sólo proyectamos { q, a } para el render.
-const FAQS: { q: string; a: string }[] = FAQ_SOURCE.map(({ q, a }) => ({ q, a }));
+// El contenido de las FAQs vive en el diccionario (src/lib/i18n/dictionary.ts):
+// el español se lee de bizInfo.ts (fuente única de verdad que también consume
+// el bot) y el inglés se agrega junto a él. Para editar el ES, ir a bizInfo.ts.
 
 // El texto de bizInfo se guarda plano (el bot lo auto-enlaza en WhatsApp).
 // En la web convertimos URLs y el teléfono en hipervínculos, con etiquetas
@@ -69,6 +69,8 @@ function renderAnswer(text: string): Array<string | JSX.Element> {
 export default function FAQPage() {
   const [open, setOpen] = useState<number | null>(null);
   const { quotesEnabled } = useSiteSettings();
+  const { t } = useLang();
+  const FAQS = t.faq.items;
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -80,14 +82,13 @@ export default function FAQPage() {
 
         <div className="hero-enter relative">
           <p className="font-script text-xl md:text-2xl text-[var(--rose)]">
-            Resolvemos tus dudas
+            {t.faq.kicker}
           </p>
           <h1 className="font-display text-3xl md:text-4xl mt-2">
-            Preguntas frecuentes
+            {t.faq.title}
           </h1>
           <p className="text-[var(--muted-foreground)] mt-4 max-w-xl mx-auto leading-relaxed">
-            Todo lo que necesitas saber antes de hacer tu pedido. ¿No encuentras tu respuesta?
-            Escríbenos directamente.
+            {t.faq.subtitle}
           </p>
         </div>
       </section>
@@ -140,9 +141,9 @@ export default function FAQPage() {
         {/* CTA */}
         <div className="mt-14 rounded-3xl glass-pink bg-mesh p-8 text-center reveal" data-reveal="scale">
           <MessageCircle size={32} className="float-y text-[var(--rose)] mx-auto mb-3" />
-          <h2 className="font-display text-2xl">¿Tienes otra pregunta?</h2>
+          <h2 className="font-display text-2xl">{t.faq.ctaTitle}</h2>
           <p className="text-[var(--muted-foreground)] mt-2 mb-6">
-            Nuestro equipo responde rápido por WhatsApp.
+            {t.faq.ctaSubtitle}
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <a
@@ -152,14 +153,14 @@ export default function FAQPage() {
               className="btn-shine inline-flex items-center gap-2 px-6 py-3 rounded-full text-white text-sm font-semibold shadow-md"
               style={{ background: "linear-gradient(135deg, #f07097 0%, #d8b375 100%)" }}
             >
-              Escribir por WhatsApp
+              {t.faq.ctaWhatsapp}
             </a>
             {quotesEnabled && (
               <Link
                 href="/cotizar"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--rose)] text-[var(--rose)] text-sm font-semibold hover:bg-[var(--rose)]/5 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
-                Cotizar mi evento
+                {t.faq.ctaQuote}
               </Link>
             )}
           </div>

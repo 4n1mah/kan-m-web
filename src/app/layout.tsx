@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import SiteBackdrop from "@/components/SiteBackdrop";
 import { WipeProvider } from "@/components/BrandWipe";
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import Footer from "@/components/Footer";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -114,14 +115,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <WipeProvider>
-          <SiteBackdrop />
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <WhatsAppFab />
-          <ScrollReveal />
-        </WipeProvider>
+        <LanguageProvider>
+          <WipeProvider>
+            <SiteBackdrop />
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <WhatsAppFab />
+            <ScrollReveal />
+          </WipeProvider>
+        </LanguageProvider>
         <Analytics />
         <SpeedInsights />
       </body>

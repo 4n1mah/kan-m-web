@@ -1,14 +1,16 @@
 "use client";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "./CartContext";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 export default function CartFab() {
   const { totalItems, open } = useCart();
+  const { t } = useLang();
 
   return (
     <button
       onClick={open}
-      aria-label="Abrir carrito"
+      aria-label={t.cart.openCart}
       className="pulse-ring fixed bottom-24 right-5 z-40 w-14 h-14 rounded-full text-white bg-gradient-rose flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-glow active:scale-90"
       style={{ boxShadow: "0 4px 20px rgba(240,112,151,0.45)" }}
     >

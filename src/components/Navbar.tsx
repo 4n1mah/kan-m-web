@@ -7,14 +7,16 @@ import { Menu, X } from "lucide-react";
 import { waLink, WA_MESSAGES } from "@/lib/whatsapp";
 import { useSiteSettings } from "@/components/useSiteSettings";
 import { useWipe, wipeClickHandler } from "@/components/BrandWipe";
+import { useLang } from "@/lib/i18n/LanguageProvider";
+import type { Dict } from "@/lib/i18n/dictionary";
 
-const links = [
-  { href: "/", label: "Inicio" },
-  { href: "/catalogo", label: "Catálogo" },
-  { href: "/catering", label: "Catering" },
-  { href: "/la-latica", label: "La Latica" },
-  { href: "/nosotros", label: "Nosotros" },
-  { href: "/faq", label: "FAQ" },
+const links: { href: string; key: keyof Dict["nav"] }[] = [
+  { href: "/", key: "home" },
+  { href: "/catalogo", key: "catalog" },
+  { href: "/catering", key: "catering" },
+  { href: "/la-latica", key: "latica" },
+  { href: "/nosotros", key: "about" },
+  { href: "/faq", key: "faq" },
 ];
 
 export default function Navbar() {
@@ -23,6 +25,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const settings = useSiteSettings();
   const { navigateWithWipe } = useWipe();
+  const { t, lang, toggle } = useLang();
   const visibleLinks = links.filter(l => l.href !== "/catalogo" || settings.catalogEnabled);
 
   // Modo Empanadoteca: el navbar cambia de mundo en /empanadoteca
@@ -98,7 +101,7 @@ export default function Navbar() {
                     : "text-white/85 hover:text-white hover:bg-white/10"
                 }`}
               >
-                {l.label}
+                {t.nav[l.key]}
               </Link>
             );
           })}
@@ -127,6 +130,15 @@ export default function Navbar() {
 
         {/* Desktop CTAs */}
         <div className="hidden lg:flex items-center gap-2 shrink-0">
+          {/* Toggle de idioma ES/EN */}
+          <button
+            onClick={toggle}
+            aria-label={t.nav.langLabel}
+            className="flex items-center rounded-full bg-white/15 border border-white/30 overflow-hidden text-xs font-semibold shrink-0"
+          >
+            <span className={`px-2 py-1.5 transition-colors ${lang === "es" ? "bg-white text-[#f07097]" : "text-white/80"}`}>ES</span>
+            <span className={`px-2 py-1.5 transition-colors ${lang === "en" ? "bg-white text-[#f07097]" : "text-white/80"}`}>EN</span>
+          </button>
           <a
             href={waLink(WA_MESSAGES.general)}
             target="_blank"
@@ -143,14 +155,14 @@ export default function Navbar() {
               href="/cotizar"
               className="btn-shine flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold hover:bg-white/90 transition-all shadow-sm"
             >
-              Cotizar
+              {t.nav.quote}
             </Link>
           )}
         </div>
 
         {/* Mobile hamburger */}
         <button
-          aria-label="Menú"
+          aria-label={t.nav.menu}
           className="lg:hidden p-2 rounded-lg text-white hover:bg-white/15 transition"
           onClick={() => setOpen((o) => !o)}
         >
@@ -181,7 +193,7 @@ export default function Navbar() {
                     : "text-white/90 hover:text-white hover:bg-white/15"
                 }`}
               >
-                {l.label}
+                {t.nav[l.key]}
               </Link>
             );
           })}
@@ -192,7 +204,7 @@ export default function Navbar() {
               onClick={(e) => { setOpen(false); wipeClickHandler(navigateWithWipe, "/", "kanm")(e); }}
               className="px-3 py-2.5 rounded-lg text-base font-semibold text-white bg-white/20 flex items-center gap-2"
             >
-              <span className="font-script text-lg leading-none">Kan M</span> · Volver a la repostería
+              <span className="font-script text-lg leading-none">Kan M</span> {t.nav.backToBakery}
             </a>
           ) : (
             <a
@@ -206,6 +218,15 @@ export default function Navbar() {
             </a>
           )}
           <div className="flex flex-col gap-2 pt-3 border-t border-white/15 mt-2">
+            {/* Toggle de idioma ES/EN */}
+            <button
+              onClick={toggle}
+              aria-label={t.nav.langLabel}
+              className="self-start flex items-center rounded-full bg-white/15 border border-white/30 overflow-hidden text-sm font-semibold"
+            >
+              <span className={`px-3 py-1.5 transition-colors ${lang === "es" ? "bg-white text-[#f07097]" : "text-white/80"}`}>ES</span>
+              <span className={`px-3 py-1.5 transition-colors ${lang === "en" ? "bg-white text-[#f07097]" : "text-white/80"}`}>EN</span>
+            </button>
             <a
               href={waLink(WA_MESSAGES.general)}
               target="_blank"
@@ -220,7 +241,7 @@ export default function Navbar() {
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center px-5 py-2.5 rounded-full bg-white text-[#f07097] text-sm font-semibold shadow-sm"
               >
-                Cotizar
+                {t.nav.quote}
               </Link>
             )}
           </div>

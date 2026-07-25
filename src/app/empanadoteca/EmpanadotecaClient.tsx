@@ -10,6 +10,7 @@
 import { useEffect } from "react";
 import { Instagram, MapPin, ArrowLeft, Flame } from "lucide-react";
 import { useWipe, wipeClickHandler } from "@/components/BrandWipe";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 const EMP = {
   instagram: "https://instagram.com/empanadotecard",
@@ -18,6 +19,7 @@ const EMP = {
 
 export default function EmpanadotecaClient() {
   const { navigateWithWipe } = useWipe();
+  const { t } = useLang();
 
   // Tema Empanadoteca con morph gradual de entrada y salida
   useEffect(() => {
@@ -49,13 +51,13 @@ export default function EmpanadotecaClient() {
             style={{ boxShadow: "0 16px 48px -12px rgba(179,40,45,0.45)" }}
           />
           <p className="font-script text-2xl mt-6" style={{ color: "var(--emp-red)" }}>
-            las mejores empanadas de RD
+            {t.empanadoteca.heroKicker}
           </p>
           <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-wide mt-1" style={{ color: "var(--emp-navy)" }}>
             EMPANADOTECA
           </h1>
           <p className="text-sm uppercase tracking-[0.25em] mt-2" style={{ color: "var(--muted-foreground)" }}>
-            Tradicionales · Venezolanas · Catibías
+            {t.empanadoteca.subtitle}
           </p>
 
           {/* Card "cocinando" */}
@@ -74,11 +76,10 @@ export default function EmpanadotecaClient() {
               <Flame size={22} />
             </div>
             <h2 className="font-display text-2xl sm:text-3xl mt-4" style={{ color: "var(--emp-navy)" }}>
-              Estamos cocinando esta página…
+              {t.empanadoteca.cookingTitle}
             </h2>
             <p className="mt-3 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
-              🥟 ¡Mantente al tanto! Muy pronto podrás ver nuestro menú de
-              empanadas aquí mismo. Mientras tanto, síguenos y visítanos.
+              {t.empanadoteca.cookingText}
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <a
@@ -97,7 +98,7 @@ export default function EmpanadotecaClient() {
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold border transition hover:-translate-y-0.5"
                 style={{ background: "rgba(255,253,248,0.8)", color: "var(--emp-navy)", borderColor: "rgba(34,49,74,0.25)" }}
               >
-                <MapPin size={17} /> Cómo llegar
+                <MapPin size={17} /> {t.empanadoteca.directions}
               </a>
             </div>
           </div>
@@ -109,7 +110,7 @@ export default function EmpanadotecaClient() {
             className="kanm-link btn-shine inline-flex items-center gap-2 mt-10 px-6 py-3 rounded-full text-white font-semibold"
             style={{ background: "linear-gradient(135deg,#f07097 0%,#f4899e 50%,#e85d82 100%)" }}
           >
-            <ArrowLeft size={17} /> Volver a <span className="font-script text-lg leading-none">Kan M</span>
+            <ArrowLeft size={17} /> {t.empanadoteca.backTo} <span className="font-script text-lg leading-none">Kan M</span>
           </a>
         </div>
       </section>

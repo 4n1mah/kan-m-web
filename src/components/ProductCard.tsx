@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus, Check, Sparkles } from "lucide-react";
 import { useCartOptional } from "./CartContext";
 import { useState } from "react";
+import { useLang } from "@/lib/i18n/LanguageProvider";
 
 export type Product = {
   id: string;
@@ -15,18 +16,10 @@ export type Product = {
   availabilityStatus?: "AVAILABLE" | "OUT_OF_STOCK" | "HIDDEN";
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  cakes: "Pasteles",
-  desserts: "Postres",
-  events: "Mesa de dulces",
-  picaderas: "Picaderas",
-  brunch: "Brunch",
-  drinks: "Bebidas",
-  laticas: "Laticas",
-};
-
 export default function ProductCard({ product }: { product: Product }) {
   const cart = useCartOptional();
+  const { t } = useLang();
+  const CATEGORY_LABELS = t.product.categoryLabels;
   const [added, setAdded] = useState(false);
 
   const inCart = cart?.items.find((i) => i.id === product.id);
@@ -59,7 +52,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         {isOutOfStock && (
           <div className="absolute top-3 left-3 bg-gray-800/85 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm">
-            No disponible
+            {t.product.outOfStock}
           </div>
         )}
         {CATEGORY_LABELS[product.category] && (
@@ -75,7 +68,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </p>
         {hasPrice && (
           <p className="mt-3 text-rose">
-            <span className="text-xs font-medium align-baseline mr-1">Desde</span>
+            <span className="text-xs font-medium align-baseline mr-1">{t.product.priceFrom}</span>
             <span className="font-display text-lg font-semibold text-gradient-rose">
               RD${product.price!.toLocaleString("es-DO")}
             </span>
@@ -97,11 +90,11 @@ export default function ProductCard({ product }: { product: Product }) {
                 }`}
               >
                 {added ? (
-                  <><Check size={15} /> ¡Agregado!</>
+                  <><Check size={15} /> {t.product.added}</>
                 ) : inCart ? (
-                  <><Check size={15} /> En el carrito ({inCart.quantity})</>
+                  <><Check size={15} /> {t.product.inCart} ({inCart.quantity})</>
                 ) : (
-                  <><Plus size={15} /> Agregar al carrito</>
+                  <><Plus size={15} /> {t.product.addToCart}</>
                 )}
               </button>
             ) : (
@@ -110,7 +103,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 href={`/catalogo?cat=${encodeURIComponent(product.category)}`}
                 className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-rose shadow-soft hover:opacity-90 hover:shadow-glow transition active:scale-[.97]"
               >
-                <Plus size={15} /> Ordenar en el catálogo
+                <Plus size={15} /> {t.product.orderInCatalog}
               </Link>
             )
           )}
@@ -121,14 +114,14 @@ export default function ProductCard({ product }: { product: Product }) {
               href={`/cotizar?item=${encodeURIComponent(product.name)}`}
               className="inline-flex w-full justify-center items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-rose shadow-soft hover:opacity-90 hover:shadow-glow transition active:scale-[.97]"
             >
-              <Sparkles size={15} /> Solicitar cotización
+              <Sparkles size={15} /> {t.product.requestQuote}
             </Link>
           )}
 
           {/* Productos sin stock con precio: mostrar mensaje claro, sin botón */}
           {hasPrice && isOutOfStock && (
             <p className="text-xs text-center text-muted-foreground py-2">
-              Vuelve pronto — disponible próximamente
+              {t.product.comingSoonMsg}
             </p>
           )}
         </div>

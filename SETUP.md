@@ -21,16 +21,6 @@ Una vez hagas el deploy, debes agregar estas variables en Vercel:
 
 1. Entra a https://vercel.com → tu proyecto → **Settings** → **Environment Variables**
 2. Agrega cada una:
-
-| Variable | Valor |
-|---|---|
-| `DATABASE_URL` | `postgresql://neondb_owner:***REMOVED***@***REMOVED***-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require` |
-| `DATABASE_URL_UNPOOLED` | `postgresql://neondb_owner:***REMOVED***@***REMOVED***.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require` |
-| `CLOUDINARY_CLOUD_NAME` | `dsvcag6oo` |
-| `CLOUDINARY_API_KEY` | `***REMOVED***` |
-| `CLOUDINARY_API_SECRET` | `***REMOVED***` |
-| `JWT_SECRET` | (el mismo valor que tienes actualmente en tu .env.local) |
-
 3. Asegúrate de marcar **Production**, **Preview** y **Development** para cada variable.
 
 ---

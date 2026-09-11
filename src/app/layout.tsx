@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import SiteBackdrop from "@/components/SiteBackdrop";
 import { WipeProvider } from "@/components/BrandWipe";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+import { ADDRESS, BUSINESS } from "@/lib/bizInfo";
 import Footer from "@/components/Footer";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import ScrollReveal from "@/components/ScrollReveal";
@@ -78,13 +79,13 @@ const localBusinessJsonLd = {
   "@context": "https://schema.org",
   "@type": ["Bakery", "LocalBusiness", "FoodEstablishment"],
   "@id": `${SITE_URL}#business`,
-  name: "Kan M Repostería y Catering",
+  name: BUSINESS.name,
   alternateName: "Kan M",
   description:
     "Repostería artesanal y catering boutique en la Zona Colonial de Santo Domingo. Pasteles personalizados, postres, mesas dulces y catering para eventos.",
   url: SITE_URL,
-  telephone: "+1-829-610-7064",
-  email: "kanmreposteriaycatering@gmail.com",
+  telephone: BUSINESS.phoneTel,
+  email: BUSINESS.email,
   image: DEFAULT_OG_IMAGE,
   logo: `${SITE_URL}/logo-kanm.png`,
   priceRange: "$$",
@@ -94,15 +95,12 @@ const localBusinessJsonLd = {
   areaServed: { "@type": "City", name: "Santo Domingo" },
   address: {
     "@type": "PostalAddress",
-    streetAddress: "C. Espaillat 58",
-    addressLocality: "Zona Colonial, Santo Domingo",
-    addressRegion: "Distrito Nacional",
-    addressCountry: "DO",
+    streetAddress: ADDRESS.street,
+    addressLocality: ADDRESS.locality,
+    addressRegion: ADDRESS.region,
+    addressCountry: ADDRESS.country,
   },
-  sameAs: [
-    "https://www.instagram.com/kanm.reposteriacafe/",
-    "https://maps.app.goo.gl/mU9uqEDyhnN4Zc7g9",
-  ],
+  sameAs: [BUSINESS.instagram, BUSINESS.mapsUrl],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

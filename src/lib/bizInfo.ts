@@ -38,15 +38,27 @@ export const HOLIDAY_OVERRIDES: Record<
   { open: number; close: number } | null
 > = {};
 
+// Dirección en partes, para los datos estructurados (JSON-LD) del sitio.
+// `BUSINESS.address` se arma desde aquí para que no puedan divergir.
+export const ADDRESS = {
+  street: "C. Espaillat 58",
+  locality: "Zona Colonial, Santo Domingo",
+  region: "Distrito Nacional",
+  country: "DO",
+} as const;
+
 export const BUSINESS = {
   name: "Kan M Repostería y Catering",
   greeting: "¡Hola, bienvenido a Kan M Repostería y Catering!",
-  address: "C. Espaillat 58, Zona Colonial, Santo Domingo",
-  mapsUrl: "https://maps.app.goo.gl/D1i89Ui3vx92FubCA",
+  address: `${ADDRESS.street}, ${ADDRESS.locality}`,
+  // Enlace único del local. Lo consumen la web, el JSON-LD y el bot vía
+  // /api/public/business-info: si cambia, se cambia solo aquí.
+  mapsUrl: "https://maps.app.goo.gl/AA97ruJTusebNrpz7",
   phoneDisplay: "+1 (829) 610-7064",
   phoneTel: "+18296107064",
   email: "kanmreposteriaycatering@gmail.com",
   instagram: "https://www.instagram.com/kanm.reposteriacafe/",
+  instagramHandle: "@kanm.reposteriacafe",
   tiktok: "https://www.tiktok.com/@kanmreposteriacafe",
 } as const;
 

@@ -11,10 +11,13 @@ import { useEffect } from "react";
 import { Instagram, MapPin, ArrowLeft, Flame } from "lucide-react";
 import { useWipe, wipeClickHandler } from "@/components/BrandWipe";
 import { useLang } from "@/lib/i18n/LanguageProvider";
+import { BUSINESS } from "@/lib/bizInfo";
 
+// Empanadoteca comparte local con Kan M, así que el mapa sale de la fuente
+// única. La cuenta de Instagram sí es propia de la sub-marca.
 const EMP = {
   instagram: "https://instagram.com/empanadotecard",
-  maps: "https://maps.app.goo.gl/hQtrJ3wqUeYyGCvJ9",
+  maps: BUSINESS.mapsUrl,
 };
 
 export default function EmpanadotecaClient() {

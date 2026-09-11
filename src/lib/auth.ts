@@ -107,7 +107,9 @@ export async function verifyCredentials(email: string, password: string) {
   });
   // Comparar contra un hash dummy si no existe el user, para que el tiempo
   // de respuesta sea similar y un atacante no pueda enumerar emails válidos.
-  const DUMMY_HASH = "$2a$12$abcdefghijklmnopqrstuv0000000000000000000000000000000000";
+  // Debe ser un hash bcrypt válido (60 caracteres, mismo costo que los reales):
+  // con un valor mal formado, bcrypt.compare sale de inmediato sin trabajar.
+  const DUMMY_HASH = "$2a$12$vC0C.IIz17cDtJPQ4tNzT.2fQT/dLBz7Y6QianY12uO/F1LgzpJKm";
   const ok = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
 
   if (!user || !user.active) return null;
@@ -164,6 +166,9 @@ export function canViewActivity(role: SessionPayload["role"]) {
   return role === "OWNER" || role === "BAKER";
 }
 export function canUploadOrderPhotos(role: SessionPayload["role"]) {
+  return role === "OWNER" || role === "BAKER";
+}
+export function canViewReports(role: SessionPayload["role"]) {
   return role === "OWNER" || role === "BAKER";
 }
 export function canManageSettings(role: SessionPayload["role"]) {

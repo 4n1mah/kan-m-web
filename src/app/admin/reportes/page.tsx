@@ -6,8 +6,8 @@
 //  • KPIs con delta vs mes anterior y sparkline
 //  • Gráfica de tendencia diaria (SVG propio, sin librerías)
 //  • Export CSV (cotizaciones y órdenes en línea)
-//  Todo se computa client-side desde /api/orders y
-//  /api/admin/cart-orders (limit=500, envelope {orders,hasMore}).
+//  Todo se computa client-side desde /api/admin/reports, que exige
+//  canViewReports (OWNER o BAKER) en el servidor.
 // ─────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -32,12 +32,8 @@ const MONTHS_SHORT = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct
 const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 const LINE = "#e85d82"; // stop oscuro del gradiente — mejor contraste para el trazo
 
-// El API devuelve array plano sin params y {orders,...} con ?limit
-function unwrap<T>(data: unknown): { list: T[]; hasMore: boolean } {
-  if (Array.isArray(data)) return { list: data as T[], hasMore: false };
-  const env = data as { orders?: T[]; hasMore?: boolean };
-  return { list: env?.orders ?? [], hasMore: !!env?.hasMore };
-}
+// Respuesta de /api/admin/reports (ver src/app/api/admin/reports/route.ts).
+type ReportsPayload = { orders: Order[]; cartOrders: CartOrder[]; hasMore: boolean };
 
 function inMonth(iso: string, m: number, y: number) {
   const d = new Date(iso);
@@ -209,17 +205,19 @@ export default function ReportesPage() {
   const [filterYear, setFilterYear]   = useState(today.getFullYear());
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/orders?limit=500").then(r => r.json()),
-      fetch("/api/admin/cart-orders?limit=500").then(r => r.json()),
-    ]).then(([ord, cart]) => {
-      const o = unwrap<Order>(ord);
-      const c = unwrap<CartOrder>(cart);
-      setOrders(o.list);
-      setCartOrders(c.list);
-      setHasMore(o.hasMore || c.hasMore);
-      setLoading(false);
-    });
+    fetch("/api/admin/reports")
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((data: ReportsPayload) => {
+        setOrders(data.orders ?? []);
+        setCartOrders(data.cartOrders ?? []);
+        setHasMore(!!data.hasMore);
+      })
+      .catch(() => {
+        // Sin permisos (403) o error de red: la vista queda vacía.
+        setOrders([]);
+        setCartOrders([]);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // ── Métricas del mes actual y del anterior ──────────────────

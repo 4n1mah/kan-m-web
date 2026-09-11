@@ -104,8 +104,6 @@ function memoryRateLimit(opts: RateLimitOpts): RateLimitResult {
 // Las rutas que la usaban con `await` siguen funcionando; las que no,
 // hay que actualizarlas (ya están todas con `await` en este proyecto —
 // ver `git grep "rateLimit({"`).
-//
-// Si necesitas la versión sync sin Upstash, usa `rateLimitSync`.
 export function rateLimit(opts: RateLimitOpts): Promise<RateLimitResult> {
   if (upstashEnabled) {
     return upstashRateLimit(opts).catch((err) => {
@@ -118,18 +116,10 @@ export function rateLimit(opts: RateLimitOpts): Promise<RateLimitResult> {
   return Promise.resolve(memoryRateLimit(opts));
 }
 
-export function rateLimitSync(opts: RateLimitOpts): RateLimitResult {
-  return memoryRateLimit(opts);
-}
-
 export function getClientIp(req: Request): string {
   const xff = req.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
   const real = req.headers.get("x-real-ip");
   if (real) return real;
   return "unknown";
-}
-
-export function isUpstashEnabled() {
-  return upstashEnabled;
 }

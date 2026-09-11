@@ -35,10 +35,6 @@ messaging.onBackgroundMessage((payload) => {
     title = "🛒 Nueva orden del catálogo — Kan M";
     body = `${data.customerName || "Cliente"} · ${data.code || ""} · RD$${data.total || ""}`;
     url = "/admin/dashboard?tab=ordenes";
-  } else if (data.type === "whatsapp_escalation") {
-    title = "💬 Cliente pide atención humana — Kan M";
-    body = `${data.clientName || data.phone || "Cliente"}: ${data.motivo || ""}`;
-    url = "/admin/dashboard";
   }
 
   self.registration.showNotification(title, {

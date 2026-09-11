@@ -420,7 +420,6 @@ function CotizarForm() {
   const [imageFiles,setImageFiles] = useState<File[]>([]);
   const [imagePreviews,setImagePreviews] = useState<string[]>([]);
   const [submitting,setSubmitting] = useState(false);
-  const [uploadProgress,setUploadProgress] = useState("");
   const [submitted,setSubmitted] = useState(false);
   const [error,setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -463,12 +462,11 @@ function CotizarForm() {
 
   const handleSubmit=async()=>{
     if(!isValid||submitting)return;
-    setSubmitting(true); setError(""); setUploadProgress("");
+    setSubmitting(true); setError("");
     try {
       const imageUrls: string[] = [];
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
-        setUploadProgress(`${t.quote.uploadingPhotoPre}${i + 1}${t.quote.uploadingPhotoMid}${imageFiles.length}…`);
         const fd = new FormData();
         fd.append("file", file);
         let res: Response;
@@ -483,12 +481,11 @@ function CotizarForm() {
         }
         imageUrls.push(data.url);
       }
-      setUploadProgress(t.quote.savingOrder);
       const res=await fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,cakeDetails,imageUrls})});
       if(!res.ok) throw new Error(t.quote.errSaveOrder);
       setSubmitted(true);
     } catch(e:unknown){ setError(e instanceof Error?e.message:t.quote.errGeneric); }
-    finally{ setSubmitting(false); setUploadProgress(""); }
+    finally{ setSubmitting(false); }
   };
 
   if(submitted){

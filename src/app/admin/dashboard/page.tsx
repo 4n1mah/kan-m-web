@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { DatePicker, TimePicker } from "@/components/DateTimePickers";
 import { ToastContainer, useToast } from "@/components/Toast";
-import { BakersProvider, useBakers, type TeamMember } from "@/components/BakersContext";
+import { BakersProvider, useBakers } from "@/components/BakersContext";
 import {
   Package, ClipboardList, LogOut, RefreshCw, Plus, X,
   Pencil, Trash2, ChevronLeft, ChevronRight, Check,
@@ -73,7 +73,6 @@ const CATEGORIES = [
   {id:"laticas",label:"Laticas"},
 ];
 const catLabel = (id: string) => CATEGORIES.find(c=>c.id===id)?.label ?? id;
-const empty = { name:"", description:"", category:"cakes", imageUrl:"", price:"" };
 const PINK = "var(--gradient-rose)"; // gradiente de marca definido en globals.css
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -457,7 +456,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
   onDelete:(id:string)=>Promise<void>;
   currentUser: CurrentUser | null;
 }) {
-  const { bakers, teamMembers } = useBakers();
+  const { teamMembers } = useBakers();
   const isAssistant = currentUser?.role === "ASSISTANT";
   const [status,setStatus]         = useState(order.status);
   const [assigned,setAssigned]     = useState(order.assignedTo??"");

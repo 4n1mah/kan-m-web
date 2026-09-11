@@ -14,7 +14,7 @@ async function requireOwner(req: Request) {
 }
 
 export async function GET(req: NextRequest) {
-  const { error, session } = await requireOwner(req);
+  const { error } = await requireOwner(req);
   if (error) return error;
 
   const users = await prisma.user.findMany({

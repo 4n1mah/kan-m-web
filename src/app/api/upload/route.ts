@@ -108,8 +108,6 @@ export async function POST(req: NextRequest) {
     // FIX HDR Pixel
     cloudForm.append("quality", "auto");
     cloudForm.append("fetch_format", "auto");
-    // opcional si algún HDR sigue fallando:
-    // cloudForm.append("flags", "strip_profile");
     
     const res = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,

@@ -166,9 +166,6 @@ export function canViewActivity(role: SessionPayload["role"]) {
 export function canUploadOrderPhotos(role: SessionPayload["role"]) {
   return role === "OWNER" || role === "BAKER";
 }
-export function canViewReports(role: SessionPayload["role"]) {
-  return role === "OWNER" || role === "BAKER";
-}
 export function canManageSettings(role: SessionPayload["role"]) {
   return role === "OWNER";
 }

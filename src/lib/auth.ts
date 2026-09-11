@@ -171,6 +171,12 @@ export function canUploadOrderPhotos(role: SessionPayload["role"]) {
 export function canViewReports(role: SessionPayload["role"]) {
   return role === "OWNER" || role === "BAKER";
 }
+// Ventas y facturación: precios acordados, depósitos, estado de pago y los
+// totales de las órdenes del catálogo. ASSISTANT no los recibe — el filtrado
+// ocurre en el servidor (src/lib/financials.ts), no solo en la interfaz.
+export function canViewFinancials(role: SessionPayload["role"]) {
+  return role === "OWNER" || role === "BAKER";
+}
 export function canManageSettings(role: SessionPayload["role"]) {
   return role === "OWNER";
 }

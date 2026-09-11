@@ -713,7 +713,7 @@ function OrderModal({ order,onClose,onUpdate,onDelete,currentUser }:{
             )}
 
             {/* ── Financiero ── (oculto en pedidos PENDING) */}
-            {!isPending&&(
+            {!isPending&&!isAssistant&&(
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-1.5">
                 <span>💰</span> Precio y pago

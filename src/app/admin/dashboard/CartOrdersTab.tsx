@@ -28,8 +28,9 @@ export type CartOrder = {
   customerPhone: string;
   fulfillmentMethod: "DINE_IN" | "PICKUP";
   items: CartItem[];
-  subtotal: number;
-  total: number;
+  // Ausentes cuando el rol no puede ver ventas (ver src/lib/financials.ts).
+  subtotal?: number;
+  total?: number;
   receiptImageUrl: string;
   status: "PENDING" | "CONFIRMED" | "DENIED" | "SENT";
   externalSyncStatus: "NOT_SENT" | "SENT" | "FAILED";
@@ -242,13 +243,15 @@ function CartOrderDetailModal({
               </div>
             )}
 
-            {/* Total */}
-            <div className="flex justify-between items-center rounded-2xl border border-[#f0e8e0] px-5 py-3.5">
-              <span className="font-semibold text-gray-700">Total</span>
-              <span className="font-display text-2xl font-bold text-[#e85d82]">
-                RD${order.total.toLocaleString("es-DO")}
-              </span>
-            </div>
+            {/* Total — el servidor no lo envía a roles sin acceso a ventas */}
+            {order.total != null && (
+              <div className="flex justify-between items-center rounded-2xl border border-[#f0e8e0] px-5 py-3.5">
+                <span className="font-semibold text-gray-700">Total</span>
+                <span className="font-display text-2xl font-bold text-[#e85d82]">
+                  RD${order.total.toLocaleString("es-DO")}
+                </span>
+              </div>
+            )}
 
             {/* Receipt */}
             <div>
@@ -380,14 +383,16 @@ function CartOrderCard({
           <p className="text-xs text-gray-500">{order.customerPhone}</p>
         </div>
 
-        {/* Method + total */}
+        {/* Método + total — el total no llega a roles sin acceso a ventas */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500 text-xs">
             {order.fulfillmentMethod === "DINE_IN" ? "🏠 Local" : "🛍️ Recoger"}
           </span>
-          <span className="font-bold text-[#f07097]">
-            RD${order.total.toLocaleString("es-DO")}
-          </span>
+          {order.total != null && (
+            <span className="font-bold text-[#f07097]">
+              RD${order.total.toLocaleString("es-DO")}
+            </span>
+          )}
         </div>
 
         {/* Date */}

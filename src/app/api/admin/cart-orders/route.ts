@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { canViewFinancials, getSession } from "@/lib/auth";
+import { stripCartOrderFinancials } from "@/lib/financials";
 
 // Nota de permisos: cualquier usuario logueado (incluida la ASISTENTE) puede
 // LEER las ordenes del catalogo — ve la pestaña Ordenes en modo solo lectura.
 // Las acciones (confirmar/negar pago) exigen canManageCartOrders en [id]/route.ts.
+// Los importes (subtotal, total y el precio de cada item) se recortan en el
+// servidor para los roles sin canViewFinancials — ver src/lib/financials.ts.
 export async function GET(req: NextRequest) {
   const session = await getSession(req);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,6 +29,10 @@ export async function GET(req: NextRequest) {
   const slice = hasMore ? orders.slice(0, limit) : orders;
   const nextCursor = hasMore ? slice[slice.length - 1].id : null;
 
+  const visible = canViewFinancials(session.role)
+    ? slice
+    : slice.map((order) => stripCartOrderFinancials(order));
+
   // Compat con el dashboard web actual (espera array). Si el cliente
   // pasa `?limit` o `?cursor`, devolvemos objeto con metadata.
   const wantsPagination =
@@ -34,13 +41,13 @@ export async function GET(req: NextRequest) {
     url.searchParams.has("status");
 
   if (!wantsPagination) {
-    return NextResponse.json(slice, {
+    return NextResponse.json(visible, {
       headers: { "Cache-Control": "private, no-store" },
     });
   }
 
   return NextResponse.json(
-    { orders: slice, nextCursor, hasMore },
+    { orders: visible, nextCursor, hasMore },
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { canManageCartOrders, getSession } from "@/lib/auth";
+import { canManageCartOrders, canViewFinancials, getSession } from "@/lib/auth";
 import { logActivity } from "@/lib/activityLog";
 import { sendOrderToExternalApi } from "@/lib/externalApi";
+import { stripCartOrderFinancials } from "@/lib/financials";
 
 const VALID_STATUSES = ["PENDING", "CONFIRMED", "DENIED", "SENT"];
 
@@ -15,7 +16,10 @@ export async function GET(
 
   const order = await prisma.cartOrder.findUnique({ where: { id: params.id } });
   if (!order) return NextResponse.json({ error: "Orden no encontrada" }, { status: 404 });
-  return NextResponse.json(order, { headers: { "Cache-Control": "private, no-store" } });
+  return NextResponse.json(
+    canViewFinancials(session.role) ? order : stripCartOrderFinancials(order),
+    { headers: { "Cache-Control": "private, no-store" } }
+  );
 }
 
 export async function PATCH(

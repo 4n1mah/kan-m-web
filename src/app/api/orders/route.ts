@@ -1,20 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { canViewFinancials, getSession } from "@/lib/auth";
 import { getSiteSettings } from "@/lib/settings";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
 import { validateDominicanPhone } from "@/lib/phone";
 import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
 import { notifyOnNewOrder } from "@/lib/push";
-
-async function isAuthed(req?: Request) {
-  const session = await getSession(req);
-  return !!session;
-}
+import { stripOrderFinancials } from "@/lib/financials";
 
 export async function GET(req: NextRequest) {
-  if (!await isAuthed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // Paginación opcional. Por defecto trae las 200 más recientes para no
   // romper compatibilidad con el dashboard actual. Cuando el dashboard se
@@ -43,16 +40,22 @@ export async function GET(req: NextRequest) {
     cakeDetails: o.cakeDetails && typeof o.cakeDetails === "object" ? o.cakeDetails : null,
   }));
 
+  // Ventas y facturación: los roles sin canViewFinancials no reciben precio
+  // acordado, depósito ni estado de pago — ver src/lib/financials.ts.
+  const visible = canViewFinancials(session.role)
+    ? normalized
+    : normalized.map((order) => stripOrderFinancials(order));
+
   // Si el cliente NO pidió paginación explícita, devuelve solo el array
   // (compat con dashboard actual). Si pasó `limit` o `cursor`, devuelve
   // un objeto con metadata.
   if (!url.searchParams.has("limit") && !url.searchParams.has("cursor")) {
-    return NextResponse.json(normalized, {
+    return NextResponse.json(visible, {
       headers: { "Cache-Control": "private, no-store" },
     });
   }
   return NextResponse.json(
-    { orders: normalized, nextCursor, hasMore },
+    { orders: visible, nextCursor, hasMore },
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }

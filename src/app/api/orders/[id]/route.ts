@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { canDeleteOrders, canEditAnyOrder, getSession } from "@/lib/auth";
+import { canDeleteOrders, canEditAnyOrder, canViewFinancials, getSession } from "@/lib/auth";
 import { logActivity } from "@/lib/activityLog";
 import { isAllowedCloudinaryImageUrl } from "@/lib/cloudinary";
 import { validateDominicanPhone } from "@/lib/phone";
+import { stripOrderFinancials } from "@/lib/financials";
 
 const VALID_STATUSES = ["PENDING","CONFIRMED","NEEDS_INFO","COMPLETED","DELIVERED","REJECTED","CANCELLED"];
 
@@ -16,13 +17,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   if (!order) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
 
   // Normaliza JSON fields como hace el listing
+  const normalized = {
+    ...order,
+    selectedItems: Array.isArray(order.selectedItems) ? order.selectedItems : [],
+    imageUrls: Array.isArray(order.imageUrls) ? order.imageUrls : [],
+    cakeDetails: order.cakeDetails && typeof order.cakeDetails === "object" ? order.cakeDetails : null,
+  };
+
   return NextResponse.json(
-    {
-      ...order,
-      selectedItems: Array.isArray(order.selectedItems) ? order.selectedItems : [],
-      imageUrls: Array.isArray(order.imageUrls) ? order.imageUrls : [],
-      cakeDetails: order.cakeDetails && typeof order.cakeDetails === "object" ? order.cakeDetails : null,
-    },
+    canViewFinancials(session.role) ? normalized : stripOrderFinancials(normalized),
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }

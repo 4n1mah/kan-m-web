@@ -36,13 +36,14 @@ export function stripOrderFinancials<T extends object>(
  * dentro del snapshot de `items` (que es Json en Prisma, así que se
  * normaliza a array antes de recorrerlo).
  */
-export function stripCartOrderFinancials<T extends { items?: unknown }>(
+export function stripCartOrderFinancials<T extends object>(
   order: T
 ): Omit<T, CartOrderFinancialField> {
-  const out: Record<string, unknown> = { ...order };
+  const out: Record<string, unknown> = { ...(order as unknown as Record<string, unknown>) };
   for (const field of CART_ORDER_FINANCIAL_FIELDS) delete out[field];
 
-  const items = Array.isArray(order.items) ? order.items : [];
+  // `items` es Json en Prisma: puede venir nulo o sin forma de array.
+  const items = Array.isArray(out.items) ? out.items : [];
   out.items = items.map((item) => {
     if (!item || typeof item !== "object") return item;
     const copy: Record<string, unknown> = { ...(item as Record<string, unknown>) };

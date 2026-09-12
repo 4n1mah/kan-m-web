@@ -55,7 +55,7 @@ cp .env.example .env.local
 
 | Variable | Si falta… |
 |---|---|
-| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | El rate limit usa el respaldo en memoria. |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Recomendadas en producción: hacen que el rate limit sea compartido entre instancias. |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | El servidor no envía notificaciones push. |
 | `NEXT_PUBLIC_FIREBASE_*` (6 variables) | El panel no ofrece activar las notificaciones. |
 | `EXTERNAL_ORDERS_API_URL` | Las órdenes del carrito no se sincronizan con el sistema externo. |
@@ -168,8 +168,6 @@ Las imágenes se guardan en la carpeta `kanm`. La app solo acepta URLs de `res.c
 
 1. Crea una base **Redis** en [upstash.com](https://upstash.com/) (el plan gratuito alcanza).
 2. Copia `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en las variables de entorno.
-
-Si Upstash falla por un problema de red, las requests pasan igual (*fail-open*) y el error queda en el log.
 
 ### Firebase Cloud Messaging (notificaciones push)
 

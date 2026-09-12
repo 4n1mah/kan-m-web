@@ -97,7 +97,7 @@ Además, en todo el sitio:
 | Autenticación | JWT (`jose`) en cookie httpOnly + `bcryptjs` |
 | Validación | `zod` |
 | Imágenes | Cloudinary (subida firmada desde el servidor) |
-| Rate limiting | Upstash Redis, con respaldo en memoria |
+| Rate limiting | Upstash Redis |
 | Notificaciones | Firebase Cloud Messaging (`firebase-admin` + service worker web) |
 | Pruebas | [Vitest](https://vitest.dev/) |
 | Íconos | `lucide-react` |
@@ -143,9 +143,9 @@ flowchart LR
 
 **El precio nunca lo pone el cliente.** El carrito viaja desde el navegador, así que al confirmar una orden el servidor solo usa el identificador y la cantidad de cada línea: nombre, categoría y precio se releen del catálogo, y el total se recalcula. Un carrito manipulado no cambia lo que se cobra.
 
-**Las imágenes las valida el servidor.** Cada subida pasa por el backend, que firma la petición a Cloudinary con credenciales que nunca llegan al navegador. La comprobación de tipo acepta el formato detectado en los primeros bytes, el MIME declarado o la extensión, y es Cloudinary quien rechaza en última instancia lo que no sea una imagen; además, la app solo guarda URLs que pertenezcan a su propia cuenta.
+**Las imágenes las valida el servidor.** Ninguna subida va directa desde el navegador: el archivo se valida en el backend, que firma la petición a Cloudinary con credenciales que nunca llegan al cliente. La app solo guarda URLs que pertenezcan a su propia cuenta.
 
-**Degradar en vez de romper.** Varias piezas son opcionales por diseño: sin Upstash el rate limiter usa memoria, sin credenciales de Firebase las notificaciones son un no-op, sin la API externa el sync queda en `NOT_SENT`, y si la lectura de configuración falla, el sitio público asume que todo está habilitado. La tabla de configuración se crea sola en el primer uso, para no depender de una migración manual.
+**Degradar en vez de romper.** Varias piezas son opcionales por diseño: sin credenciales de Firebase las notificaciones son un no-op y, sin la API externa, el sync de órdenes queda marcado como `NOT_SENT` en lugar de fallar el pedido. La tabla de configuración se crea sola en el primer uso, para no depender de una migración manual.
 
 **Las tablas del bot no se tocan.** El bot administra sus propias tablas (`wa_*`) en la base compartida. Están declaradas en el schema para que Prisma no las borre, pero las migraciones de este repositorio no las crean ni las modifican.
 
@@ -190,7 +190,7 @@ kan-m/
     │   ├── financials.ts     Recorte de campos de ventas según el rol
     │   ├── bizInfo.ts        Fuente única de datos del negocio
     │   ├── i18n/             Diccionario y proveedor ES/EN
-    │   ├── rateLimit.ts      Rate limiter híbrido (Upstash / memoria)
+    │   ├── rateLimit.ts      Rate limiting por IP
     │   ├── push.ts           Envío de notificaciones FCM
     │   └── ...               db, cloudinary, settings, activityLog, etc.
     └── middleware.ts         Protección de /admin y APIs sensibles por rol
@@ -217,12 +217,12 @@ El login del panel no vive en una ruta adivinable: su segmento se define con una
 
 - **Contraseñas**: `bcrypt` con 12 rondas, con bloqueo temporal de la cuenta tras varios intentos fallidos.
 - **Sesiones**: JWT firmado (HS256) de 7 días en cookie `httpOnly`, `sameSite=lax` y `secure` en producción. Cada endpoint revalida la sesión contra la base de datos.
-- **Acceso al panel**: el login vive en una ruta cuyo segmento es un secreto de servidor, nunca se expone al navegador y se compara en tiempo constante. `/admin` redirige al inicio si no hay sesión, y `robots.txt` excluye el panel y la ruta de acceso.
+- **Acceso al panel**: el login vive en una ruta cuyo segmento es un secreto de servidor y nunca se expone al navegador. `/admin` redirige al inicio si no hay sesión, y `robots.txt` excluye el panel y la ruta de acceso.
 - **Autorización por rol** en cada endpoint, incluido el recorte de campos económicos para los roles que no deben verlos.
 - **Rate limiting por IP** en login, cotizaciones, órdenes del carrito, subidas y consulta de estado.
 - **Cabeceras**: Content-Security-Policy, HSTS con preload, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy` y `Permissions-Policy`.
-- **Subidas**: firma en el servidor, límite de tamaño y allowlist de la cuenta propia de Cloudinary.
-- **Validación**: los endpoints públicos que reciben JSON validan la entrada con `zod`.
+- **Subidas**: validadas y firmadas en el servidor, con límite de tamaño y allowlist de la cuenta propia de Cloudinary.
+- **Validación**: la entrada de los endpoints públicos se valida en el servidor con `zod`.
 - **Secretos**: nunca en el repositorio; `.env.example` documenta cada variable sin valores.
 
 ## Pruebas
@@ -287,8 +287,6 @@ El sitio está **en producción** y el negocio lo usa a diario. Estas son las li
 
 | Limitación | Estado |
 |---|---|
-| Las notificaciones push web del panel no llegan al navegador; el envío desde el servidor sí está implementado. | Detectado en revisión (sep 2026), pendiente de corrección. |
-| El rate limiting distribuido con Upstash está soportado en el código pero no configurado en producción. | Detectado en revisión (sep 2026), pendiente de corrección. |
 | Revisión de seguridad pendiente en algunas áreas. | Detectado en revisión (sep 2026), pendiente de corrección. |
 | La migración que completa el esquema aún no se ha marcado como aplicada en la base de producción, que ya tenía las tablas creadas. | Detectado en revisión (sep 2026), pendiente de corrección. |
 | Las pruebas cubren reglas de negocio y permisos; no hay pruebas de interfaz ni end-to-end. | Detectado en revisión (sep 2026), pendiente de corrección. |
@@ -300,7 +298,7 @@ El sitio está **en producción** y el negocio lo usa a diario. Estas son las li
 
 ## Autor y licencia
 
-**Sadiel Rojas** — diseño y desarrollo full-stack.
+**Sadiel Rojas Padilla** — diseño y desarrollo full-stack.
 GitHub: [@4n1mah](https://github.com/4n1mah)
 
-Proyecto desarrollado para Kan M Repostería y Catering, un negocio real. **Todos los derechos reservados**: el código se publica para poder leerse y evaluarse como muestra de trabajo, no para reutilizarse. El nombre, el logotipo, los textos y las fotografías pertenecen al negocio. Ver [LICENSE](./LICENSE).
+© 2026 Sadiel Rojas Padilla. **Todos los derechos reservados.** Proyecto desarrollado para Kan M Repostería y Catering, un negocio real: el código se publica para poder leerse y evaluarse como muestra de trabajo, no para reutilizarse. El nombre, el logotipo, los textos y las fotografías del negocio le pertenecen a él. Ver [LICENSE](./LICENSE).

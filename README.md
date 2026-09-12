@@ -288,6 +288,7 @@ El sitio está **en producción** y el negocio lo usa a diario. Estas son las li
 | Limitación | Estado |
 |---|---|
 | Revisión de seguridad pendiente en algunas áreas. | Detectado en revisión (sep 2026), pendiente de corrección. |
+| Las notificaciones push del panel están implementadas en el servidor pero no se entregan en el navegador. | Detectado en revisión (sep 2026), pendiente de corrección. |
 | La migración que completa el esquema aún no se ha marcado como aplicada en la base de producción, que ya tenía las tablas creadas. | Detectado en revisión (sep 2026), pendiente de corrección. |
 | Las pruebas cubren reglas de negocio y permisos; no hay pruebas de interfaz ni end-to-end. | Detectado en revisión (sep 2026), pendiente de corrección. |
 | Quedan avisos de ESLint sobre dependencias de hooks en el dashboard. | Detectado en revisión (sep 2026), pendiente de corrección. |

@@ -295,7 +295,15 @@ El sitio está **en producción** y el negocio lo usa a diario. Estas son las li
 
 ## Trabajar con asistentes de IA
 
-<!-- Sección pendiente de escribir por el autor. -->
+Dirigí este proyecto con ayuda de Claude Code. Yo definí los requisitos, la arquitectura y las decisiones de producto; el asistente escribió buena parte del código bajo esa dirección.
+
+El criterio que sigo es verificar antes de dar algo por bueno. Dos ejemplos de este repositorio:
+
+Un análisis de código muerto marcó para eliminar una función de permisos que no se usaba en ninguna parte. Al revisarla, resultó ser un control de autorización que nunca se había conectado a los endpoints: no sobraba, faltaba aplicarla. En vez de borrarla, la conecté en el servidor.
+
+El README describía una tarea programada que "resolvía" las escalaciones pendientes, cuando el código las eliminaba. La documentación se corrigió contra el código, no al revés.
+
+Los commits con autoría del asistente se conservan en el historial a propósito.
 
 ## Autor y licencia
 

@@ -41,7 +41,7 @@ async function main() {
   });
 
   console.log(`✅ OWNER creado: ${user.name} <${user.email}>`);
-  console.log(`   Ya puedes iniciar sesión en /admin/login`);
+  console.log(`   Ya puedes iniciar sesión en la ruta de acceso definida por ADMIN_LOGIN_SLUG`);
 }
 
 main()

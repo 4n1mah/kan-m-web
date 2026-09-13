@@ -252,6 +252,11 @@ export default function HomeClient({
 
       <div className="section-divider" />
 
+      {/* EMPANADOTECA — el otro negocio */}
+      <EmpanadotecaBanner />
+
+      <div className="section-divider" />
+
       {/* TESTIMONIALS — reseñas reales de Google, se mantienen en español */}
       <section className="bg-secondary/40 py-14 md:py-20">
         <div className="max-w-7xl mx-auto px-6">
@@ -299,11 +304,6 @@ export default function HomeClient({
           </div>
         </div>
       </section>
-
-      <div className="section-divider" />
-
-      {/* EMPANADOTECA — el otro negocio */}
-      <EmpanadotecaBanner />
 
       {/* MARQUEE — franja decorativa de servicios */}
       <div className="overflow-hidden py-6" aria-hidden="true">

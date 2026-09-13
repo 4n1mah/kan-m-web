@@ -59,8 +59,8 @@ Un **bot de WhatsApp** que vive en otro repositorio (Python/FastAPI) comparte es
 | **Catering** (`/catering`) | Página del servicio de catering para eventos sociales y corporativos. |
 | **La Latica** (`/la-latica`) | Landing del producto estrella (postres en lata) con galería. |
 | **Empanadoteca** (`/empanadoteca`) | Sub-marca con identidad visual propia y transición animada de marca. |
-| **Nosotros** (`/nosotros`) | Historia del negocio, contacto, mapa y horario. |
-| **FAQ** (`/faq`) | Preguntas frecuentes generadas desde una fuente única de datos del negocio. |
+| **Menú** (`/menu`) | Menú del café (Brunch, Bebidas y Postres) con precios, generado desde un único archivo de datos. |
+| **Sobre nosotros** (`/nosotros`) | Historia del negocio, contacto, mapa, horario y preguntas frecuentes (generadas desde una fuente única de datos del negocio; `/faq` redirige acá). |
 
 Además, en todo el sitio:
 

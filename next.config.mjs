@@ -6,6 +6,8 @@ const nextConfig = {
     return [
       // La sección Empanadoteca se llamó /picaderas por un día
       { source: "/picaderas", destination: "/empanadoteca", permanent: true },
+      // Las FAQ se fusionaron al final de /nosotros
+      { source: "/faq", destination: "/nosotros#faq", permanent: true },
     ];
   },
   images: {

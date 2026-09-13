@@ -100,7 +100,8 @@ export const LINKS = {
   catalogoCategoria: (cat: string) => `${SITE_URL}/catalogo?cat=${cat}`,
   cotizar: `${SITE_URL}/cotizar`,
   catering: `${SITE_URL}/catering`,
-  faq: `${SITE_URL}/faq`,
+  // Las FAQ se fusionaron al final de /nosotros (/faq redirige acá).
+  faq: `${SITE_URL}/nosotros#faq`,
   // La página /contacto se fusionó dentro de /nosotros; el link canónico
   // de contacto ahora apunta ahí (la sección de contacto vive al final).
   contacto: `${SITE_URL}/nosotros`,

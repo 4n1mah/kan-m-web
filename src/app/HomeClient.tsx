@@ -238,15 +238,13 @@ export default function HomeClient({
           <p className="font-script text-2xl md:text-4xl text-gradient-rose">
             {t.home.brunchTitle}
           </p>
-          {settings.catalogEnabled && (
-            <Link
-              href="/catalogo?cat=brunch"
-              className="btn-shine group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold bg-gradient-rose"
-            >
-              {t.home.brunchCta}
-              <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          )}
+          <Link
+            href="/menu"
+            className="btn-shine group inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-full text-white text-sm font-semibold bg-gradient-rose"
+          >
+            {t.home.brunchMenuCta}
+            <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+          </Link>
         </div>
       </section>
 

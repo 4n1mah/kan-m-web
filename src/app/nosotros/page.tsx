@@ -3,6 +3,7 @@ import { IMAGES } from "@/lib/images";
 import Image from "next/image";
 import { Clock, Cake, Palette, Gem } from "lucide-react";
 import ContactoSection from "@/components/ContactoSection";
+import FaqSection from "@/components/FaqSection";
 import { useLang } from "@/lib/i18n/LanguageProvider";
 
 export default function NosotrosPage() {
@@ -79,6 +80,9 @@ export default function NosotrosPage() {
 
       {/* Contacto — antes vivía en /nosotros aparte; ahora es la sección final. */}
       <ContactoSection />
+
+      {/* Preguntas frecuentes — antes era la página /faq (redirige acá). */}
+      <FaqSection />
     </section>
   );
 }

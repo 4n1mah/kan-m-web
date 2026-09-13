@@ -68,6 +68,7 @@ export default function Footer() {
           <h4 className="text-xs uppercase tracking-widest font-medium mb-4">{t.footer.explore}</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link href="/" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.home}</Link></li>
+            <li><Link href="/menu" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.cafeMenu}</Link></li>
             {settings.catalogEnabled && <li><Link href="/catalogo" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.catalog}</Link></li>}
             <li><Link href="/catering" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.catering}</Link></li>
             <li><Link href="/la-latica" className="inline-block hover:text-rose hover:translate-x-1 transition-all duration-200">{t.footer.latica}</Link></li>

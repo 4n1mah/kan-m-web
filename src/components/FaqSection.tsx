@@ -7,9 +7,14 @@ import { LINKS, BUSINESS } from "@/lib/bizInfo";
 import { useSiteSettings } from "@/components/useSiteSettings";
 import { useLang } from "@/lib/i18n/LanguageProvider";
 
-// El contenido de las FAQs vive en el diccionario (src/lib/i18n/dictionary.ts):
-// el español se lee de bizInfo.ts (fuente única de verdad que también consume
-// el bot) y el inglés se agrega junto a él. Para editar el ES, ir a bizInfo.ts.
+/**
+ * Preguntas frecuentes. Vivía en la página /faq (ahora redirige a
+ * /nosotros#faq); se embebe al final de /nosotros, después del contacto.
+ *
+ * El contenido de las FAQs vive en el diccionario (src/lib/i18n/dictionary.ts):
+ * el español se lee de bizInfo.ts (fuente única de verdad que también consume
+ * el bot) y el inglés se agrega junto a él. Para editar el ES, ir a bizInfo.ts.
+ */
 
 // El texto de bizInfo se guarda plano (el bot lo auto-enlaza en WhatsApp).
 // En la web convertimos URLs y el teléfono en hipervínculos, con etiquetas
@@ -66,36 +71,24 @@ function renderAnswer(text: string): Array<string | JSX.Element> {
   return out;
 }
 
-export default function FAQPage() {
+export default function FaqSection() {
   const [open, setOpen] = useState<number | null>(null);
   const { quotesEnabled } = useSiteSettings();
   const { t } = useLang();
   const FAQS = t.faq.items;
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      {/* Header */}
-      <section className="relative overflow-hidden py-12 md:py-16 px-6 text-center bg-grain">
-        {/* Decorative blobs */}
-        <div className="blob-float pointer-events-none absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[var(--blush)]/30 blur-3xl" />
-        <div className="blob-float-2 pointer-events-none absolute -bottom-10 -right-10 w-64 h-64 rounded-full bg-[var(--accent)]/40 blur-3xl" />
+    <section id="faq" className="mt-24 scroll-mt-4">
+      {/* Encabezado de sección */}
+      <div className="text-center max-w-xl mx-auto reveal">
+        <p className="font-script text-2xl text-rose">{t.faq.kicker}</p>
+        <h2 className="font-display text-3xl md:text-4xl mt-1">{t.faq.title}</h2>
+        <p className="text-[var(--muted-foreground)] mt-4 leading-relaxed">{t.faq.subtitle}</p>
+      </div>
 
-        <div className="hero-enter relative">
-          <p className="font-script text-xl md:text-2xl text-[var(--rose)]">
-            {t.faq.kicker}
-          </p>
-          <h1 className="font-display text-3xl md:text-4xl mt-2">
-            {t.faq.title}
-          </h1>
-          <p className="text-[var(--muted-foreground)] mt-4 max-w-xl mx-auto leading-relaxed">
-            {t.faq.subtitle}
-          </p>
-        </div>
-      </section>
-
-      {/* FAQ accordion */}
-      <section className="max-w-3xl mx-auto px-6 pb-12">
-        <div className="stagger-fade space-y-3">
+      <div className="max-w-3xl mx-auto mt-10">
+        {/* FAQ accordion */}
+        <div className="space-y-3">
           {FAQS.map((item, i) => (
             <div
               key={i}
@@ -115,7 +108,7 @@ export default function FAQPage() {
                 </span>
                 <span
                   className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    open === i ? "bg-[var(--rose)] text-white rotate-180" : "bg-[var(--rose)]/10 text-[var(--rose)]"
+                    open === i ? "bg-[var(--rose)] text-white rotate-180" : "bg-[rgba(241,112,151,0.1)] text-[var(--rose)]"
                   }`}
                 >
                   <ChevronDown size={17} />
@@ -141,10 +134,8 @@ export default function FAQPage() {
         {/* CTA */}
         <div className="mt-14 rounded-3xl glass-pink bg-mesh p-8 text-center reveal" data-reveal="scale">
           <MessageCircle size={32} className="float-y text-[var(--rose)] mx-auto mb-3" />
-          <h2 className="font-display text-2xl">{t.faq.ctaTitle}</h2>
-          <p className="text-[var(--muted-foreground)] mt-2 mb-6">
-            {t.faq.ctaSubtitle}
-          </p>
+          <h3 className="font-display text-2xl">{t.faq.ctaTitle}</h3>
+          <p className="text-[var(--muted-foreground)] mt-2 mb-6">{t.faq.ctaSubtitle}</p>
           <div className="flex flex-wrap gap-3 justify-center">
             <a
               href={waLink(WA_MESSAGES.general)}
@@ -158,14 +149,14 @@ export default function FAQPage() {
             {quotesEnabled && (
               <Link
                 href="/cotizar"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--rose)] text-[var(--rose)] text-sm font-semibold hover:bg-[var(--rose)]/5 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[var(--rose)] text-[var(--rose)] text-sm font-semibold hover:bg-[rgba(241,112,151,0.05)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
               >
                 {t.faq.ctaQuote}
               </Link>
             )}
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

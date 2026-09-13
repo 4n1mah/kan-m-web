@@ -68,7 +68,7 @@ export default function HomeClient({
       `}</style>
 
       {/* HERO — priorityFirst para que la primera imagen sea LCP candidate */}
-      <HeroCarousel images={IMAGES.heroCarousel} priorityFirst>
+      <HeroCarousel images={IMAGES.heroCarousel} autoplayMs={6000} priorityFirst>
         <div className="max-w-7xl mx-auto px-6 py-14 md:py-20">
           <div className="max-w-2xl hero-enter">
             <span className="float-y inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-xs uppercase tracking-widest text-white">
@@ -319,7 +319,7 @@ export default function HomeClient({
       {/* FINAL CTA — full carousel */}
       <section className="relative overflow-hidden reveal">
         {/* Full-width carousel as background */}
-        <HeroCarousel images={IMAGES.heroCarousel} autoplayMs={5000}>
+        <HeroCarousel images={IMAGES.heroCarousel} autoplayMs={7000}>
           <div className="max-w-4xl mx-auto px-6 py-16 md:py-24 text-center">
             {/* Glass card over the carousel */}
             <div className="glass-strong rounded-3xl px-8 py-12 inline-block w-full">

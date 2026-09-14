@@ -255,11 +255,28 @@ const es = {
   empanadoteca: {
     heroKicker: "las mejores empanadas de RD",
     subtitle: "Tradicionales · Venezolanas · Catibías",
-    cookingTitle: "Estamos cocinando esta página…",
-    cookingText:
-      "🥟 ¡Mantente al tanto! Muy pronto podrás ver nuestro menú de empanadas aquí mismo. Mientras tanto, síguenos y visítanos.",
+    heroText:
+      "Crujientes por fuera y bien rellenas por dentro. Escoge tu masa y tu sabor favorito en la Zona Colonial.",
+    ctaMenu: "Ver el menú",
+    fromPrice: "desde",
     directions: "Cómo llegar",
     backTo: "Volver a",
+    featuredKicker: "la estrella de la casa",
+    featuredTitle: "Súper Pastelito",
+    featuredText:
+      "Grande, dorado y generoso: el pastelito para los que llegan con hambre de verdad. Pídelo clásico o con camarones.",
+    featuredBadge: "Estrella",
+    menuKicker: "para todos los antojos",
+    menuTitle: "Nuestro menú",
+    menuSubtitle: "Tres masas, un montón de sabores. Todos los precios en pesos dominicanos.",
+    groups: {
+      tradicional: "Masa Tradicional",
+      venezolana: "Masa Venezolana",
+      catibias: "Catibías",
+    },
+    finalKicker: "¿se te antojó?",
+    finalTitle: "Te esperamos en la Zona Colonial",
+    finalText: "Síguenos en Instagram para enterarte de nuevos sabores y novedades.",
   },
 
   // Catálogo
@@ -771,11 +788,28 @@ const en: Dict = {
   empanadoteca: {
     heroKicker: "the best empanadas in the DR",
     subtitle: "Traditional · Venezuelan · Catibías",
-    cookingTitle: "We're cooking up this page…",
-    cookingText:
-      "🥟 Stay tuned! Very soon you'll be able to see our empanada menu right here. In the meantime, follow us and come visit.",
+    heroText:
+      "Crispy on the outside, generously filled on the inside. Pick your dough and your favorite flavor in the Colonial Zone.",
+    ctaMenu: "See the menu",
+    fromPrice: "from",
     directions: "Directions",
     backTo: "Back to",
+    featuredKicker: "the star of the house",
+    featuredTitle: "Súper Pastelito",
+    featuredText:
+      "Big, golden and generous: the pastelito for those who come truly hungry. Get it classic or with shrimp.",
+    featuredBadge: "Star",
+    menuKicker: "for every craving",
+    menuTitle: "Our menu",
+    menuSubtitle: "Three doughs, plenty of flavors. All prices in Dominican pesos.",
+    groups: {
+      tradicional: "Traditional Dough",
+      venezolana: "Venezuelan Dough",
+      catibias: "Catibías",
+    },
+    finalKicker: "craving one?",
+    finalTitle: "We're waiting for you in the Colonial Zone",
+    finalText: "Follow us on Instagram to hear about new flavors and news.",
   },
 
   catalog: {
